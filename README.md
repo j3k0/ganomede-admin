@@ -1,6 +1,7 @@
 # ganomede-admin
 
 # How to run
-	```make run```<br/>
-	Then open your browser at ```http://localhost:8000/```
+	in terminal -- >
+	make run
+	Then open your browser at http://localhost:8000/
 
