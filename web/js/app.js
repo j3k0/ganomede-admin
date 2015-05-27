@@ -26,7 +26,7 @@ define(function (require) {
         // Application Constructor
         initialize: function() {
             Utils.allowEmptyAjaxResponse();
-            Utils.registerAjaxErrorHandlers();
+            // Utils.registerAjaxErrorHandlers();
             this.onDeviceReady();
         },
         // deviceready Event Handler

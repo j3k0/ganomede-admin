@@ -13,6 +13,7 @@ define(function (require) {
       "": "login",
       "home": "home",
       "login": "login",
+      "logout": "logout",
       "user/:id": "userDetails"
     },
 
@@ -21,15 +22,27 @@ define(function (require) {
     },
      
     home: function() {
-      var HomeView = require("./views/homeView");
-      this.renderView(new HomeView());
-      this.setHeaderNavigation('home-menu');
+      if(this.main.isLoggedIn()){
+        var HomeView = require("./views/homeView");
+        this.renderView(new HomeView());
+        this.setHeaderNavigation('home-menu');
+      }else{
+        Backbone.history.navigate('login', {trigger: true});
+      }
     },
 
     login: function() {
-      var LoginView = require("./views/loginView");
-      this.renderView(new LoginView({main: this.main}));
-      this.main.hideLogout();
+      if(!this.main.isLoggedIn()){
+        var LoginView = require("./views/loginView");
+        this.renderView(new LoginView({main: this.main}));
+      }
+      else{
+        Backbone.history.navigate('home', {trigger: true});
+      }
+    },
+
+    logout: function(){
+      this.main.logout();
     },
 
     setHeaderNavigation: function(section) {
