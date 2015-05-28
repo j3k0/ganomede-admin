@@ -41,6 +41,27 @@ define(function (require) {
       }
     },
 
+    userDetails: function(id){
+      if(this.main.isLoggedIn()){
+        var UserDetailsView = require("./views/userDetailsView");
+        var UserDetailedModel = require("./models/UserDetailedModel");
+        var model = new UserDetailedModel({id: id});
+        this.renderView(new UserDetailsView({model: model}));
+        model.getLocation();
+        model.fetch({
+              reset: true,                
+              success: function(d){
+              },
+              error: function(e){
+                console.log(e);
+              }
+            });
+      }
+      else{
+        Backbone.history.navigate('home', {trigger: true});
+      }
+    },
+
     logout: function(){
       this.main.logout();
     },
