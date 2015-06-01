@@ -5,8 +5,7 @@ The collection is fetched through the api following the country code.
 define(function (require) {
   'use strict';
 
-  var UserModel = require("./userModel.js");
-  var config = require("../config");
+  var UserModel = require("./userModel.js"); 
   
   var UsersCollection = Backbone.Collection.extend({
     model: UserModel,

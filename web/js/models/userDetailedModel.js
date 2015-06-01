@@ -1,7 +1,6 @@
 define(function (require) {
   'use strict';
-
-  var config = require('../config');
+ 
   var ajaxHandler = require("../ajaxHandler.js");
 
   var UserDetailedModel = Backbone.Model.extend({

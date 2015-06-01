@@ -2,7 +2,6 @@ define(function (require) {
   'use strict';
 
   var template = require("../text!../../templates/loginView.html");
-  var config = require("../config.js");
 
   var LoginView = Backbone.View.extend({
 

@@ -1,12 +1,11 @@
 define(function (require) {
   'use strict';
 
-  var config = require('../config');
   var ajaxHandler = require("../ajaxHandler");
 
   var Login = {
 
-    url: "../api/login",// config.apiUrl + "/login",
+    url: "../api/login",
 
     postAjax: function(username, password, success, error){
       var that = this;
