@@ -1,12 +1,61 @@
 var express = require('express');
 var app = express();
+var passport = require('passport');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var request = require("request");
+var utils = require('./utils');
+var RememberMeStrategy = require('passport-remember-me').Strategy;
 var bodyParser = require('body-parser');
+
+var API_BASE_URL = process.env.API_BASE_URL || "https://ganomede-devel.fovea.cc";
+var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
+
+
+
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
-var API_BASE_URL = process.env.API_BASE_URL || "https://ganomede-devel.fovea.cc";
-var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com/api";
+app.use(cookieParser());
+app.use(session({secret: 'ganomede-admin', saveUninitialized: true, resave: true}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.use(new RememberMeStrategy(
+  function(token, done) {
+  	console.log(token);
+  	done(null, token);
+  },
+  function(user, done) {
+    var token = utils.generateToken(64);
+    done(null, token);
+  }
+));
+
+
+app.post('/api/login', 
+	passport.authenticate('remember-me', { failureRedirect: '/login', failureFlash: true }),
+	function(req, res, next) {
+		var token = utils.generateToken(64);
+    res.cookie('remember_me', token, { path: '/', httpOnly: true, maxAge: 604800000 }); // 7 days
+    request.post(API_TEMP_URL + req.url).pipe(res);
+  },
+  function(req, res) {
+  	res.redirect('/admin/');
+  }
+ );
+
+
+
 
 app.get(/avatars\/v1\/(.+)$/, function(req, res) {
 	request.get(API_BASE_URL + req.url).pipe(res);
@@ -19,48 +68,29 @@ app.get(/avatars\/v1\/(.+)$/, function(req, res) {
  	});
  });
 
-
 //post login
- app.post("/admin/login", function(req, res){
- 	request.post(API_TEMP_URL + '/login',
- 		req.body,
- 		function (error, response, body) {
- 			if (!error && response.statusCode == 200) {
-            	res.send(body)
-            }
-    	}
-	);
- });
+ // app.post("/api/login", function(req, res){
+ // 	request.post(API_TEMP_URL + req.url).pipe(res);
+ // });
 
 //get users list
- app.get("/admin/users", function(req, res){
- 	request(API_TEMP_URL +'/getAll', 
- 		function (error, response, body) {
-		  if (!error && response.statusCode == 200) {
-		    res.send(body); 
-		  }
-	});
+ app.get("/api/users", function(req, res){
+ 	request(API_TEMP_URL + req.url).pipe(res);
  });
 
- //get users details
- app.get("/admin/user/details/:id", function(req, res){
- 	console.log("details");
- 	request(API_TEMP_URL +'/user/' + req.params.id, 
- 		function (error, response, body) {
-		  if (!error && response.statusCode == 200) {
-		    res.send(body); 
-		  }
-	});
+ //get user details
+ app.get("/api/user/:id", function(req, res){
+ 	request(API_TEMP_URL + req.url).pipe(res);
+ });
+
+  //ban user
+ app.post("/api/user/ban/:id", function(req, res){
+ 	request.post(API_TEMP_URL + req.url).pipe(res);
  });
 
  //get location
- app.get("/admin/location/:id", function(req, res){
- 	request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location', 
- 		function (error, response, body) {
-		  if (!error && response.statusCode == 200) {
-		    res.send(body); 
-		  }
-	});
+ app.get("/api/location/:id", function(req, res){
+ 	request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location').pipe(res);
  });
 
 /* serves main page */

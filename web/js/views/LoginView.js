@@ -14,7 +14,7 @@ define(function (require) {
 
     events:{
         "click .login-button":"login",
-        "keypress #password-input": "onkeypress"
+        "keypress .password-input": "onkeypress"
     },
 
     render:function () {
@@ -30,8 +30,8 @@ define(function (require) {
     },
 
     login:function (ev) {
-        var username = $('#username-input').val();
-        var password = $('#password-input').val();
+        var username = this.$('.username-input').val();
+        var password = this.$('.password-input').val();
         if(username === '' || password === '')
         {
             return;
@@ -40,6 +40,6 @@ define(function (require) {
         this.main.login(username, password);
     }
 
-});
-return LoginView;
+  });
+  return LoginView;
 });

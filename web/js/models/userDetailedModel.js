@@ -9,25 +9,56 @@ define(function (require) {
     defaults: {
       username: '',
       email: '',
-      photo: ''
+      photo: '',
+      banned: false
     },
 
     idAttribute: 'id',
-    urlRoot: '../admin/user/details/',//config.apiUrl + "/user",
+    urlRoot: '../api/user/',//config.apiUrl + "/user",
 
     initialize:function () {
     	
     },
 
+    ban: function(b, success, error){
+      var that = this;
+      ajaxHandler.postAjax({
+        url: that.urlRoot + "ban/" + that.id,// config.locationUrl.replace("userId", that.id),
+        type: 'POST',
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({banned: b}),
+        success: function (data){
+          if(typeof data === "string")
+          {
+            data = JSON.parse(data);
+          }
+
+          if(data.success === true){
+            that.set('banned', b);
+            if(success){ success(data)};
+          }else{
+            error(data.message);
+          }
+        },
+        error: function (resp){
+          if(error)
+            error(resp);
+        }
+      });
+    },
+
     getLocation: function(){
       var that = this;
       ajaxHandler.postAjax({
-        url: "../admin/location/" + that.id,// config.locationUrl.replace("userId", that.id),
+        url: "../api/location/" + that.id,// config.locationUrl.replace("userId", that.id),
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: function (data){
-          console.log(data);
-          data = JSON.parse(data);
+          if(typeof data === "string")
+          {
+            data = JSON.parse(data);
+          }
           that.location = data.value;
           that.trigger('change');
         },
