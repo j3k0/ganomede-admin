@@ -13,7 +13,8 @@ define(function (require) {
       "": "login",
       "home": "home",
       "login": "login",
-      "user/:id": "userDetails"
+      "user/:id": "userDetails",
+      "items": "items"
     },
 
     initialize: function(options) {
@@ -59,6 +60,12 @@ define(function (require) {
               ajaxHandler.errorFetchOrSave(m, r);
             }
           });
+    },
+
+    items: function(){
+      var ItemsView = require("./views/itemsView");
+      this.renderView(new ItemsView());
+      this.setHeaderNavigation('items-menu');
     },
 
     setHeaderNavigation: function(section) {

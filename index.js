@@ -136,6 +136,15 @@ app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
  	request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location').pipe(res);
  });
 
+//get items list
+ app.delete("/api/item/:id", auth, function(req, res){
+ 	request.del(API_TEMP_URL + req.url).pipe(res);
+ });
+
+ app.get("/api/items/:name", auth, function(req, res){
+ 	request(API_TEMP_URL + req.url).pipe(res);
+ });
+
 /* serves main page */
  app.get("/admin/", function(req, res) {
     res.sendFile(__dirname + "/web/index.html");
