@@ -3,7 +3,6 @@ define(function (require) {
 
   var HeaderView = require("./views/headerView");
   var Login = require("./models/Login");
-  var UsersCollection = require("./models/usersCollection");
 
   var MainView = Backbone.View.extend({
 
@@ -34,34 +33,14 @@ define(function (require) {
         function (data){
           if(data.success === true)
           {
-            that.showLogout();
-            localStorage.setItem("loggedIn", true);
-            UsersCollection.singleton().fetch({
-              reset: true,                
-              success: function(d){
-              },
-              error: function(e){
-                console.log(e);
-              }
-            });
             Backbone.history.navigate('home', {trigger: true});
           }
         },
         function (resp){
-
+          swal("Oops!", resp, "error");
         }
       );
     },
-
-    logout: function(){
-      localStorage.setItem("loggedIn", false);
-      Backbone.history.navigate('', {trigger: true});
-    },
-
-    isLoggedIn: function(){
-      return localStorage.getItem("loggedIn") === 'true' ? true : false;
-    },
-
 
     hideLogout: function(nav){
       this.headerView.hideLogout();
@@ -76,12 +55,6 @@ define(function (require) {
     },
 
     renderView: function(view) {
-      if(this.isLoggedIn()){
-        this.showLogout();
-      }
-      else{
-        this.hideLogout();
-      }
       if (this.contentView) {
         this.contentView.undelegateEvents();
       }

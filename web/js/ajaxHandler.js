@@ -26,6 +26,7 @@ define(function (/*require*/) {
             console.log(msg);
             if(error === 401 || error === 403)
             {
+                Backbone.history.navigate('login', {trigger: true});
                 return;
             }
             

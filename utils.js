@@ -24,15 +24,38 @@ exports.findByUsername = function(username, users, fn) {
   return fn(null, null);
 }
 
-exports.consumeRememberMeToken = function(token, tokens, fn) {
+exports.consumeToken = function(token, tokens, fn) {
   var username = tokens[token];
   // invalidate the single-use token
-  delete tokens[token];
+  //delete tokens[token];
   return fn(null, username);
 }
 
-exports.saveRememberMeToken = function(token, username, tokens, fn) {
+exports.removeToken = function(token, tokens) {
+  var username = tokens[token];
+  // invalidate the single-use token
+  delete tokens[token];
+}
+
+exports.saveToken = function(token, username, tokens, fn) {
+	for (var key in tokens) {
+	   if (tokens.hasOwnProperty(key)) {
+	   	delete tokens[key];
+	   }
+	}
   tokens[token] = username;
   return fn();
+}
+
+exports.parseCookies = function (request) {
+    var list = {},
+        rc = request.headers.cookie;
+
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
 }
 

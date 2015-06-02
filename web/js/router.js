@@ -13,7 +13,6 @@ define(function (require) {
       "": "login",
       "home": "home",
       "login": "login",
-      "logout": "logout",
       "user/:id": "userDetails"
     },
 
@@ -22,48 +21,44 @@ define(function (require) {
     },
      
     home: function() {
-      if(this.main.isLoggedIn()){
         var HomeView = require("./views/homeView");
         this.renderView(new HomeView());
         this.setHeaderNavigation('home-menu');
-      }else{
-        Backbone.history.navigate('login', {trigger: true});
-      }
-    },
-
-    login: function() {
-      if(!this.main.isLoggedIn()){
-        var LoginView = require("./views/loginView");
-        this.renderView(new LoginView({main: this.main}));
-      }
-      else{
-        Backbone.history.navigate('home', {trigger: true});
-      }
-    },
-
-    userDetails: function(id){
-      if(this.main.isLoggedIn()){
-        var UserDetailsView = require("./views/userDetailsView");
-        var UserDetailedModel = require("./models/UserDetailedModel");
-        var model = new UserDetailedModel({id: id});
-        this.renderView(new UserDetailsView({model: model}));
-        model.getLocation();
-        model.fetch({
+        this.main.showLogout();
+        var ajaxHandler = require("./ajaxHandler");
+        var UsersCollection = require("./models/usersCollection");
+        UsersCollection.singleton().fetch({
               reset: true,                
               success: function(d){
               },
-              error: function(e){
-                console.log(e);
+              error: function(m, r){
+                ajaxHandler.errorFetchOrSave(m, r);
               }
             });
-      }
-      else{
-        Backbone.history.navigate('home', {trigger: true});
-      }
     },
 
-    logout: function(){
-      this.main.logout();
+    login: function() {
+        var LoginView = require("./views/loginView");
+        this.renderView(new LoginView({main: this.main}));
+        this.main.hideLogout();
+    },
+
+    userDetails: function(id){
+      var UserDetailsView = require("./views/userDetailsView");
+      var UserDetailedModel = require("./models/UserDetailedModel");
+      var model = new UserDetailedModel({id: id});
+      var ajaxHandler = require("./ajaxHandler");
+      this.renderView(new UserDetailsView({model: model}));
+      this.main.showLogout();
+      model.getLocation();
+      model.fetch({
+            reset: true,                
+            success: function(d){
+            },
+            error: function(m, r){
+              ajaxHandler.errorFetchOrSave(m, r);
+            }
+          });
     },
 
     setHeaderNavigation: function(section) {

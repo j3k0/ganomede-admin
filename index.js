@@ -13,6 +13,7 @@ var flash = require("flash");
 var API_BASE_URL = process.env.API_BASE_URL || "https://ganomede-devel.fovea.cc";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
 
+
 var users = [
 	{username: "jad", password: "jad"},
 	{username: "test", password: "test"},
@@ -20,6 +21,15 @@ var users = [
 	{username: "2", password: "2"}
 ];
 var tokens = {};
+
+var sendNeedAuth = function (res) {
+   res.status(401).send({
+       success: false,
+       error: "Need authentication",
+       needAuthentication: true
+   });
+};
+
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -52,25 +62,22 @@ passport.use(new LocalStrategy(
   }
 ));
 
-passport.use(new RememberMeStrategy(
-  function(token, done) {
-    utils.consumeRememberMeToken(token, tokens, function(err, username) {
-      if (err) { return done(err); }
-      if (!username) { return done(null, false); }
-      
+
+var auth = function(req, res, next){
+	var token = (utils.parseCookies(req) && utils.parseCookies(req).token) ? utils.parseCookies(req).token : null;
+	utils.consumeToken(token, tokens, function(err, username) {
+      if (err || !username) { sendNeedAuth(res); return; }
+
       utils.findByUsername(username, users, function(err, user) {
-        if (err) { return done(err); }
-        if (!user) { return done(null, false); }
-        return done(null, user);
+        if (err || !user) { sendNeedAuth(res); return; }
+        next();
       });
     });
-  },
-  issueToken
-));
+}; 
 
 function issueToken(user, done) {
   var token = utils.generateToken(64);
-  utils.saveRememberMeToken(token, user.username, tokens, function(err) {
+  utils.saveToken(token, user.username, tokens, function(err) {
     if (err) { return done(err); }
     return done(null, token);
   });
@@ -78,12 +85,11 @@ function issueToken(user, done) {
 
 
 app.post('/api/login', 
-	passport.authenticate('local', { failureRedirect: '/admin/', failureFlash: true }),
+	passport.authenticate('local'),
 	function(req, res, next) {
-
-		 issueToken({username: req.username, password:req.password}, function(err, token) {
+		 issueToken({username: req.body.username, password:req.body.password}, function(err, token) {
 	      if (err) { return next(err); }
-	      res.cookie('remember_me', token, { path: '/home', httpOnly: true, maxAge: 604800000 });
+	      res.cookie('token', token, { path: '/', httpOnly: true, maxAge: 604800000 });
 	      res.send({success: true});
 	      // return next();
     	});
@@ -93,10 +99,7 @@ app.post('/api/login',
   }
  );
 
-
-
-
-app.get(/avatars\/v1\/(.+)$/, function(req, res) {
+app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
 	request.get(API_BASE_URL + req.url).pipe(res);
 });
 
@@ -107,28 +110,29 @@ app.get(/avatars\/v1\/(.+)$/, function(req, res) {
  	});
  });
 
-//post login
- // app.post("/api/login", function(req, res){
- // 	request.post(API_TEMP_URL + req.url).pipe(res);
- // });
+ app.get("/api/logout", auth, function(req, res){
+ 	utils.removeToken(utils.parseCookies(req).token, tokens);
+ 	res.clearCookie('token');
+ 	res.redirect('/admin/');
+ });
 
 //get users list
- app.get("/api/users", function(req, res){
+ app.get("/api/users", auth, function(req, res){
  	request(API_TEMP_URL + req.url).pipe(res);
  });
 
  //get user details
- app.get("/api/user/:id", function(req, res){
+ app.get("/api/user/:id", auth, function(req, res){
  	request(API_TEMP_URL + req.url).pipe(res);
  });
 
   //ban user
- app.post("/api/user/ban/:id", function(req, res){
+ app.post("/api/user/ban/:id", auth, function(req, res){
  	request.post(API_TEMP_URL + req.url).pipe(res);
  });
 
  //get location
- app.get("/api/location/:id", function(req, res){
+ app.get("/api/location/:id", auth, function(req, res){
  	request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location').pipe(res);
  });
 
