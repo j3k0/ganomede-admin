@@ -46,7 +46,7 @@ define(function (require) {
 
     userDetails: function(id){
       var UserDetailsView = require("./views/userDetailsView");
-      var UserDetailedModel = require("./models/UserDetailedModel");
+      var UserDetailedModel = require("./models/userDetailedModel");
       var model = new UserDetailedModel({id: id});
       var ajaxHandler = require("./ajaxHandler");
       this.renderView(new UserDetailsView({model: model}));

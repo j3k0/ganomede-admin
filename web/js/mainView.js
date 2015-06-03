@@ -2,7 +2,7 @@ define(function (require) {
   'use strict';
 
   var HeaderView = require("./views/headerView");
-  var Login = require("./models/Login");
+  var Login = require("./models/login");
 
   var MainView = Backbone.View.extend({
 
