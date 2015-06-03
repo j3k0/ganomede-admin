@@ -11,7 +11,7 @@ define(function (require) {
       title: '',
       description: '',
       price: '',
-      currency: false
+      currency: ''
     },
 
     initialize:function () {

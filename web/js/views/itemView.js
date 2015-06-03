@@ -45,9 +45,6 @@ define(function (require) {
       if(!this.$('.price-error').hasClass('hidden')){
         this.$('.price-error').addClass('hidden');
       }
-      if(!this.$('.currency-error').hasClass('hidden')){
-        this.$('.currency-error').addClass('hidden');
-      }
     },
 
     saveItem: function(ev){
@@ -71,11 +68,6 @@ define(function (require) {
       if(price === '')
       {
         this.$('.price-error').removeClass('hidden');
-        error = true;
-      }
-      if(currency === '')
-      {
-        this.$('.currency-error').removeClass('hidden');
         error = true;
       }
 

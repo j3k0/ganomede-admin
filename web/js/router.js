@@ -53,19 +53,29 @@ define(function (require) {
       this.main.showLogout();
       model.getLocation();
       model.fetch({
-            reset: true,                
-            success: function(d){
-            },
-            error: function(m, r){
-              ajaxHandler.errorFetchOrSave(m, r);
-            }
-          });
+        reset: true,                
+        success: function(d){
+        },
+        error: function(m, r){
+          ajaxHandler.errorFetchOrSave(m, r);
+        }
+      });
     },
 
     items: function(){
       var ItemsView = require("./views/itemsView");
-      this.renderView(new ItemsView());
+      var ItemsCollection = require("./models/itemsCollection");
+      var ajaxHandler = require("./ajaxHandler");
+      this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
       this.setHeaderNavigation('items-menu');
+      ItemsCollection.singleton().fetch({
+        reset: true,                
+        success: function(d){
+        },
+        error: function(m, r){
+          ajaxHandler.errorFetchOrSave(m, r);
+        }
+      });
     },
 
     setHeaderNavigation: function(section) {

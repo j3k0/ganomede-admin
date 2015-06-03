@@ -36,12 +36,11 @@
         </div>
         <br/>
         <div class="form-group">
-          <input type="text" class="form-control currency-input" placeholder="Currency" aria-describedby="basic-addon1" value="<%-currency%>" required>
-          <div class="alert alert-danger hidden currency-error" role="alert">
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="sr-only">Error:</span>
-            Enter a currency
-          </div>
+          <h6>Currency</h6>
+          <select class="form-control currency-input">
+            <option value="$" <% if (currency === "$") { print("selected");}%>>$</option>
+            <option value="€" <% if (currency === "€") { print("selected");}%>>€</option>
+          </select>
         </div>
         <br/>
       </div>

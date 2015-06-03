@@ -145,6 +145,10 @@ app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
  	request(API_TEMP_URL + req.url).pipe(res);
  });
 
+  app.get("/api/items", auth, function(req, res){
+ 	request(API_TEMP_URL + req.url).pipe(res);
+ });
+
 app.put("/api/item/:id", auth, function(req, res){
 	request.put(API_TEMP_URL + req.url).pipe(res);
 });
