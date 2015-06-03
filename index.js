@@ -145,17 +145,21 @@ app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
  	request(API_TEMP_URL + req.url).pipe(res);
  });
 
-  app.get("/api/items", auth, function(req, res){
+app.get("/api/items", auth, function(req, res){
  	request(API_TEMP_URL + req.url).pipe(res);
- });
+});
 
 app.put("/api/item/:id", auth, function(req, res){
 	request.put(API_TEMP_URL + req.url).pipe(res);
 });
 
 app.post("/api/item", auth, function(req, res){
-	console.log("ds");
 	request.post(API_TEMP_URL + req.url).pipe(res);
+});
+
+//monitoring
+app.get("/api/monitoring", auth, function(req, res){
+  request(API_BASE_URL + "/registry/v1/services").pipe(res);
 });
 
 /* serves main page */

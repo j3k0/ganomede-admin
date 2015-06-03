@@ -1,8 +1,8 @@
 define(function (require) {
   'use strict';
 
-  var template = require("../text!../../templates/itemsListItemView.html");
-  var ajaxHandler = require("../ajaxHandler");
+  var template = require("../../text!../../../templates/itemsListItemView.html");
+  var ajaxHandler = require("../../ajaxHandler");
   var ItemView = require("./itemView");
 
   var ItemsListItemView = Backbone.View.extend({

@@ -1,9 +1,9 @@
 define(function (require) {
   'use strict';
 
-  var template = require("../text!../../templates/modal.html");
+  var template = require("../../text!../../../templates/modal.html");
   var ItemModel = require("../models/itemModel");
-  var ajaxHandler = require("../ajaxHandler");
+  var ajaxHandler = require("../../ajaxHandler");
 
   var ItemView = Backbone.View.extend({
 

@@ -1,7 +1,7 @@
 define(function (require) {
   'use strict';
 
-  var template = require("../text!../../templates/userListItemView.html");
+  var template = require("../../text!../../../templates/userListItemView.html");
 
   var UserListItemView = Backbone.View.extend({
 

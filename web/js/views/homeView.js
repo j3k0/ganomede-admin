@@ -2,8 +2,8 @@ define(function (require) {
   'use strict';
 
   var template = require("../text!../../templates/homeView.html");
-  var UsersCollection = require("../models/usersCollection");
-  var UserListView = require("./userListView");
+  var UsersCollection = require("../users/models/usersCollection");
+  var UserListView = require("../users/views/userListView");
 
 
   var HomeView = Backbone.View.extend({

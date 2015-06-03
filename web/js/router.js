@@ -27,7 +27,7 @@ define(function (require) {
         this.setHeaderNavigation('home-menu');
         this.main.showLogout();
         var ajaxHandler = require("./ajaxHandler");
-        var UsersCollection = require("./models/usersCollection");
+        var UsersCollection = require("./users/models/usersCollection");
         UsersCollection.singleton().fetch({
               reset: true,                
               success: function(d){
@@ -45,8 +45,8 @@ define(function (require) {
     },
 
     userDetails: function(id){
-      var UserDetailsView = require("./views/userDetailsView");
-      var UserDetailedModel = require("./models/userDetailedModel");
+      var UserDetailsView = require("./users/views/userDetailsView");
+      var UserDetailedModel = require("./users/models/userDetailedModel");
       var model = new UserDetailedModel({id: id});
       var ajaxHandler = require("./ajaxHandler");
       this.renderView(new UserDetailsView({model: model}));
@@ -63,8 +63,8 @@ define(function (require) {
     },
 
     items: function(){
-      var ItemsView = require("./views/itemsView");
-      var ItemsCollection = require("./models/itemsCollection");
+      var ItemsView = require("./items/views/itemsView");
+      var ItemsCollection = require("./items/models/itemsCollection");
       var ajaxHandler = require("./ajaxHandler");
       this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
       this.setHeaderNavigation('items-menu');
