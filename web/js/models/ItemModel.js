@@ -7,6 +7,13 @@ define(function (require) {
     idAttribute: 'id',
     urlRoot: '../api/item',
 
+    defaults: {
+      title: '',
+      description: '',
+      price: '',
+      currency: false
+    },
+
     initialize:function () {
     }
 

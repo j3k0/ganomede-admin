@@ -2,6 +2,8 @@ define(function (require) {
   'use strict';
 
   var template = require("../text!../../templates/itemsListItemView.html");
+  var ajaxHandler = require("../ajaxHandler");
+  var ItemView = require("./itemView");
 
   var ItemsListItemView = Backbone.View.extend({
 
@@ -16,11 +18,19 @@ define(function (require) {
     },
 
     events: {
-      "click .delete-button": "deleteItem"
+      "click .delete-button": "deleteItem",
+      "click .edit-button": "editItem"
     },
 
     deleteItem: function(ev){
       this.model.destroy();
+    },
+
+    editItem: function(ev){
+      ev.preventDefault();
+      var itemView = new ItemView({model: this.model, mode: 'Edit'});
+      $(this.el).append(itemView.render().el);
+      itemView.show();
     },
 
     render:function () {

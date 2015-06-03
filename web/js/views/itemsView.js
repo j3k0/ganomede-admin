@@ -4,6 +4,8 @@ define(function (require) {
   var template = require("../text!../../templates/itemsView.html");
   var ItemsCollection = require("../models/itemsCollection");
   var ItemsListView = require("./itemsListView");
+  var ItemModel = require("../models/itemModel");
+  var ItemView = require("./itemView");
 
 
   var ItemsView = Backbone.View.extend({
@@ -12,7 +14,8 @@ define(function (require) {
 
     events: {
       "click .search-button": "search",
-      "keypress .search-query": "onkeypress"
+      "keypress .search-query": "onkeypress",
+      "click .new-button": "newItem"
     },
 
     initialize:function () {
@@ -36,6 +39,24 @@ define(function (require) {
         event.preventDefault();
         this.search();
       }
+    },
+
+    closeModal: function(ev){
+      this.$('.edit-modal').modal('hide');
+      var that = this;
+      setTimeout(function(){
+        that.$('.edit-modal').remove();
+        $('.modal-backdrop').remove();
+        $('body').removeClass( "modal-open" );
+      }, 1000);
+      
+    },
+
+    newItem: function(event){
+      event.preventDefault();
+      var itemView = new ItemView({model: new ItemModel(), mode: 'New'});
+      $(this.el).append(itemView.render().el);
+      itemView.show();
     },
 
     render:function () {

@@ -145,6 +145,15 @@ app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
  	request(API_TEMP_URL + req.url).pipe(res);
  });
 
+app.put("/api/item/:id", auth, function(req, res){
+	request.put(API_TEMP_URL + req.url).pipe(res);
+});
+
+app.post("/api/item", auth, function(req, res){
+	console.log("ds");
+	request.post(API_TEMP_URL + req.url).pipe(res);
+});
+
 /* serves main page */
  app.get("/admin/", function(req, res) {
     res.sendFile(__dirname + "/web/index.html");
