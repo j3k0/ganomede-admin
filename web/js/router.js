@@ -14,7 +14,8 @@ define(function (require) {
       "home": "home",
       "login": "login",
       "user/:id": "userDetails",
-      "items": "items"
+      "items": "items",
+      "servers": "servers"
     },
 
     initialize: function(options) {
@@ -69,6 +70,21 @@ define(function (require) {
       this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
       this.setHeaderNavigation('items-menu');
       ItemsCollection.singleton().fetch({
+        reset: true,                
+        success: function(d){
+        },
+        error: function(m, r){
+          ajaxHandler.errorFetchOrSave(m, r);
+        }
+      });
+    },
+
+    servers: function(){
+      var MonitoringView = require("./servers/views/monitoringView");
+      var ServersCollection = require("./servers/models/serversCollection");
+      this.renderView(new MonitoringView({collection: ServersCollection.singleton()}));
+      this.setHeaderNavigation('servers-menu');
+      ServersCollection.singleton().fetch({
         reset: true,                
         success: function(d){
         },

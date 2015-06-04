@@ -1,10 +1,8 @@
 define(function (require) {
   'use strict';
 
-  var template = require("../text!../../templates/monitoring.html");
-  var ItemsListView = require("./itemsListView");
-  var ItemModel = require("../models/itemModel");
-  var ItemView = require("./itemView");
+  var template = require("../../text!../../../templates/monitoring.html");
+  var ServersListView = require("./serversListView");
 
 
   var MonitoringView = Backbone.View.extend({
@@ -16,13 +14,13 @@ define(function (require) {
     },
 
     initialize:function () {
-      this.searchresultsView = new ItemsListView({collection: this.collection, className: 'list-group'});
+      this.serversView = new ServersListView({collection: this.collection, className: 'list-group'});
     },
 
 
     render:function () {
       $(this.el).html(this.template());
-      this.$('.servers', this.el).append(this.searchresultsView.render().el);
+      this.$('.servers', this.el).append(this.serversView.render().el);
       return this;
     }
 
