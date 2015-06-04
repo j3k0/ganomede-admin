@@ -12,71 +12,81 @@
 
 
 <div class="row">
-    <div class="col-md-4 col-sm-6">
+	 <div class="<!-- col-md-4  -->col-sm-6 col-md-2">
     	<br/>
-    	<h4>CPU</h4>
+    	<h5>Ping</h5>
+        <canvas class="ping_server" id="ping_server"></canvas>
+        <div class="row footer-row" style="width:300px; margin-left:1px">
+				  <div class="col-xs-4 col-md-4 text-left min">0</div>
+				  <div class="col-xs-4 col-md-4 text-center ping_server-text-field">65</div>
+				  <div class="col-xs-4 col-md-4 text-right max">30</div>
+				</div>
+    </div>
+    <div class="<!-- col-md-4 --> col-sm-6  col-md-2">
+    	<br/>
+    	<h5>CPU</h5>
         <canvas class="container_cpu" id="container_cpu"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center container_cpu-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>
 				</div>
     </div>
-    <div class="col-md-4 col-sm-6">
+    <div class="<!-- col-md-4 --> col-sm-6  col-md-2">
     	<br/>
-    	<h4>Memory</h4>
+    	<h5>Memory</h5>
         <canvas class="container_memory" id="container_memory"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center container_memory-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>
 				</div>
     </div>
-    <div class="col-md-4 col-sm-6">
+    <div class="<!-- col-md-4 --> col-sm-6 col-md-2">
     	<br/>
-    	<h4>Service CPU</h4>
+    	<h5>Service CPU</h5>
         <canvas class="service_cpu" id="service_cpu"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center service_cpu-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>
 				</div>
     </div>
-     <div class="col-md-4 col-sm-6">
+     <div class="<!-- col-md-4 --> col-sm-6 col-md-2">
      	<br/>
-     	<h4>Service Memory</h4>
+     	<h5>Service Memory</h5>
         <canvas class="service_memory" id="service_memory"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center service_memory-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>
 				</div>
     </div>
-     <div class="col-md-4 col-sm-6">
+     <div class="<!-- col-md-4 --> col-sm-6 col-md-2">
      	<br/>
-     	<h4>Host CPU</h4>
+     	<h5>Host CPU</h5>
         <canvas class="host_cpu" id="host_cpu"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center host_cpu-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>
 				</div>
     </div>
-     <div class="col-md-4 col-sm-6">
+     <div class="<!-- col-md-4 --> col-sm-6 col-md-2">
      	<br/>
-     	<h4>Host Memory</h4>
+     	<h5>Host Memory</h5>
         <canvas class="host_memory" id="host_memory"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center host_memory-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>
 				</div>
     </div>
-     <div class="col-md-4 col-sm-6">
+     <div class="<!-- col-md-4 --> col-sm-6 col-md-2">
      	<br/>
-     	<h4>Host Disk</h4>
+     	<h5>Host Disk</h5>
         <canvas class="host_disk" id="host_disk"></canvas>
-        <div class="row" style="width:300px; margin-left:1px">
+        <div class="row footer-row" style="width:300px; margin-left:1px">
 				  <div class="col-xs-4 col-md-4 text-left min">0</div>
 				  <div class="col-xs-4 col-md-4 text-center host_disk-text-field">65</div>
 				  <div class="col-xs-4 col-md-4 text-right max">100</div>

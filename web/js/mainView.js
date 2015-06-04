@@ -57,7 +57,9 @@ define(function (require) {
     renderView: function(view) {
       if (this.contentView) {
         this.contentView.undelegateEvents();
+        this.contentView.remove();
       }
+
       $("#content").html(view.render().el);
       this.contentView = view;
     },

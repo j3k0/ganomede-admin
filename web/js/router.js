@@ -83,6 +83,7 @@ define(function (require) {
       var MonitoringView = require("./servers/views/monitoringView");
       var ServersCollection = require("./servers/models/serversCollection");
       this.renderView(new MonitoringView({collection: ServersCollection.singleton()}));
+      var ajaxHandler = require("./ajaxHandler");
       this.setHeaderNavigation('servers-menu');
       ServersCollection.singleton().fetch({
         reset: true,                
