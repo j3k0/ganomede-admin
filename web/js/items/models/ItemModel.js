@@ -8,6 +8,7 @@ define(function (require) {
     urlRoot: '../api/item',
 
     defaults: {
+      id: '',
       title: '',
       description: '',
       price: '',

@@ -12,15 +12,15 @@ define(function (require) {
     initialize:function () {
         var self = this;
         this.collection.bind("reset change remove", this.render, this);
-        this.collection.bind("add", function (user) {
-            $(self.el).append(new ItemsListItemView({model:user}).render().el);
+        this.collection.bind("add", function (item) {
+            $(self.el).append(new ItemsListItemView({model: item}).render().el);
         });
     },
 
     render:function () {
         $(this.el).empty();
-        _.each(this.collection.models, function (user) {
-             $(this.el).append(new ItemsListItemView({model:user}).render().el);
+        _.each(this.collection.models, function (item) {
+             $(this.el).append(new ItemsListItemView({model: item}).render().el);
         }, this);
         return this;
     }

@@ -13,20 +13,6 @@ define(function (require) {
 
     initialize: function(models, options) {
       this.url = '../api/items' ;
-    },
-    findByName: function (key) {
-      var that = this;
-      ajaxHandler.postAjax({
-        url: that.url + "/" + key,
-        type: 'GET',
-        contentType: "application/json; charset=utf-8",
-        success: function (data){
-          that.reset(data);
-        },
-        error: function (resp){
-          console.log(resp);
-        }
-      });
     }
   });
 

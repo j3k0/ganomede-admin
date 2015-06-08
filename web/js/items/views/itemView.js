@@ -16,6 +16,7 @@ define(function (require) {
 
     initialize:function (options) {
       this.mode = options.mode;
+      this.collection = options.collection;
     },
 
 
@@ -39,6 +40,9 @@ define(function (require) {
       if(!this.$('.title-error').hasClass('hidden')){
         this.$('.title-error').addClass('hidden');
       }
+      if(!this.$('.id-error').hasClass('hidden')){
+        this.$('.id-error').addClass('hidden');
+      }
       if(!this.$('.description-error').hasClass('hidden')){
         this.$('.description-error').addClass('hidden');
       }
@@ -49,13 +53,18 @@ define(function (require) {
 
     saveItem: function(ev){
       var title = this.$('.title-input').val();
+      var id = this.$('.id-input').val();
       var description = this.$('.description-input').val();
       var price = this.$('.price-input').val();
       var currency = this.$('.currency-input').val();
       var error = false;
-
+      var that = this;
       this.hideError();
 
+      if(id === ''){
+        this.$('.id-error').removeClass('hidden');
+        error = true;
+      }
       if(title === ''){
         this.$('.title-error').removeClass('hidden');
         error = true;
@@ -75,14 +84,18 @@ define(function (require) {
         return;
       }
       this.model.save({
+        id: id,
         title: title,
         description: description,
         price: price,
         currency: currency
       }, {
         success: function (model, response) {
-          if(response.id){
+          if(response.id || response.success){
             swal("Success", "Item saved", "success");
+            if (that.collection){
+              that.collection.add(that.model);
+            }
           }
         },
         error: function (model, er) {

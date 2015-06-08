@@ -21,7 +21,7 @@ define(function (require) {
 
     newItem: function(event){
       event.preventDefault();
-      var itemView = new ItemView({model: new ItemModel(), mode: 'New'});
+      var itemView = new ItemView({model: new ItemModel(), mode: 'New', collection: this.collection});
       $(this.el).append(itemView.render().el);
       itemView.show();
     },
