@@ -6,7 +6,6 @@ define(function (require) {
   'use strict';
 
   var ItemModel = require("./itemModel.js");
-  var ajaxHandler = require("../../ajaxHandler");
   
   var ItemsCollection = Backbone.Collection.extend({
     model: ItemModel,

@@ -12,6 +12,7 @@ var flash = require("flash");
 
 var API_BASE_URL = process.env.API_BASE_URL || "https://ganomede-devel.fovea.cc";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
+var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://zalka.fovea.cc:49660";
 
 
 var users = [
@@ -160,6 +161,12 @@ app.post("/api/item", auth, function(req, res){
 //monitoring
 app.get("/api/monitoring", auth, function(req, res){
   request(API_BASE_URL + "/registry/v1/services").pipe(res);
+});
+
+
+app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
+  console.log(API_CHECKPOINTS_URL + req.url);
+  request(API_CHECKPOINTS_URL + req.url).pipe(res);
 });
 
 /* serves main page */

@@ -15,7 +15,8 @@ define(function (require) {
       "login": "login",
       "user/:id": "userDetails",
       "items": "items",
-      "servers": "servers"
+      "servers": "servers",
+      "analytics": "analytics"
     },
 
     initialize: function(options) {
@@ -93,6 +94,12 @@ define(function (require) {
           ajaxHandler.errorFetchOrSave(m, r);
         }
       });
+    },
+
+    analytics: function(){
+      var AnalyticsView = require("./analytics/views/analyticsView");
+      this.renderView(new AnalyticsView({}));
+      this.setHeaderNavigation('analytics-menu');
     },
 
     setHeaderNavigation: function(section) {
