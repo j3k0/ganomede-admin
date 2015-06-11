@@ -59,7 +59,7 @@ define(function (require) {
         string += "</tr>";
         this.$('.table-body').append(string);
       }
-      this.$('#table').dataTable();
+      this.$('#table').dataTable({responsive: true});
     },
 
     render:function () {
