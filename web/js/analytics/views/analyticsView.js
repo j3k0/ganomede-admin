@@ -2,7 +2,7 @@ define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/analyticsView.html");
-  var checkpointsTemplate = require("../../text!../../../templates/checkpoints.html");
+  var tableTemplate = require("../../text!../../../templates/table.html");
   var analytics = require("../models/analytics");
 
 
@@ -36,26 +36,33 @@ define(function (require) {
     getData: function(){
       var that = this;
       analytics.getData(this.file, null, this.level, null, null, null, function(data){
+        // that.rendercTable(data);
         that.renderTable(data);
       });
     },
 
     renderTable: function(data){
+      if(!data || data.length === 0){
+        this.$('.datatable').empty();
+        this.$('.datatable').append("<h4>No data available!</h4>");
+        return;
+      }
       this.$('.datatable').empty();
-      this.$('.datatable').append(_.template(checkpointsTemplate)());
-      // table-body
+      this.$('.datatable').append(_.template(tableTemplate)());
       var string;
-      for (var i = 0,  tot = data.length; i < tot; i++) {
-        var item = data[i];
+      string = "<tr>";
+      for(var i in data[0]){
+        string += ("<th>" + i + "</th>");
+      }
+      string += "</tr>";
+      this.$('.table-head').append(string);
+      this.$('.table-foot').append(string);
+      for (var index = 0,  tot = data.length; index < tot; index++) {
+        var item = data[index];
         string = "<tr>";
-        string += ("<td>" + item.Date + "</td>");
-        string += ("<td>" + item.App + "</td>");
-        string += ("<td>" + item.Version + "</td>");
-        string += ("<td>" + item.Grp + "</td>");
-        string += ("<td>" + item.Device + "</td>");
-        string += ("<td>" + item.UDID + "</td>");
-        string += ("<td>" + item.Session + "</td>");
-        string += ("<td>" + item.Name + "</td>");
+        for(var key in data[0]){
+          string += ("<td>" + item[key] + "</td>");
+        }
         string += "</tr>";
         this.$('.table-body').append(string);
       }
