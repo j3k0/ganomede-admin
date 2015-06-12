@@ -12,7 +12,7 @@ var flash = require("flash");
 
 var API_BASE_URL = process.env.API_BASE_URL || "https://ganomede-devel.fovea.cc";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
-var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://zalka.fovea.cc:49660";
+var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
 
 
 var users = [

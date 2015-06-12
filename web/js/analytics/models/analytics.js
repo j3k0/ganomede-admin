@@ -58,6 +58,19 @@ define(function (require) {
       });
     },
 
+    cleanDb: function(callback){
+      ajaxHandler.postAjax({
+        url: "../checkpoints/v1/cleandb",
+        type: 'GET',
+        contentType: "application/json; charset=utf-8",
+        success: function (d){
+          if (callback) callback();
+        },
+        error: function (resp){
+          console.log(resp);
+        }
+      });
+    },
 
     getData: function(file, udid, user_level, ver, app, grp, callback){
       udid = udid ? udid : '';

@@ -15,7 +15,8 @@ define(function (require) {
       "click .what-button": "what",
       "click .app-button": "application",
       "click .version-button": "version",
-      "click .group-button": "group"
+      "click .group-button": "group",
+      "click .cleandb-button": "cleanDb"
     },
 
     initialize:function () {
@@ -36,6 +37,14 @@ define(function (require) {
 
       analytics.getGroups(function(){
         that.render();
+      });
+    },
+
+    cleanDb: function(ev){
+      ev.preventDefault();
+      var that = this;
+      analytics.cleanDb(function(){
+        that.getData();
       });
     },
 
@@ -81,7 +90,7 @@ define(function (require) {
           $(this).removeClass("btn-primary");
       });
     },
-    
+
     getData: function(){
       var that = this;
       analytics.getData(this.file, null, this.level, this.ver, this.app, this.grp, function(data){
