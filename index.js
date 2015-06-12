@@ -165,7 +165,6 @@ app.get("/api/monitoring", auth, function(req, res){
 
 
 app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
-  console.log(API_CHECKPOINTS_URL + req.url);
   request(API_CHECKPOINTS_URL + req.url).pipe(res);
 });
 
@@ -176,7 +175,6 @@ app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
 
 /* serves all the static files */
  app.get(/^\/admin\/(.+)$/, function(req, res) {
-     console.log('static file request : ' + req.params[0]);
      res.sendFile(__dirname + "/web/" + req.params[0]); 
  });
 
