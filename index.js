@@ -9,6 +9,8 @@ var RememberMeStrategy = require('passport-remember-me').Strategy;
 var LocalStrategy = require('passport-local').Strategy;
 var bodyParser = require('body-parser');
 var flash = require("flash");
+var package = require("./package.json");
+var os = require("os");
 
 var API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
@@ -28,7 +30,7 @@ var sendNeedAuth = function (res) {
    });
 };
 
-var apiBase = "/admin/v1";
+var apiBase = "/" + package.api;
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -160,7 +162,32 @@ app.post(apiBase + "/api/item", auth, function(req, res){
 	request.post(API_TEMP_URL + req.url).pipe(res);
 });
 
-//monitoring
+//
+// About endpoint
+//
+var aboutData = {
+    type: package.name,
+    version: package.version,
+    description: package.description,
+    hostname: os.hostname(),
+    startDate: new Date().toISOString()
+};
+var about = function(req, res) {
+    res.send(aboutData);
+};
+app.get("/about", about);
+app.get(apiBase + "/about", about);
+
+//
+// Ping endpoint
+//
+var ping = function(req, res) {
+    res.send("pong/" + req.params.token);
+};
+app.get("/ping/:token", ping);
+app.get(apiBase + "/ping/:token", ping);
+
+// Monitoring
 app.get(apiBase + "/api/monitoring", auth, function(req, res){
     request(API_BASE_URL + "/registry/v1/services").pipe(res);
 });
@@ -180,7 +207,7 @@ app.get(/^\/admin\/v1\/web\/(.+)$/, function(req, res) {
     res.sendFile(__dirname + "/web/" + req.params[0]);
 });
 
-var server = app.listen(3000, function () {
+var server = app.listen(process.env.PORT || 8000, function () {
 
   var host = server.address().address;
   var port = server.address().port;
