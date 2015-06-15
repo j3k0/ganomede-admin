@@ -72,6 +72,15 @@ define(function (require) {
       });
     },
 
+    getUrl: function(file, udid, user_level, ver, app, grp){
+      udid = udid ? udid : '';
+      ver = ver ? ver : '';
+      app = app ? app : '';
+      grp = grp ? grp : '';
+      return "../checkpoints/v1/" + file + "?UDID=" + udid + "&userlevel=" + user_level +
+        "&ver=" + ver + "&app=" + app + "&grp=" + grp;
+    },
+
     getData: function(file, udid, user_level, ver, app, grp, callback){
       udid = udid ? udid : '';
       ver = ver ? ver : '';
@@ -94,8 +103,9 @@ define(function (require) {
           {
             d = JSON.parse(d);
           }
-          that.data[key] = d;
-          if (callback) callback(d);
+          console.log(d.data);
+          that.data[key] = d.data;
+          if (callback) callback(d.data);
         },
         error: function (resp){
           console.log(resp);

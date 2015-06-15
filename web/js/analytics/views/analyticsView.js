@@ -2,13 +2,17 @@ define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/analyticsView.html");
-  var tableTemplate = require("../../text!../../../templates/table.html");
+  var checkpointsTemplate = require("../../text!../../../templates/checkpointstable.html");
+  var newPlayersTemplate = require("../../text!../../../templates/newplayerstable.html");
+  var sessionsTemplate = require("../../text!../../../templates/sessionstable.html");
+  var usersTemplate = require("../../text!../../../templates/userstable.html");
   var analytics = require("../models/analytics");
 
 
   var AnalyticsView = Backbone.View.extend({
 
     template: _.template(template),
+    tableTemplate: _.template(checkpointsTemplate),
 
     events: {
       "click .filter-button": "filter",
@@ -42,40 +46,52 @@ define(function (require) {
 
     cleanDb: function(ev){
       ev.preventDefault();
-      var that = this;
-      analytics.cleanDb(function(){
-        that.getData();
-      });
+      analytics.cleanDb();
     },
 
     filter: function(ev){
       this.manageFiltering(ev, ".filter-button");
       this.level = ev.target.getAttribute("data");
-      this.getData();
+      this.renderTable();
     },
 
     what: function(ev){
       this.manageFiltering(ev, ".what-button");
       this.file = ev.target.getAttribute("data");
-      this.getData();
+      switch(this.file){
+        case "checkpoints":
+          this.tableTemplate = _.template(checkpointsTemplate);
+        break;
+        case "newplayers":
+          this.tableTemplate = _.template(newPlayersTemplate);
+        break;
+        case "sessions":
+          this.tableTemplate = _.template(sessionsTemplate);
+        break;
+        case "users":
+          this.tableTemplate = _.template(usersTemplate);
+        break;
+      }
+      this.renderTable();
+      // this.getData();
     },
 
     application: function(ev){
       this.manageFiltering(ev, ".app-button");
       this.app = ev.target.getAttribute("data");
-      this.getData();
+      this.renderTable();
     },
 
     version: function(ev){
       this.manageFiltering(ev, ".version-button");
       this.ver = ev.target.getAttribute("data");
-      this.getData();
+      this.renderTable();
     },
 
     group: function(ev){
       this.manageFiltering(ev, ".group-button");
       this.grp = ev.target.getAttribute("data");
-      this.getData();
+      this.renderTable();
     },
 
     manageFiltering: function(ev, className){
@@ -91,39 +107,17 @@ define(function (require) {
       });
     },
 
-    getData: function(){
-      var that = this;
-      analytics.getData(this.file, null, this.level, this.ver, this.app, this.grp, function(data){
-        that.renderTable(data);
-      });
-    },
-
-    renderTable: function(data){
-      if(!data || data.length === 0){
-        this.$('.datatable').empty();
-        this.$('.datatable').append("<h4>No data available!</h4>");
-        return;
-      }
+    renderTable: function(){
       this.$('.datatable').empty();
-      this.$('.datatable').append(_.template(tableTemplate)());
-      var string;
-      string = "<tr>";
-      for(var i in data[0]){
-        string += ("<th>" + i + "</th>");
-      }
-      string += "</tr>";
-      this.$('.table-head').append(string);
-      this.$('.table-foot').append(string);
-      for (var index = 0,  tot = data.length; index < tot; index++) {
-        var item = data[index];
-        string = "<tr>";
-        for(var key in data[0]){
-          string += ("<td>" + item[key] + "</td>");
-        }
-        string += "</tr>";
-        this.$('.table-body').append(string);
-      }
-      this.$('#table').dataTable({responsive: true});
+      this.$('.datatable').append(this.tableTemplate());
+      var that = this;
+
+      this.$('#table').dataTable({
+        responsive: true,
+        processing: true,
+        serverSide: true,
+        ajax: analytics.getUrl(that.file, null, that.level, that.ver, that.app, that.grp)
+      });
     },
 
     renderApplications: function(){
