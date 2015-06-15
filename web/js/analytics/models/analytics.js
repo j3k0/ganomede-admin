@@ -81,13 +81,14 @@ define(function (require) {
         "&ver=" + ver + "&app=" + app + "&grp=" + grp;
     },
 
-    getData: function(file, udid, user_level, ver, app, grp, callback){
+    getData: function(file, chart, udid, user_level, ver, app, grp, callback){
       udid = udid ? udid : '';
       ver = ver ? ver : '';
       app = app ? app : '';
       grp = grp ? grp : '';
+      chart = chart ? chart : '';
       var that = this;
-      var key = file + "-" + user_level + "-" + ver + "-" + app + "-" + grp;
+      var key = file + "-" + user_level + "-" + ver + "-" + app + "-" + grp + "-" + chart;
       if(this.data[key]){
         if (callback) callback(this.data[key]);
         return;
@@ -95,7 +96,7 @@ define(function (require) {
 
       ajaxHandler.postAjax({
         url: "../checkpoints/v1/" + file + "?UDID=" + udid + "&userlevel=" + user_level +
-        "&ver=" + ver + "&app=" + app + "&grp=" + grp,
+        "&ver=" + ver + "&app=" + app + "&grp=" + grp + "&chart=" + chart,
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: function (d){
@@ -103,7 +104,7 @@ define(function (require) {
           {
             d = JSON.parse(d);
           }
-          console.log(d.data);
+          // console.log(d.data);
           that.data[key] = d.data;
           if (callback) callback(d.data);
         },
