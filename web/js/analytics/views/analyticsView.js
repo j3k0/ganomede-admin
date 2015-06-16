@@ -7,6 +7,7 @@ define(function (require) {
   var sessionsTemplate = require("../../text!../../../templates/sessionstable.html");
   var usersTemplate = require("../../text!../../../templates/userstable.html");
   var analytics = require("../models/analytics");
+  var ServicesCollection = require("../../models/servicesCollection");
 
 
   var AnalyticsView = Backbone.View.extend({
@@ -42,6 +43,9 @@ define(function (require) {
       analytics.getGroups(function(){
         that.render();
       });
+
+      this.servicesCollection = ServicesCollection.singleton("analytics");
+      this.servicesCollection.bind("reset change remove", this.render, this);
     },
 
     cleanDb: function(ev){
@@ -204,11 +208,19 @@ define(function (require) {
       this.$(className).append(string);
     },
 
+     renderPanel: function(){
+      this.$('.panel-data').remove();
+       _.each(this.servicesCollection.models, function (item) {
+          this.$('.services-panel').append("<div class=\"panel-body panel-data\"><a target=\"_blank\" href=" + item.get('url') + ">" + item.get('name') + "</a></div>");
+        }, this);
+    },
+
     render:function () {
       $(this.el).html(this.template());
       this.renderApplications();
       this.renderVersions();
       this.renderGroups();
+      this.renderPanel();
       return this;
     }
 
