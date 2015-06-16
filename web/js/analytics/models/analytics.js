@@ -18,7 +18,7 @@ define(function (require) {
         return;
       }
       ajaxHandler.postAjax({
-        url: "../checkpoints/v1/" + url,
+        url: "/checkpoints/v1/" + url,
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: function (d){
@@ -60,7 +60,7 @@ define(function (require) {
 
     cleanDb: function(callback){
       ajaxHandler.postAjax({
-        url: "../checkpoints/v1/cleandb",
+        url: "/checkpoints/v1/cleandb",
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: function (d){
@@ -95,7 +95,7 @@ define(function (require) {
       }
 
       ajaxHandler.postAjax({
-        url: "../checkpoints/v1/" + file + "?UDID=" + udid + "&userlevel=" + user_level +
+        url: "/checkpoints/v1/" + file + "?UDID=" + udid + "&userlevel=" + user_level +
         "&ver=" + ver + "&app=" + app + "&grp=" + grp + "&chart=" + chart,
         type: 'GET',
         contentType: "application/json; charset=utf-8",
