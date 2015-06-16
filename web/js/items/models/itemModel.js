@@ -5,7 +5,7 @@ define(function (require) {
   var ItemModel = Backbone.Model.extend({
 
     idAttribute: 'id',
-    urlRoot: '../api/item',
+    urlRoot: 'api/item',
 
     defaults: {
       id: '',

@@ -5,7 +5,7 @@ define(function (require) {
   var UserModel = Backbone.Model.extend({
 
     idAttribute: 'id',
-    urlRoot: '../api/user',
+    urlRoot: 'api/user',
 
     initialize:function () {
     }

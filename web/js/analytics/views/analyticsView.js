@@ -7,6 +7,7 @@ define(function (require) {
   var sessionsTemplate = require("../../text!../../../templates/sessionstable.html");
   var usersTemplate = require("../../text!../../../templates/userstable.html");
   var analytics = require("../models/analytics");
+  var ServicesCollection = require("../../models/servicesCollection");
 
 
   var AnalyticsView = Backbone.View.extend({
@@ -42,6 +43,9 @@ define(function (require) {
       analytics.getGroups(function(){
         that.render();
       });
+
+      this.servicesCollection = ServicesCollection.singleton("analytics");
+      this.servicesCollection.bind("reset change remove", this.render, this);
     },
 
     cleanDb: function(ev){
@@ -121,6 +125,14 @@ define(function (require) {
     },
 
     renderChart: function(d){
+      this.$('.chart').empty();
+      if(this.myLineChart){
+        this.myLineChart.destroy();
+      }
+      if(d.labels.length == 0 ){
+        return;
+      }
+      this.$('.chart').append("<canvas id=\"myChart\" width=\"200\" height=\"200\"></canvas>");
       var ctx = this.$('#myChart')[0].getContext("2d");
       var data = {
           labels: d.labels,
@@ -137,7 +149,8 @@ define(function (require) {
               }
           ]
       };
-      var myLineChart = new Chart(ctx).Line(data, {
+      
+      this.myLineChart = new Chart(ctx).Line(data, {
           scaleShowGridLines : true,
           scaleGridLineColor : "rgba(0,0,0,.05)",//String - Colour of the grid lines
           scaleGridLineWidth : 1,//Number - Width of the grid lines
@@ -146,7 +159,7 @@ define(function (require) {
           bezierCurve : true,//Boolean - Whether the line is curved between points
           bezierCurveTension : 0.4,//Number - Tension of the bezier curve between points
           pointDot : true,//Boolean - Whether to show a dot for each point
-          pointDotRadius : 4,//Number - Radius of each point dot in pixels
+          pointDotRadius : 2,//Number - Radius of each point dot in pixels
           pointDotStrokeWidth : 1,//Number - Pixel width of point dot stroke
           pointHitDetectionRadius : 20,//Number - amount extra to add to the radius to cater for hit detection outside the drawn point
           datasetStroke : true,//Boolean - Whether to show a stroke for datasets
@@ -195,11 +208,19 @@ define(function (require) {
       this.$(className).append(string);
     },
 
+     renderPanel: function(){
+      this.$('.panel-data').remove();
+       _.each(this.servicesCollection.models, function (item) {
+          this.$('.services-panel').append("<div class=\"panel-body panel-data\"><a target=\"_blank\" href=" + item.get('url') + ">" + item.get('name') + "</a></div>");
+        }, this);
+    },
+
     render:function () {
       $(this.el).html(this.template());
       this.renderApplications();
       this.renderVersions();
       this.renderGroups();
+      this.renderPanel();
       return this;
     }
 

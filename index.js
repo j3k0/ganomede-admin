@@ -16,11 +16,30 @@ var API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
 var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
 
+var services = {
+  SERVER: [],
+  ANALYTICS: []
+}
+
+addServices("SERVER");
+addServices("ANALYTICS");
+
+function addServices(name){
+  var i = 1;
+ while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) 
+ { 
+    services[name].push({name: process.env[name + "_LINK" + i + "_NAME"], 
+      url: process.env[name + "_LINK" + i + "_URL"]});
+   i++; 
+ }
+}
+
 
 var users = [
 	{ username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD }
 ];
 var tokens = {};
+
 
 var sendNeedAuth = function (res) {
    res.status(401).send({
@@ -119,6 +138,11 @@ app.get(apiBase + "/api/users", auth, function(req, res){
     request(API_TEMP_URL + "/api/users").pipe(res);
 });
 
+//get users list
+app.get(apiBase + "/api/users/:name", auth, function(req, res){
+    request(API_TEMP_URL + "/api/users/" + req.params.name).pipe(res);
+});
+
 //get user details
 app.get(apiBase + "/api/user/:id", auth, function(req, res){
     request(API_TEMP_URL + req.url).pipe(res);
@@ -134,11 +158,19 @@ app.get(apiBase + "/api/location/:id", auth, function(req, res){
     request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location').pipe(res);
 });
 
-//get location
-app.get(apiBase + "/api/test/", auth, function(req, res){
-    console.log(req.params);
-    console.log(req.body);
-    res.send("ok");
+
+//get users list
+app.get(apiBase + "/api/links/:key", auth, function(req, res){
+  switch(req.params.key){
+    case "servers":
+      res.send(services["SERVER"]);
+    break;
+    case "analytics":
+      res.send(services["ANALYTICS"]);
+    break;
+    default:
+      res.send([]);
+  }
 });
 
 //get items list
@@ -198,12 +230,12 @@ app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
 });
 
 /* serves main page */
-app.get(apiBase + "/admin/", function(req, res) {
+app.get(apiBase , function(req, res) {
     res.sendFile(__dirname + "/web/index.html");
 });
 
 /* serves all the static files */
-app.get(/^\/admin\/v1\/web\/(.+)$/, function(req, res) {
+app.get(/^\/admin\/v1\/(.+)$/, function(req, res) {
     res.sendFile(__dirname + "/web/" + req.params[0]);
 });
 

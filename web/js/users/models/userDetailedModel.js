@@ -13,7 +13,7 @@ define(function (require) {
     },
 
     idAttribute: 'id',
-    urlRoot: '../api/user/',//config.apiUrl + "/user",
+    urlRoot: 'api/user/',//config.apiUrl + "/user",
 
     initialize:function () {
     	
