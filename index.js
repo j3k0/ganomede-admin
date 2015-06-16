@@ -119,6 +119,11 @@ app.get(apiBase + "/api/users", auth, function(req, res){
     request(API_TEMP_URL + "/api/users").pipe(res);
 });
 
+//get users list
+app.get(apiBase + "/api/users/:name", auth, function(req, res){
+    request(API_TEMP_URL + "/api/users/" + req.params.name).pipe(res);
+});
+
 //get user details
 app.get(apiBase + "/api/user/:id", auth, function(req, res){
     request(API_TEMP_URL + req.url).pipe(res);

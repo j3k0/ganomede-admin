@@ -29,12 +29,16 @@ define(function (require) {
         this.searchResults.reset();
         return;
       }
-      this.searchResults.findByName(name);
     },
 
     onkeypress: function (event) {
+      var name = $('#searchText').val();
       if (event.keyCode == 13) {
         event.preventDefault();
+        if(name != '')
+        {
+          this.searchResults.findByName(name);
+        }
       }
     },
 

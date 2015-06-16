@@ -30,14 +30,14 @@ define(function (require) {
         this.main.showLogout();
         var ajaxHandler = require("./ajaxHandler");
         var UsersCollection = require("./users/models/usersCollection");
-        UsersCollection.singleton().fetch({
-              reset: true,                
-              success: function(d){
-              },
-              error: function(m, r){
-                ajaxHandler.errorFetchOrSave(m, r);
-              }
-            });
+        // UsersCollection.singleton().fetch({
+        //       reset: true,                
+        //       success: function(d){
+        //       },
+        //       error: function(m, r){
+        //         ajaxHandler.errorFetchOrSave(m, r);
+        //       }
+        //     });
     },
 
     login: function() {
