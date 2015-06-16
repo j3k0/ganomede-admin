@@ -5,7 +5,7 @@ define(function (require) {
 
   var Login = {
 
-    url: "../api/login",
+    url: "api/login",
 
     postAjax: function(username, password, success, error){
       var that = this;

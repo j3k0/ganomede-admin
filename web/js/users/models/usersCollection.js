@@ -11,7 +11,7 @@ define(function (require) {
     model: UserModel,
 
     initialize: function(models, options) {
-      this.url = '../api/users' ;//config.apiUrl + "/getAll";
+      this.url = 'api/users' ;//config.apiUrl + "/getAll";
     },
     findByName: function (key) {
       this.reset(UsersCollection.singleton().filter(function(user){
