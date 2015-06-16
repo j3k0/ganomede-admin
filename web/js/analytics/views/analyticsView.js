@@ -121,6 +121,14 @@ define(function (require) {
     },
 
     renderChart: function(d){
+      this.$('.chart').empty();
+      if(this.myLineChart){
+        this.myLineChart.destroy();
+      }
+      if(d.labels.length == 0 ){
+        return;
+      }
+      this.$('.chart').append("<canvas id=\"myChart\" width=\"200\" height=\"200\"></canvas>");
       var ctx = this.$('#myChart')[0].getContext("2d");
       var data = {
           labels: d.labels,
@@ -137,7 +145,8 @@ define(function (require) {
               }
           ]
       };
-      var myLineChart = new Chart(ctx).Line(data, {
+      
+      this.myLineChart = new Chart(ctx).Line(data, {
           scaleShowGridLines : true,
           scaleGridLineColor : "rgba(0,0,0,.05)",//String - Colour of the grid lines
           scaleGridLineWidth : 1,//Number - Width of the grid lines
@@ -146,7 +155,7 @@ define(function (require) {
           bezierCurve : true,//Boolean - Whether the line is curved between points
           bezierCurveTension : 0.4,//Number - Tension of the bezier curve between points
           pointDot : true,//Boolean - Whether to show a dot for each point
-          pointDotRadius : 4,//Number - Radius of each point dot in pixels
+          pointDotRadius : 2,//Number - Radius of each point dot in pixels
           pointDotStrokeWidth : 1,//Number - Pixel width of point dot stroke
           pointHitDetectionRadius : 20,//Number - amount extra to add to the radius to cater for hit detection outside the drawn point
           datasetStroke : true,//Boolean - Whether to show a stroke for datasets
