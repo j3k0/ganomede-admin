@@ -6,6 +6,7 @@ define(function (require) {
   var ajaxHandler = require("../../ajaxHandler");
 
   var Analytics = {
+    url: "/checkpoints/v1/",
     data: {},
     applications: [],
     versions: [],
@@ -77,7 +78,7 @@ define(function (require) {
       ver = ver ? ver : '';
       app = app ? app : '';
       grp = grp ? grp : '';
-      return "../checkpoints/v1/" + file + "?UDID=" + udid + "&userlevel=" + user_level +
+      return this.url + file + "?UDID=" + udid + "&userlevel=" + user_level +
         "&ver=" + ver + "&app=" + app + "&grp=" + grp;
     },
 
@@ -95,7 +96,7 @@ define(function (require) {
       }
 
       ajaxHandler.postAjax({
-        url: "/checkpoints/v1/" + file + "?UDID=" + udid + "&userlevel=" + user_level +
+        url: this.url + file + "?UDID=" + udid + "&userlevel=" + user_level +
         "&ver=" + ver + "&app=" + app + "&grp=" + grp + "&chart=" + chart,
         type: 'GET',
         contentType: "application/json; charset=utf-8",
