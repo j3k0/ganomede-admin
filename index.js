@@ -17,21 +17,20 @@ var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedead
 var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
 
 var services = {
-  SERVER: [],
+  SERVERS: [],
   ANALYTICS: []
 }
 
-addServices("SERVER");
-addServices("ANALYTICS");
+addServices(services.SERVERS, "SERVERS");
+addServices(services.ANALYTICS, "ANALYTICS");
 
-function addServices(name){
+function addServices(array, name) {
   var i = 1;
- while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) 
- { 
-    services[name].push({name: process.env[name + "_LINK" + i + "_NAME"], 
+  while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) {
+    array.push({name: process.env[name + "_LINK" + i + "_NAME"],
       url: process.env[name + "_LINK" + i + "_URL"]});
-   i++; 
- }
+    i++;
+  }
 }
 
 
@@ -163,10 +162,10 @@ app.get(apiBase + "/api/location/:id", auth, function(req, res){
 app.get(apiBase + "/api/links/:key", auth, function(req, res){
   switch(req.params.key){
     case "servers":
-      res.send(services["SERVER"]);
+      res.send(services.SERVERS);
     break;
     case "analytics":
-      res.send(services["ANALYTICS"]);
+      res.send(services.ANALYTICS);
     break;
     default:
       res.send([]);
