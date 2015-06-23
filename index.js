@@ -10,7 +10,9 @@ var LocalStrategy = require('passport-local').Strategy;
 var bodyParser = require('body-parser');
 var flash = require("flash");
 var package = require("./package.json");
-var os = require("os");
+var os = require("os"), 
+  CmsEngine = require('couchdb-node-cms'),
+  config = require('./config');
 
 var API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
@@ -93,6 +95,15 @@ var auth = function(req, res, next){
       });
     });
 };
+
+var cmsEngine = new CmsEngine({
+   config: config,
+   server: app,
+   auth: auth,
+   apiRoot: '/cms/admin/v1'
+ });
+
+cmsEngine.start();
 
 function issueToken(user, done) {
   var token = utils.generateToken(64);
