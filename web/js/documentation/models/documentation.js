@@ -5,10 +5,10 @@ define(function(require) {
 
   var Documentation = {
 
-    getData: function(callback) {
+    getData: function(url, callback) {
 
       ajaxHandler.postAjax({
-        url: '/cms/admin/v1',
+        url: url || '/cms/admin/v1',
         contentType: "application/json; charset=utf-8",
         success: function(d) {
           console.log(d);

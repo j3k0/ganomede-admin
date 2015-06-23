@@ -10,11 +10,21 @@ define(function (require) {
     // template: _.template(template),
 
     events: {
+      'click a[href^="/"]': "clickLink"
     },
 
     initialize:function () {
       var that = this;
-      documentation.getData(function(data){
+      documentation.getData(null, function(data){
+        that.renderHtml(data);
+      });
+    },
+
+    clickLink: function(ev){
+      ev.preventDefault();
+      var that = this;
+      console.log(ev.target.href);
+      documentation.getData(ev.target.href, function(data){
         that.renderHtml(data);
       });
     },
