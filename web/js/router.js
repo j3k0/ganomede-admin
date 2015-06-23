@@ -16,7 +16,8 @@ define(function (require) {
       "user/:id": "userDetails",
       "items": "items",
       "servers": "servers",
-      "analytics": "analytics"
+      "analytics": "analytics",
+      "documentation": "documentation"
     },
 
     initialize: function(options) {
@@ -100,6 +101,12 @@ define(function (require) {
       var AnalyticsView = require("./analytics/views/analyticsView");
       this.renderView(new AnalyticsView({}));
       this.setHeaderNavigation('analytics-menu');
+    },
+
+    documentation: function(){
+      var DocumentationView = require("./documentation/views/documentationView");
+      this.renderView(new DocumentationView({}));
+      this.setHeaderNavigation('documentation-menu');
     },
 
     setHeaderNavigation: function(section) {
