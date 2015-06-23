@@ -1,13 +1,13 @@
 define(function (require) {
   'use strict';
 
-  // var template = require("../../text!../../../templates/analyticsView.html");
+  var template = require("../../text!../../../templates/documentationView.html");
 
   var documentation = require("../models/documentation");
 
   var DocumentationView = Backbone.View.extend({
 
-    // template: _.template(template),
+    template: _.template(template),
 
     events: {
       'click a[href^="/"]': "clickLink"
@@ -23,18 +23,17 @@ define(function (require) {
     clickLink: function(ev){
       ev.preventDefault();
       var that = this;
-      console.log(ev.target.href);
       documentation.getData(ev.target.href, function(data){
         that.renderHtml(data);
       });
     },
 
     renderHtml: function(data){
-      $(this.el).html(data);
+      this.$('.documentation-content').html(data);
     },
 
     render: function () {
-      $(this.el).html('');
+      $(this.el).html(this.template());
       return this;
     }
 
