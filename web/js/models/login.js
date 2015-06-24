@@ -7,6 +7,39 @@ define(function (require) {
 
     url: "api/login",
 
+    isLoggedIn: function(){
+      ajaxHandler.postAjax({
+        url: "api/islogged",
+        type: 'GET',
+        contentType: "application/json; charset=utf-8",
+        success: function (data){
+
+        },
+        error: function (resp){
+          
+        }
+      });
+    },
+
+    logout: function(){
+      ajaxHandler.postAjax({
+        url: "api/logout",
+        type: 'GET',
+        contentType: "application/json; charset=utf-8",
+        success: function (data){
+          if (typeof data === "string") {
+            data = JSON.parse(data);
+          }
+          console.log(data);
+          if(data.success)
+            Backbone.history.navigate('', {trigger: true});
+        },
+        error: function (resp){
+          
+        }
+      });
+    },
+
     postAjax: function(username, password, success, error){
       var that = this;
       ajaxHandler.postAjax({

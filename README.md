@@ -25,6 +25,7 @@ This project use couchdb as database
 ####```COUCHDB_HOST```     --> couchdb host
 ####```COUCHDB_USER``` 	   --> couchdb username
 ####```COUCHDB_PASSWORD``` --> couchdb password
+####```COUCHDB_DB```       --> couchdb database name
 
 # Run
 run make using these env variables.
