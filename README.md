@@ -8,6 +8,7 @@ Admin panel for Triominos
 
  - `ADMIN_USERNAME` --> administrator username
  - `ADMIN_PASSWORD` --> administrator password
+ - `ADMIN_TOKEN` (optional) --> authentication token
 
 ## Servers links
 

@@ -106,7 +106,7 @@ var cmsEngine = new CmsEngine({
 cmsEngine.start();
 
 function issueToken(user, done) {
-  var token = utils.generateToken(64);
+  var token = process.env.ADMIN_TOKEN || utils.generateToken(64);
   utils.saveToken(token, user.username, tokens, function(err) {
     if (err) { return done(err); }
     return done(null, token);
