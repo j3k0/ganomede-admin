@@ -138,10 +138,18 @@ app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
 	request.get(API_BASE_URL + req.url).pipe(res);
 });
 
+app.get(apiBase + "/api/islogged", auth, function(req, res){
+  res.status(200).send({
+    success: true
+  });
+ });
+
  app.get(apiBase + "/api/logout", auth, function(req, res){
  	utils.removeToken(utils.parseCookies(req).token, tokens);
  	res.clearCookie('token');
- 	res.redirect('/admin/');
+ 	res.send({
+    success: true
+  });
  });
 
 //get users list

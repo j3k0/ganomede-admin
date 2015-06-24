@@ -32,6 +32,8 @@ define(function (require) {
       this.$('.documentation-content').html(data);
     },
 
+    
+
     render: function () {
       $(this.el).html(this.template());
       return this;
