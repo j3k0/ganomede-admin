@@ -41,6 +41,9 @@ var users = [
 ];
 var tokens = {};
 
+if (process.env.ADMIN_TOKEN) {
+    utils.saveToken(process.env.ADMIN_TOKEN, users[0].username, tokens, function(err) {});
+}
 
 var sendNeedAuth = function (res) {
    res.status(401).send({
