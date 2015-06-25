@@ -121,6 +121,11 @@ define(function (require) {
             obj.dataSet.unshift(d[key]);
           }
         }
+        var maxPoints = 6;
+        if(obj.labels.length > maxPoints){
+          obj.labels = obj.labels.slice(- maxPoints);
+          obj.dataSet = obj.dataSet.slice(- maxPoints);
+        }
         that.renderChart(obj);
       });
     },
@@ -176,7 +181,6 @@ define(function (require) {
     renderTable: function(){
       this.$('.datatable').empty();
       this.$('.datatable').html(this.tableTemplate());
-      console.log(this.tableTemplate());
       var that = this;
 
       this.$('#table').dataTable({
