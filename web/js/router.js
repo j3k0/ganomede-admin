@@ -20,6 +20,7 @@ define(function (require) {
       "servers": "servers",
       "analytics": "analytics",
       "documentation": "documentation",
+      "documentation/:id": "page",
       "logout": "logout"
     },
 
@@ -120,6 +121,13 @@ define(function (require) {
       login.isLoggedIn();
       var DocumentationView = require("./documentation/views/documentationView");
       this.renderView(new DocumentationView({}));
+      this.setHeaderNavigation('documentation-menu');
+    },
+
+    page: function(id){
+      login.isLoggedIn();
+      var DocumentationView = require("./documentation/views/documentationView");
+      this.renderView(new DocumentationView({id: id}));
       this.setHeaderNavigation('documentation-menu');
     },
 

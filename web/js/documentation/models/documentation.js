@@ -11,12 +11,6 @@ define(function(require) {
         url: url || '/cms/admin/v1',
         contentType: "application/json; charset=utf-8",
         success: function(d) {
-          if(d){
-            d = that.replaceAll("<ul>", '<ul class="list-group">', d);
-            d = that.replaceAll("<li>", '<li class="list-group-item">', d);
-            d = that.replaceAll("<textarea", '<textarea class="form-control" ', d);
-            d = that.replaceAll("<input", '<input class="form-control" ', d);
-          }
           if (callback) callback(d);
         },
         error: function(resp) {

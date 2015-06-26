@@ -74,6 +74,7 @@ define(function(require) {
       ver = ver ? ver : '';
       app = app ? app : '';
       grp = grp ? grp : '';
+      user_level= user_level ? user_level : '';
       return this.url + file + "?UDID=" + udid + "&userlevel=" + user_level +
         "&ver=" + ver + "&app=" + app + "&grp=" + grp;
     },
@@ -83,6 +84,7 @@ define(function(require) {
       ver = ver ? ver : '';
       app = app ? app : '';
       grp = grp ? grp : '';
+      user_level= user_level ? user_level : '';
       chart = chart ? chart : '';
       var that = this;
       var key = file + "-" + user_level + "-" + ver + "-" + app + "-" + grp + "-" + chart;

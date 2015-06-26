@@ -26,26 +26,27 @@ define(function (require) {
 
     initialize:function () {
       this.file = "checkpoints";
-      this.level = 1;
+      this.level = undefined;
       this.app = '';
       this.ver = '';
       this.grp = '';
 
       var that = this;
       analytics.getApplications(function(){
-        that.render();
+        that.renderApplications();
       });
 
       analytics.getVersions(function(){
-        that.render();
+        that.renderVersions();
       });
 
       analytics.getGroups(function(){
-        that.render();
+        that.renderGroups();
       });
 
       this.servicesCollection = ServicesCollection.singleton("analytics");
-      this.servicesCollection.bind("reset change remove", this.render, this);
+      this.servicesCollection.bind("reset change remove", this.renderPanel, this);
+
     },
 
     cleanDb: function(ev){
@@ -120,6 +121,11 @@ define(function (require) {
             obj.dataSet.unshift(d[key]);
           }
         }
+        var maxPoints = 6;
+        if(obj.labels.length > maxPoints){
+          obj.labels = obj.labels.slice(- maxPoints);
+          obj.dataSet = obj.dataSet.slice(- maxPoints);
+        }
         that.renderChart(obj);
       });
     },
@@ -174,7 +180,7 @@ define(function (require) {
 
     renderTable: function(){
       this.$('.datatable').empty();
-      this.$('.datatable').append(this.tableTemplate());
+      this.$('.datatable').html(this.tableTemplate());
       var that = this;
 
       this.$('#table').dataTable({
@@ -190,11 +196,11 @@ define(function (require) {
     },
 
     renderVersions: function(){
-      this.renderOptions('.versions-group', 'version-button', analytics.applications, 'version');
+      this.renderOptions('.versions-group', 'version-button', analytics.versions, 'version');
     },
 
     renderGroups: function(){
-      this.renderOptions('.groups-group', 'group-button', analytics.applications, 'grp');
+      this.renderOptions('.groups-group', 'group-button', analytics.groups, 'grp');
     },
 
     renderOptions: function(className, buttonClass, arr, key){
@@ -221,6 +227,8 @@ define(function (require) {
       this.renderVersions();
       this.renderGroups();
       this.renderPanel();
+      this.renderTable();
+      this.getChartData();
       return this;
     }
 
