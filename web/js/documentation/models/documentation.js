@@ -8,7 +8,7 @@ define(function(require) {
     getData: function(url, callback) {
       var that = this;
       ajaxHandler.postAjax({
-        url: url || '/cms/admin/v1',
+        url: url || '../cms',
         contentType: "application/json; charset=utf-8",
         success: function(d) {
           if (callback) callback(d);

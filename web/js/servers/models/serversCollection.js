@@ -11,7 +11,7 @@ define(function (require) {
     model: ServerModel,
 
     initialize: function(models, options) {
-      this.url = 'api/monitoring' ;
+      this.url = '../api/monitoring' ;
     }
   });
 

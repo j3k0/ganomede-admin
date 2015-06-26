@@ -21,7 +21,8 @@ define(function (require) {
       "click .app-button": "application",
       "click .version-button": "version",
       "click .group-button": "group",
-      "click .cleandb-button": "cleanDb"
+      "click .cleandb-button": "cleanDb",
+      "click .show-chart-button": 'showHideChart'
     },
 
     initialize:function () {
@@ -30,6 +31,11 @@ define(function (require) {
       this.app = '';
       this.ver = '';
       this.grp = '';
+
+      this.chartsData = {
+          labels: [],
+          dataSet: []
+      };
 
       var that = this;
       analytics.getApplications(function(){
@@ -111,34 +117,54 @@ define(function (require) {
     getChartData: function(){
       var that = this;
       analytics.getData(this.file, 1, null, this.level, this.ver, this.app, this.grp, function(d){
-        var obj = {
+        that.chartsData = {
           labels: [],
           dataSet: []
         };
         for (var key in d) {
           if (d.hasOwnProperty(key)) {
-            obj.labels.unshift(key);
-            obj.dataSet.unshift(d[key]);
+            that.chartsData.labels.unshift(key);
+            that.chartsData.dataSet.unshift(d[key]);
           }
         }
         var maxPoints = 6;
-        if(obj.labels.length > maxPoints){
-          obj.labels = obj.labels.slice(- maxPoints);
-          obj.dataSet = obj.dataSet.slice(- maxPoints);
+        if(that.chartsData.labels.length > maxPoints){
+          that.chartsData.labels = that.chartsData.labels.slice(- maxPoints);
+          that.chartsData.dataSet = that.chartsData.dataSet.slice(- maxPoints);
         }
-        that.renderChart(obj);
+        if(that.$('.show-chart-button').hasClass('on'))
+          that.renderChart(that.chartsData);
       });
     },
 
-    renderChart: function(d){
+    showHideChart: function(ev){
+      var btn = $(ev.target);
+      if(btn.hasClass('off')){
+        btn.removeClass("off");
+        btn.addClass("on");
+        this.renderChart(this.chartsData);
+        btn.html("Hide Chart");
+      }else{
+        btn.removeClass("on");
+        btn.addClass("off");
+        btn.html("Show Chart");
+        this.removeChart();
+      }
+    },
+
+    removeChart: function(){
       this.$('.chart').empty();
       if(this.myLineChart){
         this.myLineChart.destroy();
       }
+    },
+
+    renderChart: function(d){
+      this.removeChart();
       if(d.labels.length == 0 ){
         return;
       }
-      this.$('.chart').append("<canvas id=\"myChart\" width=\"200\" height=\"200\"></canvas>");
+      this.$('.chart').append("<canvas id=\"myChart\" width=\"200\" height=\"200\" ></canvas>");
       var ctx = this.$('#myChart')[0].getContext("2d");
       var data = {
           labels: d.labels,

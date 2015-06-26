@@ -24,7 +24,7 @@ define(function (require) {
     model: SrevicesModel,
 
     initialize: function(models, options) {
-      this.url = 'api/links/' + options.key;
+      this.url = '../api/links/' + options.key;
     }
   });
 
