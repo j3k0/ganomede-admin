@@ -11,7 +11,7 @@ USER app
 COPY package.json /home/app/code/package.json
 RUN npm install
 
-COPY Makefile README.md index.js utils.js /home/app/code/
+COPY Makefile README.md index.js utils.js config.js /home/app/code/
 COPY web /home/app/code/web
 
 ENV ADMIN_USERNAME=admin

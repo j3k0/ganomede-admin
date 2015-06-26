@@ -10,17 +10,40 @@ var LocalStrategy = require('passport-local').Strategy;
 var bodyParser = require('body-parser');
 var flash = require("flash");
 var package = require("./package.json");
-var os = require("os");
+var os = require("os"), 
+  CmsEngine = require('couchdb-node-cms'),
+  config = require('./config');
 
 var API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
 var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
 var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
+
+var services = {
+  SERVERS: [],
+  ANALYTICS: []
+}
+
+addServices(services.SERVERS, "SERVERS");
+addServices(services.ANALYTICS, "ANALYTICS");
+
+function addServices(array, name) {
+  var i = 1;
+  while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) {
+    array.push({name: process.env[name + "_LINK" + i + "_NAME"],
+      url: process.env[name + "_LINK" + i + "_URL"]});
+    i++;
+  }
+}
 
 
 var users = [
 	{ username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD }
 ];
 var tokens = {};
+
+if (process.env.ADMIN_TOKEN) {
+    utils.saveToken(process.env.ADMIN_TOKEN, users[0].username, tokens, function(err) {});
+}
 
 var sendNeedAuth = function (res) {
    res.status(401).send({
@@ -76,8 +99,17 @@ var auth = function(req, res, next){
     });
 };
 
+var cmsEngine = new CmsEngine({
+   config: config,
+   server: app,
+   auth: auth,
+   apiRoot: apiBase + '/cms'
+ });
+
+cmsEngine.start();
+
 function issueToken(user, done) {
-  var token = utils.generateToken(64);
+  var token = process.env.ADMIN_TOKEN || utils.generateToken(64);
   utils.saveToken(token, user.username, tokens, function(err) {
     if (err) { return done(err); }
     return done(null, token);
@@ -108,15 +140,28 @@ app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
 	request.get(API_BASE_URL + req.url).pipe(res);
 });
 
+app.get(apiBase + "/api/islogged", auth, function(req, res){
+  res.status(200).send({
+    success: true
+  });
+ });
+
  app.get(apiBase + "/api/logout", auth, function(req, res){
  	utils.removeToken(utils.parseCookies(req).token, tokens);
  	res.clearCookie('token');
- 	res.redirect('/admin/');
+ 	res.send({
+    success: true
+  });
  });
 
 //get users list
 app.get(apiBase + "/api/users", auth, function(req, res){
     request(API_TEMP_URL + "/api/users").pipe(res);
+});
+
+//get users list
+app.get(apiBase + "/api/users/:name", auth, function(req, res){
+    request(API_TEMP_URL + "/api/users/" + req.params.name).pipe(res);
 });
 
 //get user details
@@ -134,11 +179,19 @@ app.get(apiBase + "/api/location/:id", auth, function(req, res){
     request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location').pipe(res);
 });
 
-//get location
-app.get(apiBase + "/api/test/", auth, function(req, res){
-    console.log(req.params);
-    console.log(req.body);
-    res.send("ok");
+
+//get users list
+app.get(apiBase + "/api/links/:key", auth, function(req, res){
+  switch(req.params.key){
+    case "servers":
+      res.send(services.SERVERS);
+    break;
+    case "analytics":
+      res.send(services.ANALYTICS);
+    break;
+    default:
+      res.send([]);
+  }
 });
 
 //get items list
@@ -198,7 +251,7 @@ app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
 });
 
 /* serves main page */
-app.get(apiBase + "/admin/", function(req, res) {
+app.get(apiBase + '/web' , function(req, res) {
     res.sendFile(__dirname + "/web/index.html");
 });
 

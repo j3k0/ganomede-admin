@@ -7,6 +7,7 @@ define(function (require) {
   var sessionsTemplate = require("../../text!../../../templates/sessionstable.html");
   var usersTemplate = require("../../text!../../../templates/userstable.html");
   var analytics = require("../models/analytics");
+  var ServicesCollection = require("../../models/servicesCollection");
 
 
   var AnalyticsView = Backbone.View.extend({
@@ -20,28 +21,38 @@ define(function (require) {
       "click .app-button": "application",
       "click .version-button": "version",
       "click .group-button": "group",
-      "click .cleandb-button": "cleanDb"
+      "click .cleandb-button": "cleanDb",
+      "click .show-chart-button": 'showHideChart'
     },
 
     initialize:function () {
       this.file = "checkpoints";
-      this.level = 1;
+      this.level = undefined;
       this.app = '';
       this.ver = '';
       this.grp = '';
 
+      this.chartsData = {
+          labels: [],
+          dataSet: []
+      };
+
       var that = this;
       analytics.getApplications(function(){
-        that.render();
+        that.renderApplications();
       });
 
       analytics.getVersions(function(){
-        that.render();
+        that.renderVersions();
       });
 
       analytics.getGroups(function(){
-        that.render();
+        that.renderGroups();
       });
+
+      this.servicesCollection = ServicesCollection.singleton("analytics");
+      this.servicesCollection.bind("reset change remove", this.renderPanel, this);
+
     },
 
     cleanDb: function(ev){
@@ -106,21 +117,54 @@ define(function (require) {
     getChartData: function(){
       var that = this;
       analytics.getData(this.file, 1, null, this.level, this.ver, this.app, this.grp, function(d){
-        var obj = {
+        that.chartsData = {
           labels: [],
           dataSet: []
         };
         for (var key in d) {
           if (d.hasOwnProperty(key)) {
-            obj.labels.unshift(key);
-            obj.dataSet.unshift(d[key]);
+            that.chartsData.labels.unshift(key);
+            that.chartsData.dataSet.unshift(d[key]);
           }
         }
-        that.renderChart(obj);
+        var maxPoints = 6;
+        if(that.chartsData.labels.length > maxPoints){
+          that.chartsData.labels = that.chartsData.labels.slice(- maxPoints);
+          that.chartsData.dataSet = that.chartsData.dataSet.slice(- maxPoints);
+        }
+        if(that.$('.show-chart-button').hasClass('on'))
+          that.renderChart(that.chartsData);
       });
     },
 
+    showHideChart: function(ev){
+      var btn = $(ev.target);
+      if(btn.hasClass('off')){
+        btn.removeClass("off");
+        btn.addClass("on");
+        this.renderChart(this.chartsData);
+        btn.html("Hide Chart");
+      }else{
+        btn.removeClass("on");
+        btn.addClass("off");
+        btn.html("Show Chart");
+        this.removeChart();
+      }
+    },
+
+    removeChart: function(){
+      this.$('.chart').empty();
+      if(this.myLineChart){
+        this.myLineChart.destroy();
+      }
+    },
+
     renderChart: function(d){
+      this.removeChart();
+      if(d.labels.length == 0 ){
+        return;
+      }
+      this.$('.chart').append("<canvas id=\"myChart\" width=\"200\" height=\"200\" ></canvas>");
       var ctx = this.$('#myChart')[0].getContext("2d");
       var data = {
           labels: d.labels,
@@ -137,7 +181,8 @@ define(function (require) {
               }
           ]
       };
-      var myLineChart = new Chart(ctx).Line(data, {
+      
+      this.myLineChart = new Chart(ctx).Line(data, {
           scaleShowGridLines : true,
           scaleGridLineColor : "rgba(0,0,0,.05)",//String - Colour of the grid lines
           scaleGridLineWidth : 1,//Number - Width of the grid lines
@@ -146,7 +191,7 @@ define(function (require) {
           bezierCurve : true,//Boolean - Whether the line is curved between points
           bezierCurveTension : 0.4,//Number - Tension of the bezier curve between points
           pointDot : true,//Boolean - Whether to show a dot for each point
-          pointDotRadius : 4,//Number - Radius of each point dot in pixels
+          pointDotRadius : 2,//Number - Radius of each point dot in pixels
           pointDotStrokeWidth : 1,//Number - Pixel width of point dot stroke
           pointHitDetectionRadius : 20,//Number - amount extra to add to the radius to cater for hit detection outside the drawn point
           datasetStroke : true,//Boolean - Whether to show a stroke for datasets
@@ -161,7 +206,7 @@ define(function (require) {
 
     renderTable: function(){
       this.$('.datatable').empty();
-      this.$('.datatable').append(this.tableTemplate());
+      this.$('.datatable').html(this.tableTemplate());
       var that = this;
 
       this.$('#table').dataTable({
@@ -177,11 +222,11 @@ define(function (require) {
     },
 
     renderVersions: function(){
-      this.renderOptions('.versions-group', 'version-button', analytics.applications, 'version');
+      this.renderOptions('.versions-group', 'version-button', analytics.versions, 'version');
     },
 
     renderGroups: function(){
-      this.renderOptions('.groups-group', 'group-button', analytics.applications, 'grp');
+      this.renderOptions('.groups-group', 'group-button', analytics.groups, 'grp');
     },
 
     renderOptions: function(className, buttonClass, arr, key){
@@ -195,11 +240,21 @@ define(function (require) {
       this.$(className).append(string);
     },
 
+     renderPanel: function(){
+      this.$('.panel-data').remove();
+       _.each(this.servicesCollection.models, function (item) {
+          this.$('.services-panel').append("<div class=\"panel-body panel-data\"><a target=\"_blank\" href=" + item.get('url') + ">" + item.get('name') + "</a></div>");
+        }, this);
+    },
+
     render:function () {
       $(this.el).html(this.template());
       this.renderApplications();
       this.renderVersions();
       this.renderGroups();
+      this.renderPanel();
+      this.renderTable();
+      this.getChartData();
       return this;
     }
 

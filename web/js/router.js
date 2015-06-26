@@ -6,6 +6,8 @@ This is controller of the application where we have :
 define(function (require) {
     'use strict';
 
+  var login = require("./models/login");
+
   var Router = Backbone.Router.extend({
 
 
@@ -16,28 +18,33 @@ define(function (require) {
       "user/:id": "userDetails",
       "items": "items",
       "servers": "servers",
-      "analytics": "analytics"
+      "analytics": "analytics",
+      "documentation": "documentation",
+      "documentation/:id": "page",
+      "logout": "logout"
     },
+
 
     initialize: function(options) {
       this.main = options.main;
     },
      
     home: function() {
+        login.isLoggedIn();
         var HomeView = require("./views/homeView");
         this.renderView(new HomeView());
         this.setHeaderNavigation('home-menu');
         this.main.showLogout();
         var ajaxHandler = require("./ajaxHandler");
         var UsersCollection = require("./users/models/usersCollection");
-        UsersCollection.singleton().fetch({
-              reset: true,                
-              success: function(d){
-              },
-              error: function(m, r){
-                ajaxHandler.errorFetchOrSave(m, r);
-              }
-            });
+        // UsersCollection.singleton().fetch({
+        //       reset: true,                
+        //       success: function(d){
+        //       },
+        //       error: function(m, r){
+        //         ajaxHandler.errorFetchOrSave(m, r);
+        //       }
+        //     });
     },
 
     login: function() {
@@ -46,7 +53,12 @@ define(function (require) {
         this.main.hideLogout();
     },
 
+    logout: function(){
+      login.logout();
+    },
+
     userDetails: function(id){
+      login.isLoggedIn();
       var UserDetailsView = require("./users/views/userDetailsView");
       var UserDetailedModel = require("./users/models/userDetailedModel");
       var model = new UserDetailedModel({id: id});
@@ -65,6 +77,7 @@ define(function (require) {
     },
 
     items: function(){
+      login.isLoggedIn();
       var ItemsView = require("./items/views/itemsView");
       var ItemsCollection = require("./items/models/itemsCollection");
       var ajaxHandler = require("./ajaxHandler");
@@ -81,6 +94,7 @@ define(function (require) {
     },
 
     servers: function(){
+      login.isLoggedIn();
       var MonitoringView = require("./servers/views/monitoringView");
       var ServersCollection = require("./servers/models/serversCollection");
       this.renderView(new MonitoringView({collection: ServersCollection.singleton()}));
@@ -97,9 +111,24 @@ define(function (require) {
     },
 
     analytics: function(){
+      login.isLoggedIn();
       var AnalyticsView = require("./analytics/views/analyticsView");
       this.renderView(new AnalyticsView({}));
       this.setHeaderNavigation('analytics-menu');
+    },
+
+    documentation: function(){
+      login.isLoggedIn();
+      var DocumentationView = require("./documentation/views/documentationView");
+      this.renderView(new DocumentationView({}));
+      this.setHeaderNavigation('documentation-menu');
+    },
+
+    page: function(id){
+      login.isLoggedIn();
+      var DocumentationView = require("./documentation/views/documentationView");
+      this.renderView(new DocumentationView({id: id}));
+      this.setHeaderNavigation('documentation-menu');
     },
 
     setHeaderNavigation: function(section) {
