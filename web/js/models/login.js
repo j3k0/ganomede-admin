@@ -5,11 +5,11 @@ define(function (require) {
 
   var Login = {
 
-    url: "api/login",
+    url: "../api/login",
 
     isLoggedIn: function(){
       ajaxHandler.postAjax({
-        url: "api/islogged",
+        url: "../api/islogged",
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: function (data){
@@ -23,7 +23,7 @@ define(function (require) {
 
     logout: function(){
       ajaxHandler.postAjax({
-        url: "api/logout",
+        url: "../api/logout",
         type: 'GET',
         contentType: "application/json; charset=utf-8",
         success: function (data){

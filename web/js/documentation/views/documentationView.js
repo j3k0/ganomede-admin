@@ -20,7 +20,7 @@ define(function (require) {
     initialize:function (options) {
       var that = this;
       var id = options.id;
-      var url = !id ? null : '/cms/admin/v1/posts/' + id;
+      var url = !id ? null : '../cms/posts/' + id;
       documentation.getData(url, function(data){
         that.renderHtml(data);
       });

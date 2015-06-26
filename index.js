@@ -103,7 +103,7 @@ var cmsEngine = new CmsEngine({
    config: config,
    server: app,
    auth: auth,
-   apiRoot: '/cms/admin/v1'
+   apiRoot: apiBase + '/cms'
  });
 
 cmsEngine.start();
@@ -251,12 +251,12 @@ app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
 });
 
 /* serves main page */
-app.get(apiBase , function(req, res) {
+app.get(apiBase + '/web' , function(req, res) {
     res.sendFile(__dirname + "/web/index.html");
 });
 
 /* serves all the static files */
-app.get(/^\/admin\/v1\/(.+)$/, function(req, res) {
+app.get(/^\/admin\/v1\/web\/(.+)$/, function(req, res) {
     res.sendFile(__dirname + "/web/" + req.params[0]);
 });
 

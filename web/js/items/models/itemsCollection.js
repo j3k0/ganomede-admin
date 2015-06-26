@@ -11,7 +11,7 @@ define(function (require) {
     model: ItemModel,
 
     initialize: function(models, options) {
-      this.url = 'api/items' ;
+      this.url = '../api/items' ;
     }
   });
 
