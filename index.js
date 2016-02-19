@@ -1,51 +1,53 @@
-var express = require('express');
-var app = express();
-var passport = require('passport');
-var cookieParser = require('cookie-parser');
-var session = require('express-session');
-var request = require("request");
-var utils = require('./utils');
-var RememberMeStrategy = require('passport-remember-me').Strategy;
-var LocalStrategy = require('passport-local').Strategy;
-var bodyParser = require('body-parser');
-var flash = require("flash");
-var package = require("./package.json");
-var os = require("os"), 
-  CmsEngine = require('couchdb-node-cms'),
-  config = require('./config');
+'use strict';
 
-var API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
-var API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
-var API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
+const express = require('express');
+const app = express();
+const passport = require('passport');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const request = require("request");
+const utils = require('./utils');
+const LocalStrategy = require('passport-local').Strategy;
+const bodyParser = require('body-parser');
+const flash = require("flash");
+const pkg = require("./package.json");
+const os = require("os");
+const CmsEngine = require('couchdb-node-cms');
+const config = require('./config');
 
-var services = {
+const API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
+const API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
+const API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
+
+const services = {
   SERVERS: [],
   ANALYTICS: []
-}
+};
+
+const log = console.log; // eslint-disable-line no-console
 
 addServices(services.SERVERS, "SERVERS");
 addServices(services.ANALYTICS, "ANALYTICS");
 
-function addServices(array, name) {
-  var i = 1;
+const addServices = function (array, name) {
+  let i = 1;
   while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) {
     array.push({name: process.env[name + "_LINK" + i + "_NAME"],
       url: process.env[name + "_LINK" + i + "_URL"]});
     i++;
   }
-}
+};
 
-
-var users = [
-	{ username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD }
+const users = [
+  { username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD }
 ];
-var tokens = {};
+const tokens = {};
 
 if (process.env.ADMIN_TOKEN) {
-    utils.saveToken(process.env.ADMIN_TOKEN, users[0].username, tokens, function(err) {});
+    utils.saveToken(process.env.ADMIN_TOKEN, users[0].username, tokens, function(/*err*/) {});
 }
 
-var sendNeedAuth = function (res) {
+const sendNeedAuth = function (res) {
    res.status(401).send({
        success: false,
        error: "Need authentication",
@@ -53,7 +55,7 @@ var sendNeedAuth = function (res) {
    });
 };
 
-var apiBase = "/" + package.api;
+const apiBase = "/" + pkg.api;
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -87,9 +89,9 @@ passport.use(new LocalStrategy(
 ));
 
 
-var auth = function(req, res, next){
-	var token = (utils.parseCookies(req) && utils.parseCookies(req).token) ? utils.parseCookies(req).token : null;
-	utils.consumeToken(token, tokens, function(err, username) {
+const auth = function(req, res, next){
+  const token = (utils.parseCookies(req) && utils.parseCookies(req).token) ? utils.parseCookies(req).token : null;
+  utils.consumeToken(token, tokens, function(err, username) {
       if (err || !username) { sendNeedAuth(res); return; }
 
       utils.findByUsername(username, users, function(err, user) {
@@ -99,7 +101,7 @@ var auth = function(req, res, next){
     });
 };
 
-var cmsEngine = new CmsEngine({
+const cmsEngine = new CmsEngine({
    config: config,
    server: app,
    auth: auth,
@@ -108,18 +110,18 @@ var cmsEngine = new CmsEngine({
 
 cmsEngine.start();
 
-function issueToken(user, done) {
-  var token = process.env.ADMIN_TOKEN || utils.generateToken(64);
+const issueToken = function (user, done) {
+  const token = process.env.ADMIN_TOKEN || utils.generateToken(64);
   utils.saveToken(token, user.username, tokens, function(err) {
     if (err) { return done(err); }
     return done(null, token);
   });
-}
+};
 
 
 app.post(apiBase + '/api/login', passport.authenticate('local'), function(req, res, next) {
     if (res.headerSent) { return; }
-		 issueToken({
+     issueToken({
              username: req.body.username,
              password:req.body.password
          }, function(err, token) {
@@ -129,7 +131,7 @@ app.post(apiBase + '/api/login', passport.authenticate('local'), function(req, r
              res.cookie('token', token, { path: '/', httpOnly: true, maxAge: 604800000 });
              res.send({ success: true });
              // return next();
-    	});
+      });
     },
     function(req, res) {
         res.redirect('/admin/');
@@ -137,7 +139,7 @@ app.post(apiBase + '/api/login', passport.authenticate('local'), function(req, r
  );
 
 app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
-	request.get(API_BASE_URL + req.url).pipe(res);
+  request.get(API_BASE_URL + req.url).pipe(res);
 });
 
 app.get(apiBase + "/api/islogged", auth, function(req, res){
@@ -147,9 +149,9 @@ app.get(apiBase + "/api/islogged", auth, function(req, res){
  });
 
  app.get(apiBase + "/api/logout", auth, function(req, res){
- 	utils.removeToken(utils.parseCookies(req).token, tokens);
- 	res.clearCookie('token');
- 	res.send({
+  utils.removeToken(utils.parseCookies(req).token, tokens);
+  res.clearCookie('token');
+  res.send({
     success: true
   });
  });
@@ -204,28 +206,28 @@ app.get(apiBase + "/api/items/:name", auth, function(req, res){
 });
 
 app.get(apiBase + "/api/items", auth, function(req, res){
- 	request(API_TEMP_URL + "/api/items").pipe(res);
+  request(API_TEMP_URL + "/api/items").pipe(res);
 });
 
 app.put(apiBase + "/api/item/:id", auth, function(req, res){
-	request.put(API_TEMP_URL + "/api/item/" + req.params.id).pipe(res);
+  request.put(API_TEMP_URL + "/api/item/" + req.params.id).pipe(res);
 });
 
 app.post(apiBase + "/api/item", auth, function(req, res){
-	request.post(API_TEMP_URL + req.url).pipe(res);
+  request.post(API_TEMP_URL + req.url).pipe(res);
 });
 
 //
 // About endpoint
 //
-var aboutData = {
-    type: package.name,
-    version: package.version,
-    description: package.description,
+const aboutData = {
+    type: pkg.name,
+    version: pkg.version,
+    description: pkg.description,
     hostname: os.hostname(),
     startDate: new Date().toISOString()
 };
-var about = function(req, res) {
+const about = function(req, res) {
     res.send(aboutData);
 };
 app.get("/about", about);
@@ -234,7 +236,7 @@ app.get(apiBase + "/about", about);
 //
 // Ping endpoint
 //
-var ping = function(req, res) {
+const ping = function(req, res) {
     res.send("pong/" + req.params.token);
 };
 app.get("/ping/:token", ping);
@@ -260,11 +262,11 @@ app.get(/^\/admin\/v1\/web\/(.+)$/, function(req, res) {
     res.sendFile(__dirname + "/web/" + req.params[0]);
 });
 
-var server = app.listen(process.env.PORT || 8000, function () {
+const server = app.listen(process.env.PORT || 8000, function () {
 
-  var host = server.address().address;
-  var port = server.address().port;
+  const host = server.address().address;
+  const port = server.address().port;
 
-  console.log('Example app listening at http://%s:%s', host, port);
+  log('Example app listening at http://%s:%s', host, port);
 
 });

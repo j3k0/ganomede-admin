@@ -1,4 +1,6 @@
-var config = {
+'use strict';
+
+const config = {
   "port": +process.env.COUCHDB_PORT || 5984,
   "host": process.env.COUCHDB_HOST || "localhost",
   "db": process.env.COUCHDB_DB || "blog"
