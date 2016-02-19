@@ -52,7 +52,7 @@ passport.use(new LocalStrategy(
 
 
 const auth = function(req, res, next){
-  const token = (utils.parseCookies(req) && utils.parseCookies(req).token) ? utils.parseCookies(req).token : null;
+  const token = req.cookies && req.cookies.token;
   utils.consumeToken(token, tokens, function(err, username) {
       if (err || !username) { sendNeedAuth(res); return; }
 
@@ -107,7 +107,7 @@ app.get(config.http.apiBase + "/api/islogged", auth, function(req, res){
  });
 
  app.get(config.http.apiBase + "/api/logout", auth, function(req, res){
-  utils.removeToken(utils.parseCookies(req).token, tokens);
+  utils.removeToken(req.cookies && req.cookies.token, tokens);
   res.clearCookie('token');
   res.send({
     success: true

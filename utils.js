@@ -47,15 +47,3 @@ exports.saveToken = function(token, username, tokens, fn) {
   tokens[token] = username;
   return fn();
 };
-
-exports.parseCookies = function (request) {
-    const list = {};
-    const rc = request.headers.cookie;
-
-    rc && rc.split(';').forEach(function( cookie ) {
-        const parts = cookie.split('=');
-        list[parts.shift().trim()] = decodeURI(parts.join('='));
-    });
-
-    return list;
-};
