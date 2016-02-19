@@ -26,9 +26,6 @@ const services = {
 
 const log = console.log; // eslint-disable-line no-console
 
-addServices(services.SERVERS, "SERVERS");
-addServices(services.ANALYTICS, "ANALYTICS");
-
 const addServices = function (array, name) {
   let i = 1;
   while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) {
@@ -37,6 +34,9 @@ const addServices = function (array, name) {
     i++;
   }
 };
+
+addServices(services.SERVERS, "SERVERS");
+addServices(services.ANALYTICS, "ANALYTICS");
 
 const users = [
   { username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD }
