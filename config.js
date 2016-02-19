@@ -1,9 +1,15 @@
 'use strict';
 
+const pkg = require('./package.json');
+
 const config = {
   "port": +process.env.COUCHDB_PORT || 5984,
   "host": process.env.COUCHDB_HOST || "localhost",
-  "db": process.env.COUCHDB_DB || "blog"
+  "db": process.env.COUCHDB_DB || "blog",
+
+  http: {
+    apiBase: `/${pkg.api}`
+  }
 };
 
 if (typeof process.env.COUCHDB_USER == "undefined")

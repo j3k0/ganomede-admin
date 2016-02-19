@@ -1,42 +1,15 @@
 'use strict';
 
-const express = require('express');
-const app = express();
 const passport = require('passport');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const request = require("request");
 const utils = require('./utils');
 const LocalStrategy = require('passport-local').Strategy;
-const bodyParser = require('body-parser');
-const flash = require("flash");
 const pkg = require("./package.json");
 const os = require("os");
 const CmsEngine = require('couchdb-node-cms');
 const config = require('./config');
-
-const API_BASE_URL = process.env.API_BASE_URL || "https://staging.ggs.ovh";
-const API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
-const API_CHECKPOINTS_URL = process.env.API_CHECKPOINTS_URL || "http://192.168.59.103" || "http://zalka.fovea.cc:49660";
-
-const services = {
-  SERVERS: [],
-  ANALYTICS: []
-};
+const app = require('./server/app');
 
 const log = console.log; // eslint-disable-line no-console
-
-const addServices = function (array, name) {
-  let i = 1;
-  while (process.env[name + "_LINK" + i + "_URL"] && process.env[name + "_LINK" + i + "_NAME"]) {
-    array.push({name: process.env[name + "_LINK" + i + "_NAME"],
-      url: process.env[name + "_LINK" + i + "_URL"]});
-    i++;
-  }
-};
-
-addServices(services.SERVERS, "SERVERS");
-addServices(services.ANALYTICS, "ANALYTICS");
 
 const users = [
   { username: process.env.ADMIN_USERNAME, password: process.env.ADMIN_PASSWORD }
@@ -54,17 +27,6 @@ const sendNeedAuth = function (res) {
        needAuthentication: true
    });
 };
-
-const apiBase = "/" + pkg.api;
-
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-
-app.use(cookieParser());
-app.use(session({secret: 'ganomede-admin', saveUninitialized: true, resave: true}));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
 
 
 passport.serializeUser(function(user, done) {
@@ -105,7 +67,7 @@ const cmsEngine = new CmsEngine({
    config: config,
    server: app,
    auth: auth,
-   apiRoot: apiBase + '/cms'
+   apiRoot: `${config.http.apiBase}/cms`
  });
 
 cmsEngine.start();
@@ -119,7 +81,7 @@ const issueToken = function (user, done) {
 };
 
 
-app.post(apiBase + '/api/login', passport.authenticate('local'), function(req, res, next) {
+app.post(config.http.apiBase + '/api/login', passport.authenticate('local'), function(req, res, next) {
     if (res.headerSent) { return; }
      issueToken({
              username: req.body.username,
@@ -138,17 +100,13 @@ app.post(apiBase + '/api/login', passport.authenticate('local'), function(req, r
     }
  );
 
-app.get(/avatars\/v1\/(.+)$/, auth, function(req, res) {
-  request.get(API_BASE_URL + req.url).pipe(res);
-});
-
-app.get(apiBase + "/api/islogged", auth, function(req, res){
+app.get(config.http.apiBase + "/api/islogged", auth, function(req, res){
   res.status(200).send({
     success: true
   });
  });
 
- app.get(apiBase + "/api/logout", auth, function(req, res){
+ app.get(config.http.apiBase + "/api/logout", auth, function(req, res){
   utils.removeToken(utils.parseCookies(req).token, tokens);
   res.clearCookie('token');
   res.send({
@@ -156,70 +114,10 @@ app.get(apiBase + "/api/islogged", auth, function(req, res){
   });
  });
 
-//get users list
-app.get(apiBase + "/api/users", auth, function(req, res){
-    request(API_TEMP_URL + "/api/users").pipe(res);
-});
-
-//get users list
-app.get(apiBase + "/api/users/:name", auth, function(req, res){
-    request(API_TEMP_URL + "/api/users/" + req.params.name).pipe(res);
-});
-
-//get user details
-app.get(apiBase + "/api/user/:id", auth, function(req, res){
-    request(API_TEMP_URL + req.url).pipe(res);
-});
-
-//ban user
-app.post(apiBase + "/api/user/ban/:id", auth, function(req, res){
-    request.post(API_TEMP_URL + req.url).pipe(res);
-});
-
-//get location
-app.get(apiBase + "/api/location/:id", auth, function(req, res){
-    request(API_BASE_URL + '/users/v1/' + req.params.id +'/metadata/location').pipe(res);
-});
-
-
-//get users list
-app.get(apiBase + "/api/links/:key", auth, function(req, res){
-  switch(req.params.key){
-    case "servers":
-      res.send(services.SERVERS);
-    break;
-    case "analytics":
-      res.send(services.ANALYTICS);
-    break;
-    default:
-      res.send([]);
-  }
-});
-
-//get items list
-app.delete(apiBase + "/api/item/:id", auth, function(req, res){
-    request.del(API_TEMP_URL + req.url).pipe(res);
-});
-
-app.get(apiBase + "/api/items/:name", auth, function(req, res){
-    request(API_TEMP_URL + "/api/items/" + req.params.name).pipe(res);
-});
-
-app.get(apiBase + "/api/items", auth, function(req, res){
-  request(API_TEMP_URL + "/api/items").pipe(res);
-});
-
-app.put(apiBase + "/api/item/:id", auth, function(req, res){
-  request.put(API_TEMP_URL + "/api/item/" + req.params.id).pipe(res);
-});
-
-app.post(apiBase + "/api/item", auth, function(req, res){
-  request.post(API_TEMP_URL + req.url).pipe(res);
-});
-
 //
 // About endpoint
 //
+
 const aboutData = {
     type: pkg.name,
     version: pkg.version,
@@ -231,36 +129,17 @@ const about = function(req, res) {
     res.send(aboutData);
 };
 app.get("/about", about);
-app.get(apiBase + "/about", about);
+app.get(config.http.apiBase + "/about", about);
 
 //
 // Ping endpoint
 //
+
 const ping = function(req, res) {
     res.send("pong/" + req.params.token);
 };
 app.get("/ping/:token", ping);
-app.get(apiBase + "/ping/:token", ping);
-
-// Monitoring
-app.get(apiBase + "/api/monitoring", auth, function(req, res){
-    request(API_BASE_URL + "/registry/v1/services").pipe(res);
-});
-
-
-app.get(/^\/checkpoints\/v1\/(.+)$/, auth, function(req, res){
-    request(API_CHECKPOINTS_URL + req.url).pipe(res);
-});
-
-/* serves main page */
-app.get(apiBase + '/web' , function(req, res) {
-    res.sendFile(__dirname + "/web/index.html");
-});
-
-/* serves all the static files */
-app.get(/^\/admin\/v1\/web\/(.+)$/, function(req, res) {
-    res.sendFile(__dirname + "/web/" + req.params[0]);
-});
+app.get(config.http.apiBase + "/ping/:token", ping);
 
 const server = app.listen(process.env.PORT || 8000, function () {
 
