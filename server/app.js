@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const flash = require('flash');
 const passport = require('passport');
 const config = require('../config');
+const auth = require('./auth');
 
 const app = express();
 const apiBase = config.http.apiBase;
@@ -28,7 +29,12 @@ app.use(flash());
 // Routers.
 //
 
+// these are public
+app.use(`${apiBase}/web`, require('./static.router'));
+
 // these need auth
+app.use(`${apiBase}/api`, auth.router);
+app.use(auth.mwValidate);
 app.use(require('./checkpoints.router'));
 app.use(require('./avatars.router'));
 app.use(`${apiBase}/api`, require('./users.router'));
@@ -36,8 +42,8 @@ app.use(`${apiBase}/api`, require('./location.router'));
 app.use(`${apiBase}/api`, require('./items.router'));
 app.use(`${apiBase}/api`, require('./links.router'));
 app.use(`${apiBase}/api`, require('./monitoring.router'));
-
-// these are public
-app.use(`${apiBase}/web`, require('./static.router'));
+app.use(`${apiBase}/api/islogged`, function (req, res) {
+  res.json({success: true});
+});
 
 module.exports = app;
