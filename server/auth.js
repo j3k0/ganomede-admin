@@ -30,7 +30,7 @@ const tokens = {
     const ret = {};
 
     if (process.env.ADMIN_TOKEN)
-      ret[process.env.ADMIN_TOKEN] = users[0].username;
+      ret[process.env.ADMIN_TOKEN] = process.env.ADMIN_USERNAME;
 
     return ret;
   }()),
