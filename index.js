@@ -45,7 +45,7 @@ const ping = function(req, res) {
 app.get("/ping/:token", ping);
 app.get(config.http.apiBase + "/ping/:token", ping);
 
-const server = app.listen(process.env.PORT || 8000, function () {
+const server = app.listen(config.http.port, config.http.host, function () {
 
   const host = server.address().address;
   const port = server.address().port;

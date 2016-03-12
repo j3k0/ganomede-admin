@@ -8,7 +8,17 @@ const config = {
   "db": process.env.COUCHDB_DB || "blog",
 
   http: {
+    host: process.env.HOST || '0.0.0.0',
+    port: process.env.PORT || 8000,
     apiBase: `/${pkg.api}`
+  },
+
+  auth: {
+    admin: {
+      username: process.env.ADMIN_USERNAME || '1',
+      password: process.env.ADMIN_PASSWORD || '1',
+      token: process.env.ADMIN_TOKEN || null
+    }
   }
 };
 

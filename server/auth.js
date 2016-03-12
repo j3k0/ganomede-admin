@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const express = require('express');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const config = require('../config');
 
 const router = new express.Router();
 
@@ -11,8 +12,8 @@ const users = {
   store: (function () {
     const ret = {};
     const user = {
-      username: process.env.ADMIN_USERNAME,
-      password: process.env.ADMIN_PASSWORD
+      username: config.auth.admin.username,
+      password: config.auth.admin.password
     };
     ret[user.username] = user;
     return ret;
@@ -29,8 +30,8 @@ const tokens = {
   store: (function () {
     const ret = {};
 
-    if (process.env.ADMIN_TOKEN)
-      ret[process.env.ADMIN_TOKEN] = process.env.ADMIN_USERNAME;
+    if (config.auth.admin.token)
+      ret[config.auth.admin.token] = config.auth.admin.username;
 
     return ret;
   }()),
