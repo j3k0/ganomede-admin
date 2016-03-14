@@ -27,3 +27,6 @@ const config = {
 };
 
 module.exports = config;
+
+if (!module.parent)
+  console.log(module.exports); // eslint-disable-line no-console
