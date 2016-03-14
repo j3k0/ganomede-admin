@@ -38,5 +38,13 @@ This project use couchdb as database.
  - `COUCHDB_PASSWORD` --> couchdb password
  - `COUCHDB_DB`       --> couchdb database name
 
+## Other microservices
+
+Most of functionality depends on interacting with other ganomede
+microservices. Provide links to them with env vars (otherwise will
+deafult to locally running intstance):
+
+ - `LINK_VIRTUAL_CURRENCY` for Items list ([https://github.com/j3k0/ganomede-virtualcurrency](virtual currency module)).
+
 # Run
 run make using these env variables.

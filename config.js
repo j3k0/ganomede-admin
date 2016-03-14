@@ -23,6 +23,10 @@ const config = {
       password: process.env.ADMIN_PASSWORD || '1',
       token: process.env.ADMIN_TOKEN || null
     }
+  },
+
+  services: {
+    virtualcurrency: process.env.LINK_VIRTUAL_CURRENCY || 'http://localhost:8000/virtualcurrency/v1'
   }
 };
 
