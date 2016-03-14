@@ -10,7 +10,7 @@ const auth = require('./server/auth');
 const log = console.log; // eslint-disable-line no-console
 
 const cmsEngine = new CmsEngine({
-   config: config,
+   config: config.couch,
    server: app,
    auth: auth.mwValidate,
    apiRoot: `${config.http.apiBase}/cms`
