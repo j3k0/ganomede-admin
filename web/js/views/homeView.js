@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../text!../../templates/homeView.html");
@@ -50,6 +49,4 @@ define(function (require) {
 
 
   });
-  return HomeView;
-
-});
+  module.exports = HomeView;

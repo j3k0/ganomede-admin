@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/analyticsView.html");
@@ -181,7 +180,7 @@ define(function (require) {
               }
           ]
       };
-      
+
       this.myLineChart = new Chart(ctx).Line(data, {
           scaleShowGridLines : true,
           scaleGridLineColor : "rgba(0,0,0,.05)",//String - Colour of the grid lines
@@ -259,6 +258,4 @@ define(function (require) {
     }
 
   });
-  return AnalyticsView;
-
-});
+  module.exports = AnalyticsView;

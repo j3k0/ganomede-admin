@@ -3,7 +3,6 @@ This is controller of the application where we have :
 - Routing between the different screens of the app
 - First rendering of tabView and LodadingView
 */
-define(function (require) {
     'use strict';
 
   var login = require("./models/login");
@@ -28,7 +27,7 @@ define(function (require) {
     initialize: function(options) {
       this.main = options.main;
     },
-     
+
     home: function() {
         login.isLoggedIn();
         var HomeView = require("./views/homeView");
@@ -38,7 +37,7 @@ define(function (require) {
         var ajaxHandler = require("./ajaxHandler");
         var UsersCollection = require("./users/models/usersCollection");
         // UsersCollection.singleton().fetch({
-        //       reset: true,                
+        //       reset: true,
         //       success: function(d){
         //       },
         //       error: function(m, r){
@@ -67,7 +66,7 @@ define(function (require) {
       this.main.showLogout();
       model.getLocation();
       model.fetch({
-        reset: true,                
+        reset: true,
         success: function(d){
         },
         error: function(m, r){
@@ -84,7 +83,7 @@ define(function (require) {
       this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
       this.setHeaderNavigation('items-menu');
       ItemsCollection.singleton().fetch({
-        reset: true,                
+        reset: true,
         success: function(d){
         },
         error: function(m, r){
@@ -101,7 +100,7 @@ define(function (require) {
       var ajaxHandler = require("./ajaxHandler");
       this.setHeaderNavigation('servers-menu');
       ServersCollection.singleton().fetch({
-        reset: true,                
+        reset: true,
         success: function(d){
         },
         error: function(m, r){
@@ -141,6 +140,4 @@ define(function (require) {
 
   });
 
-    return Router;
-});
-
+  module.exports = Router;

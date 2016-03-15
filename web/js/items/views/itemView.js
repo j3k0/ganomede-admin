@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/modal.html");
@@ -102,7 +101,7 @@ define(function (require) {
           ajaxHandler.errorFetchOrSave(model, er);
         }
       });
-      
+
       this.closeModal();
     },
 
@@ -113,6 +112,4 @@ define(function (require) {
 
 
   });
-  return ItemView;
-
-});
+  module.exports = ItemView;

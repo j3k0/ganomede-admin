@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../text!../../templates/loginView.html");
@@ -40,5 +39,4 @@ define(function (require) {
     }
 
   });
-  return LoginView;
-});
+  module.exports = LoginView;

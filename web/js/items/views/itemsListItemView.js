@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/itemsListItemView.html");
@@ -7,7 +6,7 @@ define(function (require) {
 
   var ItemsListItemView = Backbone.View.extend({
 
-    
+
     tagName:"a",
     className: "list-group-item",
     template: _.template(template),
@@ -32,8 +31,8 @@ define(function (require) {
         showCancelButton: true,
         confirmButtonColor: "#DD6B55",
         confirmButtonText: "Yes, delete it!",
-        closeOnConfirm: false }, 
-        function(){ 
+        closeOnConfirm: false },
+        function(){
           that.model.destroy({
             success: function(model, response) {
               swal("Deleted!", "Your imaginary file has been deleted.", "success");
@@ -54,6 +53,4 @@ define(function (require) {
     }
 
   });
-  return ItemsListItemView;
-
-});
+  module.exports = ItemsListItemView;

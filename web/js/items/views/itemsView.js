@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/itemsView.html");
@@ -33,6 +32,4 @@ define(function (require) {
     }
 
   });
-  return ItemsView;
-
-});
+  module.exports = ItemsView;

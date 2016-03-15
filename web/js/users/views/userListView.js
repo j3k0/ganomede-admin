@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var UserListItemView = require("./userListItemView");
@@ -26,6 +25,4 @@ define(function (require) {
         return this;
     }
   });
-return UserListView;
-
-});
+module.exports = UserListView;

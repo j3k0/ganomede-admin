@@ -1,7 +1,6 @@
-define(function () {
   'use strict';
 
-  return {
+  module.exports = {
 
     allowEmptyAjaxResponse: function() {
       $.ajaxSetup({dataFilter: function(data, type) {
@@ -24,4 +23,3 @@ define(function () {
     }
 
   };
-});

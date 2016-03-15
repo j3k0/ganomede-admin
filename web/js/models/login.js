@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var ajaxHandler = require("../ajaxHandler");
@@ -16,7 +15,7 @@ define(function (require) {
 
         },
         error: function (resp){
-          
+
         }
       });
     },
@@ -35,7 +34,7 @@ define(function (require) {
             Backbone.history.navigate('', {trigger: true});
         },
         error: function (resp){
-          
+
         }
       });
     },
@@ -60,8 +59,7 @@ define(function (require) {
         }
       });
     }
-    
+
   };
 
-  return Login;
-});
+  module.exports = Login;

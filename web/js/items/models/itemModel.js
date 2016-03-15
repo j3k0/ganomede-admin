@@ -1,6 +1,5 @@
-define(function (require) {
   'use strict';
- 
+
 
   var ItemModel = Backbone.Model.extend({
 
@@ -19,6 +18,5 @@ define(function (require) {
     }
 
   });
-  
-  return ItemModel;
-});
+
+  module.exports = ItemModel;

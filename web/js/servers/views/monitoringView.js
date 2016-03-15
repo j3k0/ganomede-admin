@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/monitoring.html");
@@ -52,6 +51,4 @@ define(function (require) {
     }
 
   });
-  return MonitoringView;
-
-});
+  module.exports = MonitoringView;

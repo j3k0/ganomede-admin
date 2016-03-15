@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
     var template = require("../text!../../templates/headerView.html");
@@ -30,5 +29,4 @@ define(function (require) {
       }
 
     });
-    return HeaderView;
-});
+    module.exports = HeaderView;

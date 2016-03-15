@@ -1,8 +1,7 @@
-define(function (require) {
   'use strict';
 
   var template = require("../../text!../../../templates/userDetailsView.html");
-  
+
 
   var UserDetailsView = Backbone.View.extend({
 
@@ -33,5 +32,4 @@ define(function (require) {
 
   });
 
-  return UserDetailsView;
-});
+  module.exports = UserDetailsView;
