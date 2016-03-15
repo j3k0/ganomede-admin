@@ -1,5 +1,2 @@
-run: node_modules
-	./node_modules/.bin/http-server web
-
-node_modules:
-	npm install
+build:
+	../node_modules/.bin/browserify -t brfs js/entrypoint.js > bundle.js
