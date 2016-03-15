@@ -1,7 +1,7 @@
   'use strict';
 
   var fs = require('fs');
-  var template = fs.readFileSync("../../../templates/itemsListItemView.html");
+  var template = fs.readFileSync(__dirname + "/../../../templates/itemsListItemView.html", 'utf8');
   var ajaxHandler = require("../../ajaxHandler");
   var ItemView = require("./itemView");
 

@@ -1,7 +1,7 @@
   'use strict';
 
   var fs = require('fs');
-  var template = fs.readFileSync("../../../templates/itemsView.html");
+  var template = fs.readFileSync(__dirname + "/../../../templates/itemsView.html", 'utf8');
   var ItemsListView = require("./itemsListView");
   var ItemModel = require("../models/itemModel");
   var ItemView = require("./itemView");

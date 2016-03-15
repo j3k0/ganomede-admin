@@ -1,7 +1,7 @@
   'use strict';
 
   var fs = require('fs');
-  var template = fs.readFileSync("../../../templates/userListItemView.html");
+  var template = fs.readFileSync(__dirname + "/../../../templates/userListItemView.html", 'utf8');
 
   var UserListItemView = Backbone.View.extend({
 

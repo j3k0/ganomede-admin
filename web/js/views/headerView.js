@@ -1,7 +1,7 @@
   'use strict';
 
     var fs = require('fs');
-    var template = fs.readFileSync("../../templates/headerView.html");
+    var template = fs.readFileSync(__dirname + "/../../templates/headerView.html", 'utf8');
 
     var HeaderView = Backbone.View.extend({
 

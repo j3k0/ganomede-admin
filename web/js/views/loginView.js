@@ -1,7 +1,7 @@
   'use strict';
 
   var fs = require('fs');
-  var template = fs.readFileSync("../../templates/loginView.html");
+  var template = fs.readFileSync(__dirname + "/../../templates/loginView.html", 'utf8');
 
   var LoginView = Backbone.View.extend({
 

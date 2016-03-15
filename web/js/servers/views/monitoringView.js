@@ -1,7 +1,7 @@
   'use strict';
 
   var fs = require('fs');
-  var template = fs.readFileSync("../../../templates/monitoring.html");
+  var template = fs.readFileSync(__dirname + "/../../../templates/monitoring.html", 'utf8');
   var ServersListView = require("./serversListView");
 
   var ServicesCollection = require("../../models/servicesCollection");

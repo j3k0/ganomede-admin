@@ -1,7 +1,7 @@
   'use strict';
 
   var fs = require('fs');
-  var template = fs.readFileSync("../../../templates/modal.html");
+  var template = fs.readFileSync(__dirname + "/../../../templates/modal.html", 'utf8');
   var ItemModel = require("../models/itemModel");
   var ajaxHandler = require("../../ajaxHandler");
 
