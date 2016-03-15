@@ -46,4 +46,4 @@ The collection is fetched through the api following the country code.
     return all;
   };
 
-  module.exports UsersCollection;
+  module.exports = UsersCollection;
