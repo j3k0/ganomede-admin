@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/userListItemView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/userListItemView.html");
 
   var UserListItemView = Backbone.View.extend({
 

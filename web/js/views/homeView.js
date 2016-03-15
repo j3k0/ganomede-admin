@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../text!../../templates/homeView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../templates/homeView.html");
   var UsersCollection = require("../users/models/usersCollection");
   var UserListView = require("../users/views/userListView");
 

@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/itemsListItemView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/itemsListItemView.html");
   var ajaxHandler = require("../../ajaxHandler");
   var ItemView = require("./itemView");
 

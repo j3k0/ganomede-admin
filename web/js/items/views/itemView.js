@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/modal.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/modal.html");
   var ItemModel = require("../models/itemModel");
   var ajaxHandler = require("../../ajaxHandler");
 

@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/itemsView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/itemsView.html");
   var ItemsListView = require("./itemsListView");
   var ItemModel = require("../models/itemModel");
   var ItemView = require("./itemView");

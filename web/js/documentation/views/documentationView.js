@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/documentationView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/documentationView.html");
 
   var documentation = require("../models/documentation");
   var ajaxHandler = require("../../ajaxHandler");

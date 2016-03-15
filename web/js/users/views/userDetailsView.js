@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/userDetailsView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/userDetailsView.html");
 
 
   var UserDetailsView = Backbone.View.extend({

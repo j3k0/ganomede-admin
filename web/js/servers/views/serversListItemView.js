@@ -1,6 +1,7 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/serversListItemView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/serversListItemView.html");
   var ajaxHandler = require("../../ajaxHandler");
 
   var ServersListItemView = Backbone.View.extend({

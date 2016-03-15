@@ -1,10 +1,11 @@
   'use strict';
 
-  var template = require("../../text!../../../templates/analyticsView.html");
-  var checkpointsTemplate = require("../../text!../../../templates/checkpointstable.html");
-  var newPlayersTemplate = require("../../text!../../../templates/newplayerstable.html");
-  var sessionsTemplate = require("../../text!../../../templates/sessionstable.html");
-  var usersTemplate = require("../../text!../../../templates/userstable.html");
+  var fs = require('fs');
+  var template = fs.readFileSync("../../../templates/analyticsView.html");
+  var checkpointsTemplate = fs.readFileSync("../../../templates/checkpointstable.html");
+  var newPlayersTemplate = fs.readFileSync("../../../templates/newplayerstable.html");
+  var sessionsTemplate = fs.readFileSync("../../../templates/sessionstable.html");
+  var usersTemplate = fs.readFileSync("../../../templates/userstable.html");
   var analytics = require("../models/analytics");
   var ServicesCollection = require("../../models/servicesCollection");
 

@@ -1,6 +1,7 @@
   'use strict';
 
-    var template = require("../text!../../templates/headerView.html");
+    var fs = require('fs');
+    var template = fs.readFileSync("../../templates/headerView.html");
 
     var HeaderView = Backbone.View.extend({
 
