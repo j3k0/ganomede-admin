@@ -6,6 +6,12 @@ This is controller of the application where we have :
     'use strict';
 
   var login = require("./models/login");
+  var utils = require('./utils');
+  var ajaxHandler = require("./ajaxHandler");
+  var ItemsView = utils.autodestroyView(require('./items/react-wrapper'));
+  var ItemsCollection = require("./items/models/itemsCollection");
+
+  var handleFetchError = ajaxHandler.errorFetchOrSave.bind(ajaxHandler);
 
   var Router = Backbone.Router.extend({
 
@@ -34,8 +40,7 @@ This is controller of the application where we have :
         this.renderView(new HomeView());
         this.setHeaderNavigation('home-menu');
         this.main.showLogout();
-        var ajaxHandler = require("./ajaxHandler");
-        var UsersCollection = require("./users/models/usersCollection");
+        // var UsersCollection = require("./users/models/usersCollection");
         // UsersCollection.singleton().fetch({
         //       reset: true,
         //       success: function(d){
@@ -61,13 +66,12 @@ This is controller of the application where we have :
       var UserDetailsView = require("./users/views/userDetailsView");
       var UserDetailedModel = require("./users/models/userDetailedModel");
       var model = new UserDetailedModel({id: id});
-      var ajaxHandler = require("./ajaxHandler");
       this.renderView(new UserDetailsView({model: model}));
       this.main.showLogout();
       model.getLocation();
       model.fetch({
         reset: true,
-        success: function(d){
+        success: function(/*d*/){
         },
         error: function(m, r){
           ajaxHandler.errorFetchOrSave(m, r);
@@ -77,18 +81,19 @@ This is controller of the application where we have :
 
     items: function(){
       login.isLoggedIn();
-      var ItemsView = require("./items/views/itemsView");
-      var ItemsCollection = require("./items/models/itemsCollection");
-      var ajaxHandler = require("./ajaxHandler");
-      this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
       this.setHeaderNavigation('items-menu');
+      this.renderView(new ItemsView({
+        collection: ItemsCollection.singleton()
+      }));
+
+      // var ItemsView = require("./items/views/itemsView");
+      // var ItemsCollection = require("./items/models/itemsCollection");
+      // var ajaxHandler = require("./ajaxHandler");
+      // this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
+
       ItemsCollection.singleton().fetch({
         reset: true,
-        success: function(d){
-        },
-        error: function(m, r){
-          ajaxHandler.errorFetchOrSave(m, r);
-        }
+        error: handleFetchError
       });
     },
 
@@ -97,11 +102,10 @@ This is controller of the application where we have :
       var MonitoringView = require("./servers/views/monitoringView");
       var ServersCollection = require("./servers/models/serversCollection");
       this.renderView(new MonitoringView({collection: ServersCollection.singleton()}));
-      var ajaxHandler = require("./ajaxHandler");
       this.setHeaderNavigation('servers-menu');
       ServersCollection.singleton().fetch({
         reset: true,
-        success: function(d){
+        success: function(/*d*/){
         },
         error: function(m, r){
           ajaxHandler.errorFetchOrSave(m, r);

@@ -17,4 +17,12 @@ router.get('/items', pipeTo({
   url: `${config.services.virtualcurrency}/auth/token/products`
 }));
 
+router.put('/item/:id', (req, res) => {
+  utils.safeRequestPipe({
+    method: 'put',
+    url: `${config.services.virtualcurrency}/products`,
+    json: req.body
+  }, res);
+});
+
 module.exports = router;
