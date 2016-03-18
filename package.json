@@ -9,7 +9,7 @@
     "npm": ">=2"
   },
   "scripts": {
-    "lint": "./node_modules/.bin/eslint {index,config,utils}.js server/"
+    "lint": "make lint"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,28 @@
+{
+  "env": {
+    "es6": false,
+    "node": false,
+    "browser": true,
+    "commonjs": true
+  },
+
+  "parserOptions": {
+    "ecmaVersion": 5,
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+
+  "globals": {
+    "$": true,
+    "_": true,
+    "__dirname": true,
+    "Backbone": true,
+    "Gauge": true,
+    "swal": true
+  },
+
+  "rules": {
+    "no-var": 0
+  }
+}
