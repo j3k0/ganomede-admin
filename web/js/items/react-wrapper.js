@@ -2,18 +2,14 @@
 
 var React = require('react');
 var ReactDOM = require('react-dom');
+var ReactBackbone = require('react.backbone');
 
-var Item = React.createClass({
-  getInitialState: function () {
-    return this.props.model.toJSON();
-  },
-
+var ItemComponent = React.createBackboneClass({
   onSave: function () {
     var json = this.refs.textarea.value;
     var obj = JSON.parse(json);
-    this.setState(obj);
     this.props.model.set(obj);
-    this.props.model.save()
+    this.props.model.save();
   },
 
   render: function () {
@@ -23,7 +19,7 @@ var Item = React.createClass({
           ref="textarea"
           className="form-control"
           rows="8"
-          defaultValue={JSON.stringify(this.state, null, 2)}
+          defaultValue={JSON.stringify(this.getModel().toJSON(), null, 2)}
         />
         <button onClick={this.onSave}>Save changes</button>
       </div>
@@ -31,31 +27,28 @@ var Item = React.createClass({
   }
 });
 
-var Items = React.createClass({
+var ItemsListComponent = React.createBackboneClass({
+  // Rerender on this collection events.
+  changeOptions: 'add remove reset',
+
   render: function () {
+    var itemsList = this.getCollection().map(function (item) {
+      return (<ItemComponent key={item.id} model={item} />);
+    });
+
     return (
       <div>
-        { this.props.collection.map(function (model) {
-            return (<Item key={model.id} model={model} />);
-          })
-        }
+        {itemsList}
       </div>
     );
   }
 });
 
-module.exports = Backbone.View.extend({
-  initialize: function () {
-    // FIXME
-    // For some reason addnig `reset` here
-    // results in creation of multiple React Nodes.
-    // If we remove `reset`, initial re-render does not happen
-    // (the one router initiates by collection.fetch({reset: true})).
-    this.collection.bind("add change remove reset", this.render, this);
-  },
+var ItemsListView = React.createFactory(ItemsListComponent);
 
+module.exports = Backbone.View.extend({
   render: function () {
-    ReactDOM.render(<Items collection={this.collection} />, this.el);
+    ReactDOM.render(ItemsListView({collection: this.collection}), this.el);
     return this;
   },
 
