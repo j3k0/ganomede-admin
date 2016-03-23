@@ -4,24 +4,60 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var ReactBackbone = require('react.backbone');
 var ItemModel = require('./models/itemModel');
+var CostsTable = require('./CostsTable.jsx');
 
 var ItemComponent = React.createBackboneClass({
+  getInitialState: function () {
+    return {
+      editing: this.props.hasOwnProperty('editing')
+        ? this.props.editing
+        : false
+    };
+  },
+
   onSave: function () {
     var item = this.getModel();
-    var attrs = JSON.parse(this.refs.textarea.value);
-    item.save(attrs, {method: item.isNew() ? 'POST' : 'PUT'});
+    var attrs = {
+      id: item.id || item.get('displayId'),
+      costs: this.refs.costs.getCosts()
+    };
+
+    item.save(attrs, {
+      method: item.isNew() ? 'POST' : 'PUT',
+      success: function (data) {
+        this.setState({editing: false});
+        console.log(data);
+      }.bind(this)
+    });
   },
 
   render: function () {
+    var item = this.getModel();
+    var displayId = item.get('id') || item.get('displayId');
+
     return (
-      <div>
-        <textarea
-          ref="textarea"
-          className="form-control"
-          rows="8"
-          defaultValue={JSON.stringify(this.getModel().toJSON(), null, 2)}
-        />
-        <button onClick={this.onSave}>Save changes</button>
+      <div className="panel panel-default">
+        <div className="panel-heading">
+          <h3 className="panel-title">{displayId}</h3>
+        </div>
+
+        <div className="panel-body">
+          <CostsTable ref='costs'
+                      initialCosts={item.get('costs')}
+                      initialEditing={this.state.editing}
+          />
+
+          { (function () {
+              if (/*this.state.editing*/true) {
+                return (
+                  <button className="btn btn-default" onClick={this.onSave}>
+                    Save changes
+                  </button>
+                );
+              }
+            }.call(this))
+          }
+        </div>
       </div>
     );
   }
@@ -32,13 +68,28 @@ var ItemsListComponent = React.createBackboneClass({
   changeOptions: 'add remove reset',
 
   onAddItem: function () {
-    this.getCollection().push(new ItemModel());
+    // TODO
+    // add pretty dialog window.
+    //
+    // We need displayId so isNew() will return true and model
+    // will be save and not updated. But we also need to
+    // display something in the view, so put it into displayId attr.
+    var displayId = prompt('New Item ID');
+    if (!displayId)
+      return;
+
+    this.getCollection().push(new ItemModel({
+      displayId: displayId
+    }));
   },
 
   render: function () {
     var itemsList = this.getCollection().map(function (item, idx) {
       var key = [idx, item.id].join(':');
-      return (<ItemComponent key={key} model={item} />);
+
+      return (
+        <ItemComponent key={key} model={item} editing={item.isNew()} />
+      );
     });
 
     return (
