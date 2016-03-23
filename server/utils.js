@@ -38,6 +38,15 @@ const safeRequestPipe = function (options, dst) {
   });
 }());
 
+/**
+ * Cloning of plain objects (Arrays, Object, other standard JS instances).
+ * Won't work with descendat classes.
+ */
+const clonePlainObject = function (obj) {
+  return JSON.parse(JSON.stringify(obj));
+};
+
 module.exports = {
-  safeRequestPipe
+  safeRequestPipe,
+  clonePlainObject
 };

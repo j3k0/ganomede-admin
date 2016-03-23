@@ -12,16 +12,26 @@ const pipeTo = (options) => {
   };
 };
 
+// Build a body to pass upstream to vcurrency server:
+//   - add `secret`, if not pressent.
+const payloadToPipe = (expressBody) => {
+  const payload = utils.clonePlainObject(expressBody);
+  payload.secret = payload.secret || process.env.API_SECRET;
+  return payload;
+};
+
+// List items.
 router.get('/items', pipeTo({
   method: 'get',
   url: `${config.services.virtualcurrency}/auth/token/products`
 }));
 
+// Update item.
 router.put('/item/:id', (req, res) => {
   utils.safeRequestPipe({
     method: 'put',
     url: `${config.services.virtualcurrency}/products`,
-    json: req.body
+    json: payloadToPipe(req.body)
   }, res);
 });
 
