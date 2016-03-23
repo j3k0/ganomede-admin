@@ -3,13 +3,13 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var ReactBackbone = require('react.backbone');
+var ItemModel = require('./models/itemModel');
 
 var ItemComponent = React.createBackboneClass({
   onSave: function () {
-    var json = this.refs.textarea.value;
-    var obj = JSON.parse(json);
-    this.props.model.set(obj);
-    this.props.model.save();
+    var item = this.getModel();
+    var attrs = JSON.parse(this.refs.textarea.value);
+    item.save(attrs, {method: item.isNew() ? 'POST' : 'PUT'});
   },
 
   render: function () {
@@ -31,14 +31,20 @@ var ItemsListComponent = React.createBackboneClass({
   // Rerender on this collection events.
   changeOptions: 'add remove reset',
 
+  onAddItem: function () {
+    this.getCollection().push(new ItemModel());
+  },
+
   render: function () {
-    var itemsList = this.getCollection().map(function (item) {
-      return (<ItemComponent key={item.id} model={item} />);
+    var itemsList = this.getCollection().map(function (item, idx) {
+      var key = [idx, item.id].join(':');
+      return (<ItemComponent key={key} model={item} />);
     });
 
     return (
       <div>
         {itemsList}
+        <button onClick={this.onAddItem}>Add new Item</button>
       </div>
     );
   }

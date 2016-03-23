@@ -20,19 +20,24 @@ const payloadToPipe = (expressBody) => {
   return payload;
 };
 
+const pipeToProducts = (method) => {
+  return (req, res) => {
+    utils.safeRequestPipe({
+      method,
+      url: `${config.services.virtualcurrency}/products`,
+      json: payloadToPipe(req.body)
+    }, res);
+  };
+};
+
 // List items.
 router.get('/items', pipeTo({
   method: 'get',
   url: `${config.services.virtualcurrency}/auth/token/products`
 }));
 
-// Update item.
-router.put('/item/:id', (req, res) => {
-  utils.safeRequestPipe({
-    method: 'put',
-    url: `${config.services.virtualcurrency}/products`,
-    json: payloadToPipe(req.body)
-  }, res);
-});
+// Create or updated item.
+router.post('/items/:id', pipeToProducts('post'));
+router.put('/items/:id', pipeToProducts('put'));
 
 module.exports = router;
