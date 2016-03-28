@@ -42,6 +42,7 @@
     "brfs": "^1.4.3",
     "browserify": "^13.0.0",
     "eslint": "^2.1.0",
+    "eslint-plugin-react": "^4.2.3",
     "reactify": "^1.1.1"
   }
 }

@@ -2,9 +2,9 @@
 
 var React = require('react');
 var ReactDOM = require('react-dom');
-var ReactBackbone = require('react.backbone');
 var ItemModel = require('./models/itemModel');
 var CostsTable = require('./CostsTable.jsx');
+require('react.backbone');
 
 var ItemComponent = React.createBackboneClass({
   getInitialState: function () {
@@ -24,9 +24,8 @@ var ItemComponent = React.createBackboneClass({
 
     item.save(attrs, {
       method: item.isNew() ? 'POST' : 'PUT',
-      success: function (data) {
+      success: function () {
         this.setState({editing: false});
-        console.log(data);
       }.bind(this)
     });
   },
@@ -47,16 +46,9 @@ var ItemComponent = React.createBackboneClass({
                       initialEditing={this.state.editing}
           />
 
-          { (function () {
-              if (/*this.state.editing*/true) {
-                return (
-                  <button className="btn btn-default" onClick={this.onSave}>
-                    Save changes
-                  </button>
-                );
-              }
-            }.call(this))
-          }
+          <button className="btn btn-default" onClick={this.onSave}>
+            Save changes
+          </button>
         </div>
       </div>
     );
