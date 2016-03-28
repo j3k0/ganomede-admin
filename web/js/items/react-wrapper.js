@@ -42,6 +42,7 @@ var ItemComponent = React.createBackboneClass({
 
         <div className="panel-body">
           <CostsTable ref='costs'
+                      availableCurrencies={this.props.availableCurrencies}
                       initialCosts={item.get('costs')}
                       initialEditing={this.state.editing}
           />
@@ -76,11 +77,16 @@ var ItemsListComponent = React.createBackboneClass({
   },
 
   render: function () {
-    var itemsList = this.getCollection().map(function (item, idx) {
+    var collection = this.getCollection();
+    var itemsList = collection.map(function (item, idx) {
       var key = [idx, item.id].join(':');
 
       return (
-        <ItemComponent key={key} model={item} editing={item.isNew()} />
+        <ItemComponent key={key}
+          model={item}
+          editing={item.isNew()}
+          availableCurrencies={collection.currencies}
+        />
       );
     });
 

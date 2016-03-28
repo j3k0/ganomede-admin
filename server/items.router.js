@@ -2,6 +2,7 @@
 
 const url = require('url');
 const express = require('express');
+const request = require('request');
 const utils = require('./utils');
 const config = require('../config');
 
@@ -12,12 +13,6 @@ const upstreamUrl = url.format({
   port: config.services.virtualcurrency.port,
   pathname: '/virtualcurrency/v1'
 });
-
-const pipeTo = (options) => {
-  return (req, res) => {
-    utils.safeRequestPipe[options.method](options.url, res);
-  };
-};
 
 // Build a body to pass upstream to vcurrency server:
 //   - add `secret`, if not pressent.
@@ -37,16 +32,27 @@ const pipeToProducts = (method) => {
   };
 };
 
-// List currencies.
-router.get('/items/_currencies', (req, res) => {
-  res.json(config.services.virtualcurrency.currencies);
-});
-
 // List items.
-router.get('/items', pipeTo({
-  method: 'get',
-  url: `${upstreamUrl}/auth/token/products`
-}));
+router.get('/items', (req, res, next) => {
+  const options = {
+    method: 'get',
+    url: `${upstreamUrl}/auth/token/products`,
+    json: true
+  };
+
+  request(options, (err, response, items) => {
+    if (err)
+      return next(err);
+
+    // TODO
+    // if (response.statusCode !== 200)
+
+    res.json({
+      items,
+      currencies: config.services.virtualcurrency.currencies
+    });
+  });
+});
 
 // Create or updated item.
 router.post('/items/:id', pipeToProducts('post'));

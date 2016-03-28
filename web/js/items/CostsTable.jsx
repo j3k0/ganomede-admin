@@ -3,50 +3,56 @@
 var React = require('react');
 var ArrayView = require('./ArrayView.jsx');
 
-var CostsTableCell = function (props) {
-  // return (
-  //   <td>
-  //     { props.editable
-  //         ? <input type='text'
-  //                  value={props.value}
-  //                  placeholder={props.placeholder}
-  //                  onChange={function (event) {
-  //                    props.onChange(event.target.value);
-  //                  }}
-  //           />
-  //         : props.value
-  //     }
-  //   </td>
-  // );
+var CurrencySelector = function (props) {
+  var options = props.availableCurrencies.map(function (currency) {
+    return (
+      <option key={currency}
+        value={currency}>{currency}
+      </option>
+    );
+  });
 
   return (
-    <td>
-    <input type='text' value={props.value} onChange={function (event) {props.onChange(event.target.value)}} />
-    </td>
+    <td><select
+      value={props.selectedCurrency}
+      onChange={event => props.onChange(event.target.value)}
+    >
+      {options}
+    </select></td>
   );
 };
 
 var CostsTableRow = function (props) {
   return (
     <tr>
-      <CostsTableCell placeholder='Currency' value={props.currency}
-                    editable={props.editable}
-                    onChange={function (newCurrency) {
-                      props.onChange({
-                        currency: newCurrency,
-                        amount: props.amount
-                      });
-                    }}
-      />
-      <CostsTableCell placeholder='Amount' value={props.amount}
-                    editable={props.editable}
-                    onChange={function (newAmount) {
-                      props.onChange({
-                        currency: props.currency,
-                        amount: parseInt(newAmount, 10) || 0
-                      });
-                    }}
-      />
+      <td>
+        <CurrencySelector
+          selectedCurrency={props.currency}
+          availableCurrencies={props.availableCurrencies}
+          onChange={function (newCurrency) {
+            props.onChange({
+              currency: newCurrency,
+              amount: props.amount,
+              availableCurrencies: props.availableCurrencies
+            });
+          }}
+        />
+      </td>
+
+      <td>
+        <input
+          type='text'
+          value={props.amount}
+          onChange={function (event) {
+            props.onChange({
+              currency: props.currency,
+              amount: parseInt(event.target.value, 10),
+              availableCurrencies: props.availableCurrencies
+            });
+          }}
+        />
+      </td>
+
       <td>
         <button onClick={props.onRemove}>Remove</button>
       </td>
@@ -62,9 +68,10 @@ var CostsTable = React.createClass({
       costs: Object.keys(costs).map(function (currency) {
         return {
           currency: currency,
-          amount: costs[currency]
+          amount: costs[currency],
+          availableCurrencies: this.props.availableCurrencies
         }
-      }),
+      }, this),
       editing: false
     }
   },
@@ -85,7 +92,7 @@ var CostsTable = React.createClass({
             Container='tbody'
             Component={CostsTableRow} />
         </table>
-        <button onClick={event => this.refs.arrayView.onAdd({})}>
+        <button onClick={event => this.refs.arrayView.onAdd({availableCurrencies: this.props.availableCurrencies})}>
           Add new
         </button>
       </div>
