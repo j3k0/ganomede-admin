@@ -71,8 +71,7 @@ var CostsTable = React.createClass({
           amount: costs[currency],
           availableCurrencies: this.props.availableCurrencies
         }
-      }, this),
-      editing: false
+      }, this)
     }
   },
 

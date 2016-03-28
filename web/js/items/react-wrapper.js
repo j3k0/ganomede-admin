@@ -7,14 +7,6 @@ var CostsTable = require('./CostsTable.jsx');
 require('react.backbone');
 
 var ItemComponent = React.createBackboneClass({
-  getInitialState: function () {
-    return {
-      editing: this.props.hasOwnProperty('editing')
-        ? this.props.editing
-        : false
-    };
-  },
-
   onSave: function () {
     var item = this.getModel();
     var attrs = {
@@ -25,7 +17,8 @@ var ItemComponent = React.createBackboneClass({
     item.save(attrs, {
       method: item.isNew() ? 'POST' : 'PUT',
       success: function () {
-        this.setState({editing: false});
+        // TODO
+        // notify user of the XHR result.
       }.bind(this)
     });
   },
@@ -44,7 +37,6 @@ var ItemComponent = React.createBackboneClass({
           <CostsTable ref='costs'
                       availableCurrencies={this.props.availableCurrencies}
                       initialCosts={item.get('costs')}
-                      initialEditing={this.state.editing}
           />
 
           <button className="btn btn-default" onClick={this.onSave}>
@@ -84,7 +76,6 @@ var ItemsListComponent = React.createBackboneClass({
       return (
         <ItemComponent key={key}
           model={item}
-          editing={item.isNew()}
           availableCurrencies={collection.currencies}
         />
       );
