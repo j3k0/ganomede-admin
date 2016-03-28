@@ -28,7 +28,17 @@ const config = {
   services: {
     virtualcurrency: {
       host: process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR || 'localhost',
-      port: +process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_PORT || 8080
+      port: +process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_PORT || 8080,
+      currencies: (function () {
+        const envName = 'VIRTUAL_CURRENCY_CURRENCY_CODES';
+        const has = process.env.hasOwnProperty(envName);
+        const currencies = String(process.env[envName]).split(',');
+
+        if (has && currencies.length > 1)
+          return currencies;
+
+        throw new Error(`Please provide currency codes via ${envName} env variable.`);
+      }())
     }
   }
 };
