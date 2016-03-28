@@ -37,6 +37,11 @@ const pipeToProducts = (method) => {
   };
 };
 
+// List currencies.
+router.get('/items/_currencies', (req, res) => {
+  res.json(config.services.virtualcurrency.currencies);
+});
+
 // List items.
 router.get('/items', pipeTo({
   method: 'get',
