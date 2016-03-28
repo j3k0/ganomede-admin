@@ -26,7 +26,10 @@ const config = {
   },
 
   services: {
-    virtualcurrency: process.env.LINK_VIRTUAL_CURRENCY || 'http://localhost:8000/virtualcurrency/v1'
+    virtualcurrency: {
+      host: process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR || 'localhost',
+      port: +process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_PORT || 8080
+    }
   }
 };
 
