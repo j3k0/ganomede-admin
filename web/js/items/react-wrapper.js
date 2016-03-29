@@ -16,10 +16,31 @@ var ItemComponent = React.createBackboneClass({
 
     item.save(attrs, {
       method: item.isNew() ? 'POST' : 'PUT',
-      success: function () {
-        // TODO
-        // notify user of the XHR result.
-      }.bind(this)
+      success: window.swal.bind(null, 'Item saved!', null, 'success'),
+      error: function (model, response, options) {
+        var error = options.xhr.responseJSON;
+        var isUpstream = error && error.name === 'UpstreamError';
+        var errorText = isUpstream
+          ? error.reason
+          : (options.xhr.responseJSON || options.xhr.responseText);
+
+        var errorTitle = isUpstream
+          ? error.message
+          : 'Server Error';
+
+        var body = $('<div>')
+          .append($('<div>').text(errorTitle))
+          .append('<br/>')
+          .append($('<pre class="well">').css('text-align', 'left').text(JSON.stringify(errorText, null, 2)))
+          .html();
+
+        swal({
+          type: 'error',
+          title: 'Failed to Save Item',
+          text: '<div>' + body + '</div>',
+          html: true
+        });
+      }
     });
   },
 
