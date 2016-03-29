@@ -46,7 +46,7 @@ var CostsTableRow = function (props) {
           onChange={function (event) {
             props.onChange({
               currency: props.currency,
-              amount: parseInt(event.target.value, 10),
+              amount: parseInt(event.target.value, 10) || 0,
               availableCurrencies: props.availableCurrencies
             });
           }}

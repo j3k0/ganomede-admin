@@ -74,19 +74,22 @@ var ItemsListComponent = React.createBackboneClass({
   changeOptions: 'add remove reset',
 
   onAddItem: function () {
-    // TODO
-    // add pretty dialog window.
-    //
-    // We need displayId so isNew() will return true and model
-    // will be save and not updated. But we also need to
-    // display something in the view, so put it into displayId attr.
-    var displayId = prompt('New Item ID');
-    if (!displayId)
-      return;
+    swal({
+      title: 'Adding New Item',
+      text: 'Provide an ID for the item:',
+      type: 'input',
+      showCancelButton: true
+    }, function (displayId) {
+      // We need displayId so isNew() will return true and model
+      // will be save and not updated. But we also need to
+      // display something in the view, so put it into displayId attr.
+      if (!displayId)
+        return;
 
-    this.getCollection().push(new ItemModel({
-      displayId: displayId
-    }));
+      this.getCollection().push(new ItemModel({
+        displayId: displayId
+      }));
+    }.bind(this));
   },
 
   render: function () {
