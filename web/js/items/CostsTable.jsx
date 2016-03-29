@@ -13,12 +13,12 @@ var CurrencySelector = function (props) {
   });
 
   return (
-    <td><select
+    <select
       value={props.selectedCurrency}
       onChange={event => props.onChange(event.target.value)}
     >
       {options}
-    </select></td>
+    </select>
   );
 };
 
