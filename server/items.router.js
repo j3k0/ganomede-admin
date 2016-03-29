@@ -39,7 +39,7 @@ const pipeToProducts = (method) => {
 router.get('/items', (req, res) => {
   const options = {
     method: 'get',
-    url: '/auth/token/products',
+    url: `/auth/${process.env.API_SECRET}/products`,
     qs: {limit: 500}
   };
 
