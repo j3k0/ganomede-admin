@@ -20,12 +20,12 @@ This is controller of the application where we have :
       "": "login",
       "home": "home",
       "login": "login",
-      "user/:id": "userDetails",
+      // "user/:id": "userDetails",
       "items": "items",
-      "servers": "servers",
-      "analytics": "analytics",
-      "documentation": "documentation",
-      "documentation/:id": "page",
+      // "servers": "servers",
+      // "analytics": "analytics",
+      // "documentation": "documentation",
+      // "documentation/:id": "page",
       "logout": "logout"
     },
 
