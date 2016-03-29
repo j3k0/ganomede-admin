@@ -36,7 +36,7 @@ describe('utils', function () {
         expect(err).to.be.an(Error);
         expect(err.name).to.be('UpstreamError');
         expect(err.message).to.match(/HTTP 404/);
-        expect(err.reason).to.match(/Not Found/);
+        expect(err.reason).to.be.a('string');
         done();
       });
     });

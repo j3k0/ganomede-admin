@@ -1,13 +1,11 @@
 'use strict';
 
-const url = require('url');
 const express = require('express');
-const request = require('request');
 const utils = require('./utils');
 const config = require('../config');
 
 const router = new express.Router();
-const upstreamUrl = url.format({
+const upstream = new utils.Upstream({
   protocol: 'http',
   hostname: config.services.virtualcurrency.host,
   port: config.services.virtualcurrency.port,
@@ -24,28 +22,29 @@ const payloadToPipe = (expressBody) => {
 
 const pipeToProducts = (method) => {
   return (req, res) => {
-    utils.safeRequestPipe({
+    upstream.request({
       method,
-      url: `${upstreamUrl}/products`,
-      json: payloadToPipe(req.body)
-    }, res);
+      url: '/products',
+      body: payloadToPipe(req.body)
+    }, (err, body) => {
+      if (err)
+        return res.status(500).json(err);
+
+      res.json(body);
+    });
   };
 };
 
 // List items.
-router.get('/items', (req, res, next) => {
+router.get('/items', (req, res) => {
   const options = {
     method: 'get',
-    url: `${upstreamUrl}/auth/token/products`,
-    json: true
+    url: '/auth/token/products'
   };
 
-  request(options, (err, response, items) => {
+  upstream.request(options, (err, items) => {
     if (err)
-      return next(err);
-
-    // TODO
-    // if (response.statusCode !== 200)
+      return res.status(500).json(err);
 
     res.json({
       items,

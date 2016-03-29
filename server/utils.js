@@ -63,10 +63,10 @@ class Upstream {
       : formatted;
   }
 
-  createError (reason) {
+  createError (reason, body) {
     const error = new Error(String(reason));
     error.name = 'UpstreamError';
-    error.reason = reason;
+    error.reason = body || reason;
     return error;
   }
 
@@ -85,7 +85,7 @@ class Upstream {
       // Check status code is 2xx
       if (!/^2\d{2}$/.test(String(res.statusCode))) {
         const reason = `HTTP ${res.statusCode}: ${http.STATUS_CODES[res.statusCode]}`;
-        return callback(this.createError(reason));
+        return callback(this.createError(reason, body));
       }
 
       callback(null, body);
