@@ -39,7 +39,8 @@ const pipeToProducts = (method) => {
 router.get('/items', (req, res) => {
   const options = {
     method: 'get',
-    url: '/auth/token/products'
+    url: '/auth/token/products',
+    qs: {limit: 500}
   };
 
   upstream.request(options, (err, items) => {
