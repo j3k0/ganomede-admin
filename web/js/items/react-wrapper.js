@@ -9,13 +9,14 @@ require('react.backbone');
 var ItemComponent = React.createBackboneClass({
   onSave: function () {
     var item = this.getModel();
+    var creatingNewItem = item.isNew();
     var attrs = {
       id: item.id || item.get('displayId'),
       costs: this.refs.costs.getCosts()
     };
 
     item.save(attrs, {
-      method: item.isNew() ? 'POST' : 'PUT',
+      method: creatingNewItem ? 'POST' : 'PUT',
       success: window.swal.bind(null, 'Item saved!', null, 'success'),
       error: function (model, response, options) {
         var error = options.xhr.responseJSON;
@@ -33,6 +34,12 @@ var ItemComponent = React.createBackboneClass({
           .append('<br/>')
           .append($('<pre class="well">').css('text-align', 'left').text(JSON.stringify(errorText, null, 2)))
           .html();
+
+        // In case we failed to create new item,
+        // unset its id, so we will "create" it again,
+        // and not "update" on subsequent "Save" clicks.
+        if (creatingNewItem)
+          item.unset('id');
 
         swal({
           type: 'error',
