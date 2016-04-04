@@ -3,6 +3,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var ItemModel = require('./models/itemModel');
+var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
 require('react.backbone');
 
@@ -123,14 +124,8 @@ var ItemsListComponent = React.createBackboneClass({
 
 var ItemsListView = React.createFactory(ItemsListComponent);
 
-module.exports = Backbone.View.extend({
-  render: function () {
-    ReactDOM.render(ItemsListView({collection: this.collection}), this.el);
-    return this;
-  },
-
-  destroy: function () {
-    if (this.el)
-      ReactDOM.unmountComponentAtNode(this.el);
-  }
-});
+module.exports = function ItemsList (/*props*/) {
+  var collection = ItemsCollection.singleton();
+  collection.fetch({reset: true});
+  return ItemsListView({collection: collection});
+};

@@ -1,3 +1,10 @@
 'use strict';
 
-require('./app').initialize();
+var React = require('react');
+var ReactDOM = require('react-dom');
+var GanomedeAdminRouter = require('./router');
+
+ReactDOM.render(
+  <GanomedeAdminRouter />,
+  document.getElementById('app')
+);
