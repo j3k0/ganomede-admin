@@ -1,7 +1,7 @@
-define(function (require) {
   'use strict';
 
-    var template = require("../text!../../templates/headerView.html");
+    var fs = require('fs');
+    var template = fs.readFileSync(__dirname + "/../../templates/headerView.html", 'utf8');
 
     var HeaderView = Backbone.View.extend({
 
@@ -30,5 +30,4 @@ define(function (require) {
       }
 
     });
-    return HeaderView;
-});
+    module.exports = HeaderView;

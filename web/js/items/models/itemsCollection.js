@@ -2,16 +2,19 @@
 The collection of all the items of a country.
 The collection is fetched through the api following the country code.
 */
-define(function (require) {
   'use strict';
 
   var ItemModel = require("./itemModel.js");
-  
+
   var ItemsCollection = Backbone.Collection.extend({
     model: ItemModel,
+    url: '../api/items',
 
-    initialize: function(models, options) {
-      this.url = '../api/items' ;
+    parse: function (result) {
+      // Server responds with list of currencies and items.
+      // Remember currencies and return items as attributes for models.
+      this.currencies = result.currencies;
+      return result.items;
     }
   });
 
@@ -25,6 +28,4 @@ define(function (require) {
     return all;
   };
 
-  return ItemsCollection;
-
-});
+  module.exports = ItemsCollection;

@@ -3,10 +3,15 @@ This is controller of the application where we have :
 - Routing between the different screens of the app
 - First rendering of tabView and LodadingView
 */
-define(function (require) {
     'use strict';
 
   var login = require("./models/login");
+  var utils = require('./utils');
+  var ajaxHandler = require("./ajaxHandler");
+  var ItemsView = utils.autodestroyView(require('./items/react-wrapper'));
+  var ItemsCollection = require("./items/models/itemsCollection");
+
+  var handleFetchError = ajaxHandler.errorFetchOrSave.bind(ajaxHandler);
 
   var Router = Backbone.Router.extend({
 
@@ -15,12 +20,12 @@ define(function (require) {
       "": "login",
       "home": "home",
       "login": "login",
-      "user/:id": "userDetails",
+      // "user/:id": "userDetails",
       "items": "items",
-      "servers": "servers",
-      "analytics": "analytics",
-      "documentation": "documentation",
-      "documentation/:id": "page",
+      // "servers": "servers",
+      // "analytics": "analytics",
+      // "documentation": "documentation",
+      // "documentation/:id": "page",
       "logout": "logout"
     },
 
@@ -28,17 +33,16 @@ define(function (require) {
     initialize: function(options) {
       this.main = options.main;
     },
-     
+
     home: function() {
         login.isLoggedIn();
         var HomeView = require("./views/homeView");
         this.renderView(new HomeView());
         this.setHeaderNavigation('home-menu');
         this.main.showLogout();
-        var ajaxHandler = require("./ajaxHandler");
-        var UsersCollection = require("./users/models/usersCollection");
+        // var UsersCollection = require("./users/models/usersCollection");
         // UsersCollection.singleton().fetch({
-        //       reset: true,                
+        //       reset: true,
         //       success: function(d){
         //       },
         //       error: function(m, r){
@@ -62,13 +66,12 @@ define(function (require) {
       var UserDetailsView = require("./users/views/userDetailsView");
       var UserDetailedModel = require("./users/models/userDetailedModel");
       var model = new UserDetailedModel({id: id});
-      var ajaxHandler = require("./ajaxHandler");
       this.renderView(new UserDetailsView({model: model}));
       this.main.showLogout();
       model.getLocation();
       model.fetch({
-        reset: true,                
-        success: function(d){
+        reset: true,
+        success: function(/*d*/){
         },
         error: function(m, r){
           ajaxHandler.errorFetchOrSave(m, r);
@@ -78,18 +81,19 @@ define(function (require) {
 
     items: function(){
       login.isLoggedIn();
-      var ItemsView = require("./items/views/itemsView");
-      var ItemsCollection = require("./items/models/itemsCollection");
-      var ajaxHandler = require("./ajaxHandler");
-      this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
       this.setHeaderNavigation('items-menu');
+      this.renderView(new ItemsView({
+        collection: ItemsCollection.singleton()
+      }));
+
+      // var ItemsView = require("./items/views/itemsView");
+      // var ItemsCollection = require("./items/models/itemsCollection");
+      // var ajaxHandler = require("./ajaxHandler");
+      // this.renderView(new ItemsView({collection: ItemsCollection.singleton()}));
+
       ItemsCollection.singleton().fetch({
-        reset: true,                
-        success: function(d){
-        },
-        error: function(m, r){
-          ajaxHandler.errorFetchOrSave(m, r);
-        }
+        reset: true,
+        error: handleFetchError
       });
     },
 
@@ -98,11 +102,10 @@ define(function (require) {
       var MonitoringView = require("./servers/views/monitoringView");
       var ServersCollection = require("./servers/models/serversCollection");
       this.renderView(new MonitoringView({collection: ServersCollection.singleton()}));
-      var ajaxHandler = require("./ajaxHandler");
       this.setHeaderNavigation('servers-menu');
       ServersCollection.singleton().fetch({
-        reset: true,                
-        success: function(d){
+        reset: true,
+        success: function(/*d*/){
         },
         error: function(m, r){
           ajaxHandler.errorFetchOrSave(m, r);
@@ -141,6 +144,4 @@ define(function (require) {
 
   });
 
-    return Router;
-});
-
+  module.exports = Router;

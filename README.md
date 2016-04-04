@@ -6,6 +6,7 @@ Admin panel for Triominos
 
 # Env variables
 
+ - `HOST` and `PORT` for interface/port to listen on
  - `ADMIN_USERNAME` --> administrator username
  - `ADMIN_PASSWORD` --> administrator password
  - `ADMIN_TOKEN` (optional) --> authentication token
@@ -37,6 +38,17 @@ This project use couchdb as database.
  - `COUCHDB_USER` 	   --> couchdb username
  - `COUCHDB_PASSWORD` --> couchdb password
  - `COUCHDB_DB`       --> couchdb database name
+
+## Other microservices
+
+Most of functionality depends on interacting with other ganomede
+microservices. Provide links to them with env vars (otherwise will
+deafult to locally running intstance):
+
+ - [virtual currency module](https://github.com/j3k0/ganomede-virtualcurrency)
+   - `VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR` virtual currecny host;
+   - `VIRTUAL_CURRENCY_PORT_8080_TCP_PORT` virtual currency port;
+   - `VIRTUAL_CURRENCY_CURRENCY_CODES` comma-separated list of allowed currency codes for item purchases (e.g.: `gold,silver,copper`).
 
 # Run
 run make using these env variables.

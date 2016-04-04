@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-define(function (require) {
     'use strict';
 
     var MainView = require('./mainView');
@@ -40,5 +39,4 @@ define(function (require) {
         }
     };
 
-return app;
-});
+module.exports = app;

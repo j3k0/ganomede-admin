@@ -1,29 +1,61 @@
 'use strict';
 
 const express = require('express');
-const request = require('request');
+const utils = require('./utils');
+const config = require('../config');
 
-const API_TEMP_URL = process.env.API_TEMP_URL || "http://private-194a93-ganomedeadmin.apiary-mock.com";
 const router = new express.Router();
-
-router.delete('/item/:id', function (req, res) {
-    request.del(API_TEMP_URL + req.url).pipe(res);
+const upstream = new utils.Upstream({
+  protocol: 'http',
+  hostname: config.services.virtualcurrency.host,
+  port: config.services.virtualcurrency.port,
+  pathname: '/virtualcurrency/v1'
 });
 
-router.get('/items/:name', function (req, res) {
-    request(`${API_TEMP_URL}/api/items/${req.params.name}`).pipe(res);
+// Build a body to pass upstream to vcurrency server:
+//   - add `secret`, if not pressent.
+const payloadToPipe = (expressBody) => {
+  const payload = utils.clonePlainObject(expressBody);
+  payload.secret = payload.secret || process.env.API_SECRET;
+  return payload;
+};
+
+const pipeToProducts = (method) => {
+  return (req, res) => {
+    upstream.request({
+      method,
+      url: '/products',
+      body: payloadToPipe(req.body)
+    }, (err, body) => {
+      if (err)
+        return res.status(500).json(err);
+
+      res.json(body);
+    });
+  };
+};
+
+// List items.
+router.get('/items', (req, res) => {
+  const options = {
+    method: 'get',
+    url: `/auth/${process.env.API_SECRET}/products`,
+    qs: {limit: 500}
+  };
+
+  upstream.request(options, (err, items) => {
+    if (err)
+      return res.status(500).json(err);
+
+    res.json({
+      items,
+      currencies: config.services.virtualcurrency.currencies
+    });
+  });
 });
 
-router.get('/items', function (req, res) {
-  request(`${API_TEMP_URL}/api/items`).pipe(res);
-});
-
-router.put('/item/:id', function (req, res) {
-  request.put(`${API_TEMP_URL}/api/item/${req.params.id}`).pipe(res);
-});
-
-router.post('/item', function (req, res) {
-  request.post(API_TEMP_URL + req.url).pipe(res);
-});
+// Create or updated item.
+router.post('/items/:id', pipeToProducts('post'));
+router.put('/items/:id', pipeToProducts('put'));
 
 module.exports = router;

@@ -9,7 +9,8 @@
     "npm": ">=2"
   },
   "scripts": {
-    "lint": "./node_modules/.bin/eslint {index,config,utils}.js server/"
+    "test": "make test",
+    "lint": "make lint"
   },
   "repository": {
     "type": "git",
@@ -31,12 +32,20 @@
     "less": "^2.2.0",
     "passport": "^0.2.1",
     "passport-local": "^1.0.0",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
+    "react.backbone": "^0.8.0",
     "request": "^2.55.0",
-    "requirejs": "^2.1.15",
     "sweetalert": "~0.4.0",
     "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "eslint": "^2.1.0"
+    "brfs": "^1.4.3",
+    "browserify": "^13.0.0",
+    "eslint": "^2.1.0",
+    "eslint-plugin-react": "^4.2.3",
+    "expect.js": "^0.3.1",
+    "mocha": "^2.4.5",
+    "reactify": "^1.1.1"
   }
 }

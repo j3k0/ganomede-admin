@@ -1,5 +1,5 @@
-run: node_modules
-	./node_modules/.bin/http-server web
-
-node_modules:
-	npm install
+build:
+	../node_modules/.bin/browserify \
+		-t [ reactify --es6 --target es5 ] \
+		-t brfs \
+		js/entrypoint.js > bundle.js
