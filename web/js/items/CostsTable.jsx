@@ -91,7 +91,13 @@ var CostsTable = React.createClass({
             Container='tbody'
             Component={CostsTableRow} />
         </table>
-        <button onClick={event => this.refs.arrayView.onAdd({availableCurrencies: this.props.availableCurrencies})}>
+        <button onClick={event => {
+          this.refs.arrayView.onAdd({
+            currency: this.props.availableCurrencies[0],
+            amount: 0,
+            availableCurrencies: this.props.availableCurrencies
+          });
+        }}>
           Add new
         </button>
       </div>
