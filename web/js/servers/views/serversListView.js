@@ -1,4 +1,3 @@
-define(function (require) {
   'use strict';
 
   var ServersListItemView = require("./serversListItemView");
@@ -25,6 +24,4 @@ define(function (require) {
         return this;
     }
   });
-return ServersListView;
-
-});
+module.exports = ServersListView;

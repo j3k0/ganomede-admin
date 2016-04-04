@@ -1,24 +1,7 @@
-define(function (require) {
-  'use strict';
- 
+'use strict';
 
-  var ItemModel = Backbone.Model.extend({
-
-    idAttribute: 'id',
-    urlRoot: '../api/item',
-
-    defaults: {
-      id: '',
-      title: '',
-      description: '',
-      price: '',
-      currency: ''
-    },
-
-    initialize:function () {
-    }
-
-  });
-  
-  return ItemModel;
+var ItemModel = Backbone.Model.extend({
+  urlRoot: '../api/items'
 });
+
+module.exports = ItemModel;

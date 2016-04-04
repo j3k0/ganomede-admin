@@ -2,7 +2,6 @@
 The collection of all the items of a country.
 The collection is fetched through the api following the country code.
 */
-define(function (require) {
   'use strict';
 
   var ajaxHandler = require("../ajaxHandler");
@@ -19,7 +18,7 @@ define(function (require) {
 
   });
 
-  
+
   var ServicesCollection = Backbone.Collection.extend({
     model: SrevicesModel,
 
@@ -37,17 +36,15 @@ define(function (require) {
       all[key] = services;
     }
     services.fetch({
-              reset: true,                
+              reset: true,
               success: function(d){
               },
               error: function(m, r){
                 ajaxHandler.errorFetchOrSave(m, r);
               }
             });
-    
+
     return services;
   };
 
-  return ServicesCollection;
-
-});
+  module.exports = ServicesCollection;

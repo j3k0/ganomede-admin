@@ -1,7 +1,7 @@
-define(function (require) {
   'use strict';
 
-  var template = require("../../text!../../../templates/documentationView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../../templates/documentationView.html", 'utf8');
 
   var documentation = require("../models/documentation");
   var ajaxHandler = require("../../ajaxHandler");
@@ -29,10 +29,10 @@ define(function (require) {
     upload: function(e){
       console.log("upload");
       e.preventDefault();
-      var file = this.$('.file-input').val(); 
-      if(file=='') 
+      var file = this.$('.file-input').val();
+      if(file=='')
       {
-        swal('Oops!', 'Please choose a file', 'error'); 
+        swal('Oops!', 'Please choose a file', 'error');
       }else{
         var form = this.$('.file-form');
         var formData = new FormData(form[0]);
@@ -80,16 +80,16 @@ define(function (require) {
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
             confirmButtonText: "Yes, delete it!",
-            closeOnConfirm: true 
-          }, 
-          function(){ 
+            closeOnConfirm: true
+          },
+          function(){
             doIt();
           }
         );
       }else{
         doIt();
       }
-      
+
     },
 
     renderHtml: function(data){
@@ -130,11 +130,11 @@ define(function (require) {
           }else{
             swal('Oops!', 'Some fields are empty!', 'error');
           }
-          
+
           return false; // avoid to execute the actual submit of the form.
       });
     },
-   
+
 
     render: function () {
       $(this.el).html(this.template());
@@ -142,6 +142,4 @@ define(function (require) {
     }
 
   });
-  return DocumentationView;
-
-});
+  module.exports = DocumentationView;
