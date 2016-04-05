@@ -2,20 +2,20 @@
 
 const pkg = require("./package.json");
 const os = require("os");
-const CmsEngine = require('couchdb-node-cms');
+//const CmsEngine = require('couchdb-node-cms');
 const config = require('./config');
 const app = require('./server/app');
 const auth = require('./server/auth');
 const log = require('./server/log');
 
-const cmsEngine = new CmsEngine({
+/*const cmsEngine = new CmsEngine({
    config: config.couch,
    server: app,
    auth: auth.mwValidate,
    apiRoot: `${config.http.apiBase}/cms`
  });
 
-cmsEngine.start();
+cmsEngine.start();*/
 
 //
 // About endpoint
