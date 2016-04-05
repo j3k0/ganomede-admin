@@ -3,6 +3,7 @@
 var React = require('react');
 var ReactRouter = require('react-router');
 var utils = require('./utils');
+var login = require('./models/login');
 
 function NavLink (props) {
   return (
@@ -31,12 +32,19 @@ function Header (props) {
             </li>
           </ul>
 
-          <ul id="logout-ul" className="nav navbar-nav navbar-right">
-            <li>
-              <a className="logout-button" href="#logout">Logout</a>
-            </li>
-          </ul>
+          { (function () {
+              if (!props.loggedIn)
+                return;
 
+              return (
+                <ul id="logout-ul" className="nav navbar-nav navbar-right">
+                  <li>
+                    <a onClick={props.onLogout} className="logout-button">Logout</a>
+                  </li>
+                </ul>
+              );
+            }())
+          }
         </div>
       </div>
     </nav>
@@ -50,15 +58,30 @@ var App = React.createClass({
     };
   },
 
+  onLoggedInChanged: function (model, newLoggedIn) {
+    this.setState({loggedIn: newLoggedIn});
+  },
+
   componentDidMount: function () {
     utils.allowEmptyAjaxResponse();
+    login.sub(this.onLoggedInChanged);
+  },
+
+  componentWillUnmount: function () {
+    login.unsub(this.onLoggedInChanged);
+  },
+
+  onLogout: function () {
+    login.logout();
   },
 
   render: function () {
     return (
       <div>
         <div className="header">
-          <Header />
+          <Header loggedIn={this.state.loggedIn}
+                  onLogout={this.onLogout}
+          />
         </div>
 
         <div className="container">
