@@ -70,6 +70,12 @@ class Upstream {
     return error;
   }
 
+  logError () {
+    const message = `Upstream(${this.prefix}) failed`;
+    const args = [message].concat(Array.prototype.slice.call(arguments, 0));
+    log.error.apply(log, args);
+  }
+
   request (options, callback) {
     options.url = options.url
       ? `${this.prefix}/${options.url}`
@@ -79,12 +85,15 @@ class Upstream {
 
     request(options, (err, res, body) => {
       // Check network errors.
-      if (err)
+      if (err) {
+        this.logError(err);
         return callback(this.createError(err));
+      }
 
       // Check status code is 2xx
       if (!/^2\d{2}$/.test(String(res.statusCode))) {
         const reason = `HTTP ${res.statusCode}: ${http.STATUS_CODES[res.statusCode]}`;
+        this.logError(reason);
         return callback(this.createError(reason, body));
       }
 

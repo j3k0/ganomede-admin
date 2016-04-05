@@ -2,15 +2,11 @@
 
 const express = require('express');
 const utils = require('./utils');
+const upstreams = require('./upstreams');
 const config = require('../config');
 
 const router = new express.Router();
-const upstream = new utils.Upstream({
-  protocol: 'http',
-  hostname: config.services.virtualcurrency.host,
-  port: config.services.virtualcurrency.port,
-  pathname: '/virtualcurrency/v1'
-});
+const upstream = upstreams.virtualcurrency;
 
 // Build a body to pass upstream to vcurrency server:
 //   - add `secret`, if not pressent.
