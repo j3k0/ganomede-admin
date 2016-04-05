@@ -6,7 +6,7 @@ const config = require('../config');
 
 const router = new express.Router();
 const upstream = new utils.Upstream({
-  protocol: 'http',
+  protocol: config.services.virtualcurrency.protocol,
   hostname: config.services.virtualcurrency.host,
   port: config.services.virtualcurrency.port,
   pathname: '/virtualcurrency/v1'
