@@ -1,4 +1,4 @@
-FROM node:0.10.33-slim
+FROM node:5.0.0
 
 MAINTAINER Jean-Christophe Hoelt <hoelt@fovea.cc>
 
