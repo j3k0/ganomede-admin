@@ -3,13 +3,13 @@
 const pkg = require('./package.json');
 
 const config = {
-  couch: {
+  /* couch: {
     host: process.env.COUCHDB_HOST || 'localhost',
     port: +process.env.COUCHDB_PORT || 5984,
     user: process.env.COUCHDB_USER || '',
     password: process.env.COUCHDB_PASSWORD || '',
     db: process.env.COUCHDB_DB || 'blog'
-  },
+  }, */
 
   http: {
     host: process.env.HOST || '0.0.0.0',
