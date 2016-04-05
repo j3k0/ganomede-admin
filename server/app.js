@@ -32,6 +32,8 @@ app.use(flash());
 // these are public
 app.use('/about', require('./about.router'));
 app.use(`${apiBase}/about`, require('./about.router'));
+app.use('/ping', require('./ping.router'));
+app.use(`${apiBase}/ping`, require('./ping.router'));
 app.use(`${apiBase}/web`, require('./static.router'));
 
 // these need auth

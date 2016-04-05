@@ -34,16 +34,6 @@ const about = function(req, res) {
 app.get("/about", about);
 app.get(config.http.apiBase + "/about", about);
 
-//
-// Ping endpoint
-//
-
-const ping = function(req, res) {
-    res.send("pong/" + req.params.token);
-};
-app.get("/ping/:token", ping);
-app.get(config.http.apiBase + "/ping/:token", ping);
-
 const server = app.listen(config.http.port, config.http.host, function () {
 
   const host = server.address().address;
