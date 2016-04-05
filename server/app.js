@@ -29,7 +29,16 @@ app.use(flash());
 // Routers.
 //
 
+// redirect from index routes to web-interface.
+const redirectToWebUi = (req, res) => res.redirect(`${apiBase}/web`);
+app.get('/', redirectToWebUi);
+app.get(apiBase, redirectToWebUi);
+
 // these are public
+app.use('/about', require('./about.router'));
+app.use(`${apiBase}/about`, require('./about.router'));
+app.use('/ping', require('./ping.router'));
+app.use(`${apiBase}/ping`, require('./ping.router'));
 app.use(`${apiBase}/web`, require('./static.router'));
 
 // these need auth

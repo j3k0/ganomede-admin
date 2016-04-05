@@ -51,4 +51,8 @@ deafult to locally running intstance):
    - `VIRTUAL_CURRENCY_CURRENCY_CODES` comma-separated list of allowed currency codes for item purchases (e.g.: `gold,silver,copper`).
 
 # Run
-run make using these env variables.
+
+1. `make install` fetches dependencies and builds client-side JS bundle;
+2. `node index.js` will run the server (`export` all the required env vars);
+  - `./run-server.dev.sh` exports some placeholder env vars for you, feel free to modify those to your development needs;
+3. Go to [http://localhost:8000](http://localhost:8000).
