@@ -24,39 +24,32 @@ var CurrencySelector = function (props) {
 
 var CostsTableRow = function (props) {
   return (
-    <tr>
-      <td>
-        <CurrencySelector
-          selectedCurrency={props.currency}
-          availableCurrencies={props.availableCurrencies}
-          onChange={function (newCurrency) {
-            props.onChange({
-              currency: newCurrency,
-              amount: props.amount,
-              availableCurrencies: props.availableCurrencies
-            });
-          }}
-        />
-      </td>
+    <div className="item-cost">
+      <CurrencySelector
+        selectedCurrency={props.currency}
+        availableCurrencies={props.availableCurrencies}
+        onChange={function (newCurrency) {
+          props.onChange({
+            currency: newCurrency,
+            amount: props.amount,
+            availableCurrencies: props.availableCurrencies
+          });
+        }}
+      />
 
-      <td>
-        <input
-          type='text'
-          value={props.amount}
-          onChange={function (event) {
-            props.onChange({
-              currency: props.currency,
-              amount: parseInt(event.target.value, 10) || 0,
-              availableCurrencies: props.availableCurrencies
-            });
-          }}
-        />
-      </td>
-
-      <td>
-        <button onClick={props.onRemove}>Remove</button>
-      </td>
-    </tr>
+      <input
+        type='text'
+        size='5'
+        value={props.amount}
+        onChange={function (event) {
+          props.onChange({
+            currency: props.currency,
+            amount: parseInt(event.target.value, 10) || 0,
+            availableCurrencies: props.availableCurrencies
+          });
+        }}
+      />
+    </div>
   );
 };
 
@@ -83,23 +76,29 @@ var CostsTable = React.createClass({
   },
 
   render: function () {
-    return (
-      <div>
-        <table className="table">
-          <ArrayView ref="arrayView"
-            initialItems={this.state.costs}
-            Container='tbody'
-            Component={CostsTableRow} />
-        </table>
-        <button onClick={event => {
+    var addButton = '';
+    if (this.state.costs.length < 1) {
+      addButton = (
+        <button className="btn btn-xs btn-primary" onClick={event => {
+          event.target.style.display = 'none';
           this.refs.arrayView.onAdd({
             currency: this.props.availableCurrencies[0],
             amount: 0,
             availableCurrencies: this.props.availableCurrencies
           });
         }}>
-          Add new
+          Add Cost
         </button>
+      );
+    }
+
+    return (
+      <div className="item-costs">
+        <ArrayView ref="arrayView"
+          initialItems={this.state.costs}
+          Container='div'
+          Component={CostsTableRow} />
+        {addButton}
       </div>
     );
   }
