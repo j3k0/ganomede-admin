@@ -35,10 +35,8 @@ app.get("/about", about);
 app.get(config.http.apiBase + "/about", about);
 
 const server = app.listen(config.http.port, config.http.host, function () {
-
   const host = server.address().address;
   const port = server.address().port;
 
-  log('Example app listening at http://%s:%s', host, port);
-
+  log('App listening at http://%s:%s', host, port);
 });
