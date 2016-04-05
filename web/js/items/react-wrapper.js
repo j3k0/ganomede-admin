@@ -57,21 +57,16 @@ var ItemComponent = React.createBackboneClass({
     var displayId = item.get('id') || item.get('displayId');
 
     return (
-      <div className="panel panel-default">
-        <div className="panel-heading">
-          <h3 className="panel-title">{displayId}</h3>
-        </div>
+      <div className="list-item">
+        <div className="item-id">{displayId}</div>
+        <CostsTable ref='costs'
+          availableCurrencies={this.props.availableCurrencies}
+          initialCosts={item.get('costs')}
+        />
 
-        <div className="panel-body">
-          <CostsTable ref='costs'
-                      availableCurrencies={this.props.availableCurrencies}
-                      initialCosts={item.get('costs')}
-          />
-
-          <button className="btn btn-default" onClick={this.onSave}>
-            Save changes
-          </button>
-        </div>
+        <button className="btn btn-xs btn-default" onClick={this.onSave}>
+          Save Item
+        </button>
       </div>
     );
   }
@@ -116,7 +111,7 @@ var ItemsListComponent = React.createBackboneClass({
     return (
       <div>
         {itemsList}
-        <button onClick={this.onAddItem}>Add new Item</button>
+        <button className="btn btn-primary btn-add-item" onClick={this.onAddItem}>Add New Item</button>
       </div>
     );
   }
