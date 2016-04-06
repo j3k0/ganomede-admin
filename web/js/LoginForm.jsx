@@ -2,26 +2,7 @@
 
 var React = require('react');
 var login = require('./models/login');
-
-function Loader (props) {
-  var content = props.error
-    ? ( <div>
-          Error occured. Please refresh a page and try again.
-          <pre className="well">{
-            [ props.error.message,
-              JSON.stringify(props.error, null, 2)
-            ].join('\n\n')
-          }</pre>
-        </div>
-      )
-    : props.children;
-
-  return (
-    <div>
-      { props.loading ? 'Loading…' : content }
-    </div>
-  );
-};
+var Loader = require('./components/Loader.jsx');
 
 var Form = React.createClass({
   getInitialState: function () {
