@@ -9,7 +9,8 @@ var Form = React.createClass({
     return {error: null};
   },
 
-  onSubmit: function () {
+  onSubmit: function (event) {
+    event.preventDefault();
     login.login({
       username: this.refs.username.value,
       password: this.refs.password.value
