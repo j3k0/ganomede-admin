@@ -46,6 +46,7 @@ microservices. Provide links to them with env vars (otherwise will
 deafult to locally running intstance):
 
  - [virtual currency module](https://github.com/j3k0/ganomede-virtualcurrency)
+   - `VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL` virtual currency protocol (`http` or `https`, defaults to `http`);
    - `VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR` virtual currecny host;
    - `VIRTUAL_CURRENCY_PORT_8080_TCP_PORT` virtual currency port;
    - `VIRTUAL_CURRENCY_CURRENCY_CODES` comma-separated list of allowed currency codes for item purchases (e.g.: `gold,silver,copper`).

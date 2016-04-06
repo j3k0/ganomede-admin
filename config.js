@@ -27,7 +27,7 @@ const config = {
 
   services: {
     virtualcurrency: {
-      protocol: 'http',
+      protocol: process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL || 'http',
       host: process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR || 'localhost',
       port: +process.env.VIRTUAL_CURRENCY_PORT_8080_TCP_PORT || 8080,
       currencies: (function () {
