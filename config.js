@@ -20,8 +20,7 @@ const config = {
   auth: {
     admin: {
       username: process.env.ADMIN_USERNAME || '1',
-      password: process.env.ADMIN_PASSWORD || '1',
-      token: process.env.ADMIN_TOKEN || null
+      password: process.env.ADMIN_PASSWORD || '1'
     }
   },
 

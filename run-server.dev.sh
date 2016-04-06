@@ -6,7 +6,6 @@ function main {
   export PORT="1337"
   export ADMIN_USERNAME="1"
   export ADMIN_PASSWORD="1"
-  export ADMIN_TOKEN=$(cat run-server.dev.admin-token)
 
   # Some links
   export SERVERS_LINK1_URL="http://tst.com"

@@ -63,7 +63,7 @@
 
     // callback(err, isLoggedOut)
     logout: function (callback) {
-      return this._request('get', 'logout', callback);
+      return this._request('post', 'logout', callback);
     },
 
     // callback(model, newLoggedIn, options)

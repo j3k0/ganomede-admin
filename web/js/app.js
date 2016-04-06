@@ -52,6 +52,12 @@ function Header (props) {
 };
 
 var App = React.createClass({
+  // Get access to react router instance via
+  // this.context.router
+  contextTypes: {
+    router: React.PropTypes.object
+  },
+
   getInitialState: function () {
     return {
       loggedIn: false
@@ -59,6 +65,9 @@ var App = React.createClass({
   },
 
   onLoggedInChanged: function (model, newLoggedIn) {
+    if (newLoggedIn === false)
+      this.context.router.push('/');
+
     this.setState({loggedIn: newLoggedIn});
   },
 
