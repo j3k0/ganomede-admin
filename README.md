@@ -9,7 +9,6 @@ Admin panel for Triominos
  - `HOST` and `PORT` for interface/port to listen on
  - `ADMIN_USERNAME` --> administrator username
  - `ADMIN_PASSWORD` --> administrator password
- - `ADMIN_TOKEN` (optional) --> authentication token
 
 ## Servers links
 
