@@ -38,7 +38,9 @@ var Form = React.createClass({
         </div>
 
         <div className="col-md-6">
-          <span className="pull-right">
+          <form className="pull-right"
+                onSubmit={this.onSubmit}
+          >
             <h3>Login</h3>
             <br/>
 
@@ -66,12 +68,11 @@ var Form = React.createClass({
             }
             <br/>
 
-            <a className="btn btn-primary btn-large login-button"
-               onClick={this.onSubmit}
-            >
-              Login &raquo;
-            </a>
-          </span>
+            <input className="btn btn-primary btn-large login-button"
+                   type="submit"
+                   value="Login &raquo;"
+            />
+          </form>
           </div>
       </div>
     );
