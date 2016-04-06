@@ -56,7 +56,7 @@ router.post('/login', passport.authenticate('local'), function (req, res) {
   res.json({success: true});
 });
 
-router.get('/logout', mwValidate, function (req, res){
+router.post('/logout', mwValidate, function (req, res){
   res.clearCookie('token');
   res.json({success: true});
 });
