@@ -5,6 +5,7 @@ var ReactDOM = require('react-dom');
 var ItemModel = require('./models/itemModel');
 var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
+var Loader = require('../components/Loader.jsx');
 require('react.backbone');
 
 var ItemComponent = React.createBackboneClass({
@@ -117,10 +118,40 @@ var ItemsListComponent = React.createBackboneClass({
   }
 });
 
-var ItemsListView = React.createFactory(ItemsListComponent);
+// TODO
+// This should probably become react mixin or something like that.
+// Also, look for beter ways of data initialization.
+module.exports = React.createClass({
+  getInitialState: function () {
+    return {
+      error: null,
+      loading: true,
+      collection: ItemsCollection.singleton()
+    };
+  },
 
-module.exports = function ItemsList (/*props*/) {
-  var collection = ItemsCollection.singleton();
-  collection.fetch({reset: true});
-  return ItemsListView({collection: collection});
-};
+  componentDidMount: function () {
+    this.state.collection.fetch({
+      reset: true,
+      success: function () {
+        this.setState({loading: false});
+      }.bind(this),
+      error: function (collection, xhr) {
+        var err = new Error(xhr.responseText);
+        err.reason = xhr.responseJSON;
+        this.setState({
+          loading: false,
+          error: err
+        });
+      }.bind(this)
+    });
+  },
+
+  render: function () {
+    return (
+      <Loader loading={this.state.loading} error={this.state.error}>
+        <ItemsListComponent collection={this.state.collection} />
+      </Loader>
+    );
+  }
+});

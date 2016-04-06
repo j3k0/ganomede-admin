@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react');
-var ArrayView = require('./ArrayView.jsx');
+var ArrayView = require('../components/ArrayView.jsx');
 
 var CurrencySelector = function (props) {
   var options = props.availableCurrencies.map(function (currency) {
