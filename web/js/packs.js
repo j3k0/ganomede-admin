@@ -31,21 +31,25 @@ var Pack = React.createBackboneClass({
     var pack = this.getModel();
 
     return (
-      <div className="row">
-        <div className="col-md-3">{pack.get('id')}</div>
-        <div className="col-md-3">{pack.get('currency')}</div>
-        <div className="col-md-6">
-          <input
-            type='text'
-            size='5'
-            ref='amountInput'
-            defaultValue={pack.get('amount')}
-          />
+      <div className="list-item">
+        <div className="item-id">{pack.get('id')}</div>
+        <div className="item-costs">
+          <div className="item-cost">
+            <select value={pack.get('currency')} disabled>
+              <option value={pack.get('currency')}>{pack.get('currency')}</option>
+            </select>
 
-          <button className="btn btn-xs btn-default" onClick={this.onSave}>
+            <input
+              type='text'
+              size='5'
+              ref='amountInput'
+              defaultValue={pack.get('amount')}
+            />
+          </div>
+        </div>
+                  <button className="btn btn-xs btn-default" onClick={this.onSave}>
             Update Amount
           </button>
-        </div>
       </div>
     );
   }
@@ -54,7 +58,8 @@ var Pack = React.createBackboneClass({
 function PacksList (props) {
   var packs = props.collection.map(function (pack) {
     return (
-      <Pack key={pack.id} model={pack} />
+      <div><Pack key={pack.id} model={pack} />
+      <hr/></div>
     );
   });
 
