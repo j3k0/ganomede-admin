@@ -82,10 +82,10 @@ var ItemsListComponent = React.createBackboneClass({
       var key = [idx, item.id].join(':');
 
       return (
-        <div><ItemComponent key={key}
-          model={item}
-          availableCurrencies={collection.currencies}
-        /><hr/></div>
+        <div key={key}>
+          <ItemComponent model={item} availableCurrencies={collection.currencies} />
+          <hr/>
+        </div>
       );
     });
 
