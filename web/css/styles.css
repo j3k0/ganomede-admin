@@ -22,6 +22,7 @@
     display: inline-block;
 }
 .item-cost select {
+    min-width: 80px;
     margin-right: 1em;
 }
 
