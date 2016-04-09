@@ -1,9 +1,9 @@
 'use strict';
 
 const express = require('express');
-const utils = require('./utils');
-const upstreams = require('./upstreams');
-const config = require('../config');
+const utils = require('../utils');
+const upstreams = require('../upstreams');
+const config = require('../../config');
 
 const router = new express.Router();
 const upstream = upstreams.virtualcurrency;
@@ -32,7 +32,7 @@ const pipeToProducts = (method) => {
 };
 
 // List items.
-router.get('/items', (req, res) => {
+router.get('/', (req, res) => {
   const options = {
     method: 'get',
     url: `/auth/${process.env.API_SECRET}/products`,
@@ -51,7 +51,7 @@ router.get('/items', (req, res) => {
 });
 
 // Create or updated item.
-router.post('/items/:id', pipeToProducts('post'));
-router.put('/items/:id', pipeToProducts('put'));
+router.post('/:id', pipeToProducts('post'));
+router.put('/:id', pipeToProducts('put'));
 
 module.exports = router;

@@ -48,7 +48,7 @@ app.use(require('./checkpoints.router'));
 app.use(require('./avatars.router'));
 app.use(`${apiBase}/api`, require('./users.router'));
 app.use(`${apiBase}/api`, require('./location.router'));
-app.use(`${apiBase}/api`, require('./items.router'));
+app.use(`${apiBase}/api`, require('./vcurrency'));
 app.use(`${apiBase}/api`, require('./links.router'));
 app.use(`${apiBase}/api`, require('./monitoring.router'));
 app.use(`${apiBase}/api/islogged`, function (req, res) {
