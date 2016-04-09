@@ -46,14 +46,14 @@ const pipeToSingleListApi = (method, url, additionalOptions, postProcess) => {
 // Creater router for proxying backbone's collections' requests
 // to single list APIs.
 //
-// @url is '/products' or '/packs'
+// @urls is list an object of {method: url} format
 // @postProcessGet is optional functions for modifying result of listing.
-const singleListRouter = (url, postProcessGet) => {
+const singleListRouter = (urls, postProcessGet) => {
   const router = new express.Router();
 
-  router.get('/', pipeToSingleListApi('get', `/auth/${process.env.API_SECRET}/${url}`, {qs: {limit: 500}}, postProcessGet));
-  router.post('/:id', pipeToSingleListApi('post', url));
-  router.put('/:id', pipeToSingleListApi('put', url));
+  router.get('/', pipeToSingleListApi('get', urls.get, {qs: {limit: 500}}, postProcessGet));
+  router.post('/:id', pipeToSingleListApi('post', urls.post));
+  router.put('/:id', pipeToSingleListApi('put', urls.put));
 
   return router;
 };
