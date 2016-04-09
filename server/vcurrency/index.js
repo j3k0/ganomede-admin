@@ -22,6 +22,10 @@ router.use(
   )
 );
 
-router.use('/packs', proxy('/packs'));
+router.use('/packs', proxy({
+  get: `/auth/${process.env.API_SECRET}/packs`,
+  post: `/auth/${process.env.API_SECRET}/packs`,
+  put: `/auth/${process.env.API_SECRET}/packs`
+}));
 
 module.exports = router;

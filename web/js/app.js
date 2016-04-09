@@ -30,6 +30,9 @@ function Header (props) {
             <li className="items-menu">
               <NavLink to='/items'>Items</NavLink>
             </li>
+            <li>
+              <NavLink to='/packs'>Packs</NavLink>
+            </li>
           </ul>
 
           { (function () {

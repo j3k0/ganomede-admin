@@ -4,6 +4,7 @@ var React = require('react');
 var ReactRouter = require('react-router');
 var App = require('./app');
 var ItemsList = require('./items/react-wrapper');
+var PacksList = require('./packs');
 var LoginForm = require('./LoginForm.jsx');
 
 var Router = ReactRouter.Router;
@@ -17,6 +18,7 @@ module.exports = function GanomedeRouter (/*props*/) {
       <Route path="/" component={App}>
         <IndexRoute component={LoginForm} />
         <Route path="/items" component={ItemsList} />
+        <Route path="/packs" component={PacksList} />
       </Route>
     </Router>
   );
