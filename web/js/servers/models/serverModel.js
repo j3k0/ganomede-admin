@@ -1,6 +1,5 @@
-define(function (require) {
   'use strict';
- 
+
 
   var ServerModel = Backbone.Model.extend({
 
@@ -27,6 +26,5 @@ define(function (require) {
     }
 
   });
-  
-  return ServerModel;
-});
+
+  module.exports = ServerModel;

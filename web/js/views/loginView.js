@@ -1,7 +1,7 @@
-define(function (require) {
   'use strict';
 
-  var template = require("../text!../../templates/loginView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../templates/loginView.html", 'utf8');
 
   var LoginView = Backbone.View.extend({
 
@@ -40,5 +40,4 @@ define(function (require) {
     }
 
   });
-  return LoginView;
-});
+  module.exports = LoginView;

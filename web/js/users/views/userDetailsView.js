@@ -1,8 +1,8 @@
-define(function (require) {
   'use strict';
 
-  var template = require("../../text!../../../templates/userDetailsView.html");
-  
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../../templates/userDetailsView.html", 'utf8');
+
 
   var UserDetailsView = Backbone.View.extend({
 
@@ -33,5 +33,4 @@ define(function (require) {
 
   });
 
-  return UserDetailsView;
-});
+  module.exports = UserDetailsView;

@@ -13,3 +13,27 @@
     display: none;
 }
 
+.item-id {
+    display: inline-block;
+    width: 20em;
+    font-weight: 300;
+}
+.item-costs {
+    display: inline-block;
+}
+.item-cost select {
+    margin-right: 1em;
+}
+
+.list-item .btn {
+    margin-left: 1em;
+}
+
+button.btn-add-item {
+    margin-top: 1em;
+    float: right;
+}
+
+.logout-button {
+    cursor: pointer;
+}

@@ -1,6 +1,3 @@
-
-
-define(function (/*require*/) {
     'use strict';
 
     var ajaxHandler = {
@@ -29,7 +26,7 @@ define(function (/*require*/) {
                 Backbone.history.navigate('login', {trigger: true});
                 return;
             }
-            
+
             if(callback)
             {
                 callback(msg);
@@ -49,7 +46,7 @@ define(function (/*require*/) {
           //        success: callback for success method,
           //        error: callback for error method
         // }
-        
+
         postAjax: function(options)
         {
             var errorCallback = options.error;
@@ -65,6 +62,4 @@ define(function (/*require*/) {
         }
     };
 
-    return ajaxHandler;
-});
-
+    module.exports = ajaxHandler;

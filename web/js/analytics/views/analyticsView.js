@@ -1,11 +1,11 @@
-define(function (require) {
   'use strict';
 
-  var template = require("../../text!../../../templates/analyticsView.html");
-  var checkpointsTemplate = require("../../text!../../../templates/checkpointstable.html");
-  var newPlayersTemplate = require("../../text!../../../templates/newplayerstable.html");
-  var sessionsTemplate = require("../../text!../../../templates/sessionstable.html");
-  var usersTemplate = require("../../text!../../../templates/userstable.html");
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../../templates/analyticsView.html", 'utf8');
+  var checkpointsTemplate = fs.readFileSync(__dirname + "/../../../templates/checkpointstable.html", 'utf8');
+  var newPlayersTemplate = fs.readFileSync(__dirname + "/../../../templates/newplayerstable.html", 'utf8');
+  var sessionsTemplate = fs.readFileSync(__dirname + "/../../../templates/sessionstable.html", 'utf8');
+  var usersTemplate = fs.readFileSync(__dirname + "/../../../templates/userstable.html", 'utf8');
   var analytics = require("../models/analytics");
   var ServicesCollection = require("../../models/servicesCollection");
 
@@ -181,7 +181,7 @@ define(function (require) {
               }
           ]
       };
-      
+
       this.myLineChart = new Chart(ctx).Line(data, {
           scaleShowGridLines : true,
           scaleGridLineColor : "rgba(0,0,0,.05)",//String - Colour of the grid lines
@@ -259,6 +259,4 @@ define(function (require) {
     }
 
   });
-  return AnalyticsView;
-
-});
+  module.exports = AnalyticsView;
