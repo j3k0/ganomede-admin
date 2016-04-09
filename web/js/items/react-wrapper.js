@@ -5,6 +5,7 @@ var ItemModel = require('./models/itemModel');
 var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
 var CollectionLoader = require('../components/CollectionLoader.jsx');
+var utils = require('../utils');
 require('react.backbone');
 
 var ItemComponent = React.createBackboneClass({
@@ -16,40 +17,20 @@ var ItemComponent = React.createBackboneClass({
       costs: this.refs.costs.getCosts()
     };
 
-    item.save(attrs, {
-      method: creatingNewItem ? 'POST' : 'PUT',
-      success: window.swal.bind(null, 'Item saved!', null, 'success'),
-      error: function (model, response, options) {
-        var error = options.xhr.responseJSON;
-        var isUpstream = error && error.name === 'UpstreamError';
-        var errorText = isUpstream
-          ? error.reason
-          : (options.xhr.responseJSON || options.xhr.responseText);
-
-        var errorTitle = isUpstream
-          ? error.message
-          : 'Server Error';
-
-        var body = $('<div>')
-          .append($('<div>').text(errorTitle))
-          .append('<br/>')
-          .append($('<pre class="well">').css('text-align', 'left').text(JSON.stringify(errorText, null, 2)))
-          .html();
-
+    utils.saveModel(
+      item,
+      attrs,
+      {method: creatingNewItem ? 'POST' : 'PUT'},
+      { success: 'Item saved!',
+        error: 'Failed to save Item' },
+      function (failed) {
         // In case we failed to create new item,
         // unset its id, so we will "create" it again,
         // and not "update" on subsequent "Save" clicks.
-        if (creatingNewItem)
+        if (failed && creatingNewItem)
           item.unset('id');
-
-        swal({
-          type: 'error',
-          title: 'Failed to Save Item',
-          text: '<div>' + body + '</div>',
-          html: true
-        });
       }
-    });
+    );
   },
 
   render: function () {
