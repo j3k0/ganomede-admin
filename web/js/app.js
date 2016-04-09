@@ -2,7 +2,6 @@
 
 var React = require('react');
 var ReactRouter = require('react-router');
-var utils = require('./utils');
 var login = require('./models/login');
 
 function NavLink (props) {
@@ -75,7 +74,6 @@ var App = React.createClass({
   },
 
   componentDidMount: function () {
-    utils.allowEmptyAjaxResponse();
     login.sub(this.onLoggedInChanged);
   },
 
