@@ -22,7 +22,6 @@
     "$": true,
     "_": true,
     "__dirname": true,
-    "Backbone": true,
     "Gauge": true,
     "swal": true
   },

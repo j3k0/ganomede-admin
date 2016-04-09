@@ -2,7 +2,7 @@
 
   var fs = require('fs');
   var template = fs.readFileSync(__dirname + "/../../../templates/userDetailsView.html", 'utf8');
-
+var Backbone = require('backbone');
 
   var UserDetailsView = Backbone.View.extend({
 

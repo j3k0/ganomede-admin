@@ -8,7 +8,7 @@
   var usersTemplate = fs.readFileSync(__dirname + "/../../../templates/userstable.html", 'utf8');
   var analytics = require("../models/analytics");
   var ServicesCollection = require("../../models/servicesCollection");
-
+  var Backbone = require('backbone');
 
   var AnalyticsView = Backbone.View.extend({
 

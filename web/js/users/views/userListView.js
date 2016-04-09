@@ -1,5 +1,5 @@
   'use strict';
-
+  var Backbone = require('backbone');
   var UserListItemView = require("./userListItemView");
 
   var UserListView = Backbone.View.extend({

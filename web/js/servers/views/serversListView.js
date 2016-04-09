@@ -1,5 +1,5 @@
   'use strict';
-
+var Backbone = require('backbone');
   var ServersListItemView = require("./serversListItemView");
 
   var ServersListView = Backbone.View.extend({

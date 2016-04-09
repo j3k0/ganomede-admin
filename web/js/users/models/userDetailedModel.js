@@ -1,5 +1,6 @@
   'use strict';
 
+  var Backbone = require('backbone');
   var ajaxHandler = require("../../ajaxHandler.js");
 
   var UserDetailedModel = Backbone.Model.extend({

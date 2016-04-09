@@ -3,7 +3,7 @@
   var fs = require('fs');
   var template = fs.readFileSync(__dirname + "/../../../templates/serversListItemView.html", 'utf8');
   var ajaxHandler = require("../../ajaxHandler");
-
+  var Backbone = require('backbone');
   var ServersListItemView = Backbone.View.extend({
 
 

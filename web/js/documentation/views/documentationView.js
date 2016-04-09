@@ -5,6 +5,7 @@
 
   var documentation = require("../models/documentation");
   var ajaxHandler = require("../../ajaxHandler");
+  var Backbone = require('backbone');
 
   var DocumentationView = Backbone.View.extend({
 

@@ -1,6 +1,8 @@
   'use strict';
 
 
+  var Backbone = require('backbone');
+
   var ServerModel = Backbone.Model.extend({
 
     idAttribute: 'id',

@@ -2,6 +2,7 @@
 
   var url = require('url');
   var request = require('request');
+  var Backbone = require('backbone');
 
   var Login = Backbone.Model.extend({
     defaults: {
