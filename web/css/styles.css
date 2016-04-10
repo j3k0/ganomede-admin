@@ -5,8 +5,13 @@
 }
 
 .list-item {
-    padding-top: 6px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     padding-left: 56px;
+}
+
+.list-item-container:nth-child(even) {
+    background-color: #f4f4f4;
 }
 
 .no-reports {

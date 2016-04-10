@@ -58,7 +58,7 @@ var Pack = React.createBackboneClass({
 function PacksList (props) {
   var packs = props.collection.map(function (pack) {
     return (
-      <div key={pack.id}>
+      <div className="list-item-container" key={pack.id}>
         <Pack model={pack} />
       </div>
     );
