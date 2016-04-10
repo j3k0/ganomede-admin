@@ -84,7 +84,6 @@ var ItemsListComponent = React.createBackboneClass({
       return (
         <div key={key}>
           <ItemComponent model={item} availableCurrencies={collection.currencies} />
-          <hr/>
         </div>
       );
     });

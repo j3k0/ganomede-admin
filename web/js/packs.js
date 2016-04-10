@@ -60,7 +60,6 @@ function PacksList (props) {
     return (
       <div key={pack.id}>
         <Pack model={pack} />
-        <hr/>
       </div>
     );
   });
