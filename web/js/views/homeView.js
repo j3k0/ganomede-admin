@@ -1,7 +1,7 @@
-define(function (require) {
   'use strict';
-
-  var template = require("../text!../../templates/homeView.html");
+  var Backbone = require('backbone');
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../templates/homeView.html", 'utf8');
   var UsersCollection = require("../users/models/usersCollection");
   var UserListView = require("../users/views/userListView");
 
@@ -50,6 +50,4 @@ define(function (require) {
 
 
   });
-  return HomeView;
-
-});
+  module.exports = HomeView;

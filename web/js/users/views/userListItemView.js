@@ -1,11 +1,11 @@
-define(function (require) {
   'use strict';
 
-  var template = require("../../text!../../../templates/userListItemView.html");
-
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../../templates/userListItemView.html", 'utf8');
+  var Backbone = require('backbone');
   var UserListItemView = Backbone.View.extend({
 
-    
+
     tagName:"li",
     className: "list-group-item",
     template: _.template(template),
@@ -21,6 +21,4 @@ define(function (require) {
     }
 
   });
-  return UserListItemView;
-
-});
+  module.exports = UserListItemView;

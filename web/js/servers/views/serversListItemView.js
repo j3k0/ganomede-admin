@@ -1,12 +1,12 @@
-define(function (require) {
   'use strict';
 
-  var template = require("../../text!../../../templates/serversListItemView.html");
+  var fs = require('fs');
+  var template = fs.readFileSync(__dirname + "/../../../templates/serversListItemView.html", 'utf8');
   var ajaxHandler = require("../../ajaxHandler");
-
+  var Backbone = require('backbone');
   var ServersListItemView = Backbone.View.extend({
 
-    
+
     tagName:"a",
     className: "list-group-item",
     template: _.template(template),
@@ -66,8 +66,8 @@ define(function (require) {
       for(var i =0; i < elements.length; i++){
         this.createGauge(elements[i], titles[i], width);
       }
-     
-      
+
+
     },
 
     render:function () {
@@ -77,6 +77,4 @@ define(function (require) {
     }
 
   });
-  return ServersListItemView;
-
-});
+  module.exports = ServersListItemView;

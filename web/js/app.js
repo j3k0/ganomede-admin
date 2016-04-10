@@ -1,44 +1,109 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-define(function (require) {
-    'use strict';
+'use strict';
 
-    var MainView = require('./mainView');
-    var Utils = require('./utils');
+var React = require('react');
+var ReactRouter = require('react-router');
+var login = require('./models/login');
 
-    var app = {
-        // Application Constructor
-        initialize: function() {
-            Utils.allowEmptyAjaxResponse();
-            // Utils.registerAjaxErrorHandlers();
-            this.onDeviceReady();
-        },
-        // deviceready Event Handler
-        //
-        // The scope of 'this' is the event. In order to call the 'receivedEvent'
-        // function, we must explicitly call 'app.receivedEvent(...);'
-        onDeviceReady: function() {
-            window.mainView = new MainView({ el: document.body });
-            window.mainView.render();
-            window.mainView.start();
-        }
+function NavLink (props) {
+  return (
+    <ReactRouter.Link {...props} activeClassName='active' />
+  );
+};
+
+function Header (props) {
+  return (
+    <nav className="navbar navbar-default">
+      <div className="container-fluid">
+        <div className="navbar-header">
+          <button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span className="sr-only">Toggle navigation</span>
+            <span className="icon-bar"></span>
+            <span className="icon-bar"></span>
+            <span className="icon-bar"></span>
+          </button>
+          <a className="navbar-brand" href="#">Triominos administration</a>
+        </div>
+
+        <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul className="nav navbar-nav">
+            <li className="items-menu">
+              <NavLink to='/items'>Items</NavLink>
+            </li>
+            <li>
+              <NavLink to='/packs'>Packs</NavLink>
+            </li>
+          </ul>
+
+          { (function () {
+              if (!props.loggedIn)
+                return;
+
+              return (
+                <ul id="logout-ul" className="nav navbar-nav navbar-right">
+                  <li>
+                    <a onClick={props.onLogout} className="logout-button">Logout</a>
+                  </li>
+                </ul>
+              );
+            }())
+          }
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+var App = React.createClass({
+  // Get access to react router instance via
+  // this.context.router
+  contextTypes: {
+    router: React.PropTypes.object
+  },
+
+  getInitialState: function () {
+    return {
+      loggedIn: false
     };
+  },
 
-return app;
+  onLoggedInChanged: function (model, newLoggedIn) {
+    if (newLoggedIn === false)
+      this.context.router.push('/');
+
+    this.setState({loggedIn: newLoggedIn});
+  },
+
+  componentDidMount: function () {
+    login.sub(this.onLoggedInChanged);
+  },
+
+  componentWillUnmount: function () {
+    login.unsub(this.onLoggedInChanged);
+  },
+
+  onLogout: function () {
+    login.logout();
+  },
+
+  render: function () {
+    return (
+      <div>
+        <div className="header">
+          <Header loggedIn={this.state.loggedIn}
+                  onLogout={this.onLogout}
+          />
+        </div>
+
+        <div className="container">
+          <div className="row">
+            <div id='content' className="span12">
+              {this.props.children}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 });
+
+module.exports = App;

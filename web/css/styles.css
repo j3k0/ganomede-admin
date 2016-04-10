@@ -5,11 +5,41 @@
 }
 
 .list-item {
-    padding-top: 6px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     padding-left: 56px;
+}
+
+.list-item-container:nth-child(even) {
+    background-color: #f4f4f4;
 }
 
 .no-reports {
     display: none;
 }
 
+.item-id {
+    display: inline-block;
+    width: 20em;
+    font-weight: 300;
+}
+.item-costs {
+    display: inline-block;
+}
+.item-cost select {
+    min-width: 8.5em;
+    margin-right: 1em;
+}
+
+.list-item .btn {
+    margin-left: 1em;
+}
+
+button.btn-add-item {
+    margin-top: 1em;
+    float: right;
+}
+
+.logout-button {
+    cursor: pointer;
+}

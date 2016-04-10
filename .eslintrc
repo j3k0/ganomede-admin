@@ -1,0 +1,21 @@
+{
+  "env": {
+    "es6": true,
+    "node": true,
+    "mocha": true,
+    "browser": false
+  },
+
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+
+  "extends": "eslint:recommended",
+  "rules": {
+    "strict": [2, "global"],
+    "semi": [2, "always"],
+    "no-var": 2,
+    "func-style": [2, "expression"],
+    "one-var": [2, "never"]
+  }
+}

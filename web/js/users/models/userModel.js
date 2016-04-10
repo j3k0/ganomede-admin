@@ -1,7 +1,6 @@
-define(function (require) {
   'use strict';
- 
 
+  var Backbone = require('backbone');
   var UserModel = Backbone.Model.extend({
 
     idAttribute: 'id',
@@ -11,6 +10,5 @@ define(function (require) {
     }
 
   });
-  
-  return UserModel;
-});
+
+  module.exports = UserModel;

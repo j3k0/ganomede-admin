@@ -2,11 +2,11 @@
 The collection of all the items of a country.
 The collection is fetched through the api following the country code.
 */
-define(function (require) {
   'use strict';
 
+  var Backbone = require('backbone');
   var ServerModel = require("./serverModel.js");
-  
+
   var ServersCollection = Backbone.Collection.extend({
     model: ServerModel,
 
@@ -25,6 +25,4 @@ define(function (require) {
     return all;
   };
 
-  return ServersCollection;
-
-});
+  module.exports = ServersCollection;

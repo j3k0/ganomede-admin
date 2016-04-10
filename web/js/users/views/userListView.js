@@ -1,6 +1,5 @@
-define(function (require) {
   'use strict';
-
+  var Backbone = require('backbone');
   var UserListItemView = require("./userListItemView");
 
   var UserListView = Backbone.View.extend({
@@ -26,6 +25,4 @@ define(function (require) {
         return this;
     }
   });
-return UserListView;
-
-});
+module.exports = UserListView;

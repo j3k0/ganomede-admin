@@ -2,12 +2,11 @@
 The collection of all the items of a country.
 The collection is fetched through the api following the country code.
 */
-define(function (require) {
   'use strict';
-
-  var UserModel = require("./userModel.js"); 
+  var Backbone = require('backbone');
+  var UserModel = require("./userModel.js");
   var ajaxHandler = require("../../ajaxHandler");
-  
+
   var UsersCollection = Backbone.Collection.extend({
     model: UserModel,
 
@@ -16,7 +15,7 @@ define(function (require) {
     },
     findByName: function (key) {
       // this.reset(UsersCollection.singleton().filter(function(user){
-      //   return user.get("username").toLowerCase().includes(key.toLowerCase()); 
+      //   return user.get("username").toLowerCase().includes(key.toLowerCase());
       // }));
       var that = this;
       ajaxHandler.postAjax({
@@ -47,6 +46,4 @@ define(function (require) {
     return all;
   };
 
-  return UsersCollection;
-
-});
+  module.exports = UsersCollection;

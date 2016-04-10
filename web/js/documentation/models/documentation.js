@@ -1,4 +1,3 @@
-define(function(require) {
   'use strict';
 
   var ajaxHandler = require("../../ajaxHandler");
@@ -24,5 +23,4 @@ define(function(require) {
 
   };
 
-  return Documentation;
-});
+  module.exports = Documentation;

@@ -1,6 +1,6 @@
-define(function (require) {
   'use strict';
- 
+
+  var Backbone = require('backbone');
   var ajaxHandler = require("../../ajaxHandler.js");
 
   var UserDetailedModel = Backbone.Model.extend({
@@ -16,7 +16,7 @@ define(function (require) {
     urlRoot: '../api/user/',//config.apiUrl + "/user",
 
     initialize:function () {
-    	
+
     },
 
     ban: function(b, success, error){
@@ -66,8 +66,7 @@ define(function (require) {
         }
       });
     }
-    
+
   });
 
-  return UserDetailedModel;
-});
+  module.exports = UserDetailedModel;

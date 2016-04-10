@@ -1,6 +1,6 @@
-define(function (require) {
   'use strict';
 
+  var Backbone = require('backbone');
   var HeaderView = require("./views/headerView");
   var Login = require("./models/login");
 
@@ -14,7 +14,7 @@ define(function (require) {
         $('body').click(function () {
           $('.dropdown').removeClass("open");
         });
-      }, 
+      },
 
       setHeaderNavigation: function(nav){
         this.headerView.select(nav);
@@ -29,7 +29,7 @@ define(function (require) {
     login: function(username, password)
     {
       var that = this;
-      Login.postAjax(username, password, 
+      Login.postAjax(username, password,
         function (data){
           if(data.success === true)
           {
@@ -71,5 +71,4 @@ define(function (require) {
     }
 
   });
-return MainView;
-});
+module.exports = MainView;
