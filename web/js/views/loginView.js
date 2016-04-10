@@ -1,5 +1,5 @@
   'use strict';
-
+  var Backbone = require('backbone');
   var fs = require('fs');
   var template = fs.readFileSync(__dirname + "/../../templates/loginView.html", 'utf8');
 

@@ -1,11 +1,11 @@
 'use strict';
 
 var React = require('react');
-var ReactDOM = require('react-dom');
 var ItemModel = require('./models/itemModel');
 var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
-var Loader = require('../components/Loader.jsx');
+var CollectionLoader = require('../components/CollectionLoader.jsx');
+var utils = require('../utils');
 require('react.backbone');
 
 var ItemComponent = React.createBackboneClass({
@@ -17,40 +17,20 @@ var ItemComponent = React.createBackboneClass({
       costs: this.refs.costs.getCosts()
     };
 
-    item.save(attrs, {
-      method: creatingNewItem ? 'POST' : 'PUT',
-      success: window.swal.bind(null, 'Item saved!', null, 'success'),
-      error: function (model, response, options) {
-        var error = options.xhr.responseJSON;
-        var isUpstream = error && error.name === 'UpstreamError';
-        var errorText = isUpstream
-          ? error.reason
-          : (options.xhr.responseJSON || options.xhr.responseText);
-
-        var errorTitle = isUpstream
-          ? error.message
-          : 'Server Error';
-
-        var body = $('<div>')
-          .append($('<div>').text(errorTitle))
-          .append('<br/>')
-          .append($('<pre class="well">').css('text-align', 'left').text(JSON.stringify(errorText, null, 2)))
-          .html();
-
+    utils.saveModel(
+      item,
+      attrs,
+      {method: creatingNewItem ? 'POST' : 'PUT'},
+      { success: 'Item saved!',
+        error: 'Failed to save Item' },
+      function (failed) {
         // In case we failed to create new item,
         // unset its id, so we will "create" it again,
         // and not "update" on subsequent "Save" clicks.
-        if (creatingNewItem)
+        if (failed && creatingNewItem)
           item.unset('id');
-
-        swal({
-          type: 'error',
-          title: 'Failed to Save Item',
-          text: '<div>' + body + '</div>',
-          html: true
-        });
       }
-    });
+    );
   },
 
   render: function () {
@@ -102,10 +82,9 @@ var ItemsListComponent = React.createBackboneClass({
       var key = [idx, item.id].join(':');
 
       return (
-        <ItemComponent key={key}
-          model={item}
-          availableCurrencies={collection.currencies}
-        />
+        <div key={key}>
+          <ItemComponent model={item} availableCurrencies={collection.currencies} />
+        </div>
       );
     });
 
@@ -118,40 +97,11 @@ var ItemsListComponent = React.createBackboneClass({
   }
 });
 
-// TODO
-// This should probably become react mixin or something like that.
-// Also, look for beter ways of data initialization.
-module.exports = React.createClass({
-  getInitialState: function () {
-    return {
-      error: null,
-      loading: true,
-      collection: ItemsCollection.singleton()
-    };
-  },
-
-  componentDidMount: function () {
-    this.state.collection.fetch({
-      reset: true,
-      success: function () {
-        this.setState({loading: false});
-      }.bind(this),
-      error: function (collection, xhr) {
-        var err = new Error(xhr.responseText);
-        err.reason = xhr.responseJSON;
-        this.setState({
-          loading: false,
-          error: err
-        });
-      }.bind(this)
-    });
-  },
-
-  render: function () {
-    return (
-      <Loader loading={this.state.loading} error={this.state.error}>
-        <ItemsListComponent collection={this.state.collection} />
-      </Loader>
-    );
-  }
-});
+module.exports = function () {
+  return (
+    <CollectionLoader
+      collection={ItemsCollection.singleton()}
+      component={ItemsListComponent}
+    />
+  );
+};

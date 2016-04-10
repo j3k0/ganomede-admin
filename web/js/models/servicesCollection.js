@@ -4,6 +4,7 @@ The collection is fetched through the api following the country code.
 */
   'use strict';
 
+  var Backbone = require('backbone');
   var ajaxHandler = require("../ajaxHandler");
 
   var SrevicesModel =  Backbone.Model.extend({

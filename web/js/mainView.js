@@ -1,5 +1,6 @@
   'use strict';
 
+  var Backbone = require('backbone');
   var HeaderView = require("./views/headerView");
   var Login = require("./models/login");
 

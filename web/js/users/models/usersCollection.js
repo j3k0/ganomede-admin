@@ -3,7 +3,7 @@ The collection of all the items of a country.
 The collection is fetched through the api following the country code.
 */
   'use strict';
-
+  var Backbone = require('backbone');
   var UserModel = require("./userModel.js");
   var ajaxHandler = require("../../ajaxHandler");
 

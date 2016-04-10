@@ -1,43 +1,73 @@
-  'use strict';
+'use strict';
 
-  module.exports = {
-    allowEmptyAjaxResponse: function() {
-      $.ajaxSetup({dataFilter: function(data, type) {
-        if (type === "json" && data === "") {
-          data = null;
-        }
-        return data;
-      }});
-    },
+var underscore = require('underscore');
 
-    registerAjaxErrorHandlers: function() {
-      $( document ).ajaxError(function(event, jqXHR/*, ajaxSettings, thrownError*/) {
-      var ouches = [ "Ow", "Owie", "Youch", "Yow", "Yowch", "Ouch", "Oops" ];
-        if (jqXHR && !jqXHR.responseJSON) {
-          swal(ouches[Math.floor(Math.random() * ouches.length) | 0] + "...",
-                          "Could not connect. Please try again later.",
-                          "error");
-        }
-      });
-    },
+module.exports = {
+  // Saves @model with updated @attributes.
+  // Mergres in custom @xhrOptions.
+  // Shows SweetAlert message after XHR completes using @messages.
+  // Calls @callback after XHT completes.
+  //
+  // callback(failedBoolean)
+  saveModel: function (model, attributes, xhrOptions, messages, callback) {
+    var cb = callback instanceof Function
+      ? callback
+      : function () {};
 
-    // Pass in Backbone.View constructor to wrap it in a way,
-    // that will call .destroy() on previously created instance.
-    //
-    // Can be used to render the same view in multiple places:
-    //
-    //   var OriginalView = require('./some-backbone-view.js');
-    //   var SomePage = autodestroyView(OriginalView);
-    //   var OtherPage = autodestroyView(OriginalView);
-    autodestroyView: function (ctor) {
-      var ref = null;
+    var options = underscore.assign({
+      success: function () {
+        window.swal(messages.success, null, 'success');
+        cb(false);
+      },
 
-      return function (options) {
-        if (ref && ref.destroy instanceof Function)
-          ref.destroy();
+      error: function (model, response, options) {
+        var error = options.xhr.responseJSON;
+        var isUpstream = error && error.name === 'UpstreamError';
+        var errorText = isUpstream
+          ? error.reason
+          : (options.xhr.responseJSON || options.xhr.responseText);
 
-        ref = new ctor(options);
-        return ref;
-      };
-    }
-  };
+        var errorTitle = isUpstream
+          ? error.message
+          : 'Server Error';
+
+        var body = $('<div>')
+          .append($('<div>').text(errorTitle))
+          .append('<br/>')
+          .append($('<pre class="well">').css('text-align', 'left').text(JSON.stringify(errorText, null, 2)))
+          .html();
+
+        swal({
+          type: 'error',
+          title: messages.error,
+          text: '<div>' + body + '</div>',
+          html: true
+        });
+
+        cb(true);
+      }
+    }, xhrOptions);
+
+    model.save(attributes, options);
+  },
+
+  // Pass in Backbone.View constructor to wrap it in a way,
+  // that will call .destroy() on previously created instance.
+  //
+  // Can be used to render the same view in multiple places:
+  //
+  //   var OriginalView = require('./some-backbone-view.js');
+  //   var SomePage = autodestroyView(OriginalView);
+  //   var OtherPage = autodestroyView(OriginalView);
+  autodestroyView: function (ctor) {
+    var ref = null;
+
+    return function (options) {
+      if (ref && ref.destroy instanceof Function)
+        ref.destroy();
+
+      ref = new ctor(options);
+      return ref;
+    };
+  }
+};

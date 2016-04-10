@@ -4,6 +4,7 @@ The collection is fetched through the api following the country code.
 */
   'use strict';
 
+  var Backbone = require('backbone');
   var ItemModel = require("./itemModel.js");
 
   var ItemsCollection = Backbone.Collection.extend({

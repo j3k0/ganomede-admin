@@ -1,5 +1,8 @@
     'use strict';
 
+
+    var Backbone = require('backbone');
+
     var ajaxHandler = {
 
         codes: {

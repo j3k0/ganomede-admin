@@ -3,6 +3,7 @@
   var fs = require('fs');
   var template = fs.readFileSync(__dirname + "/../../../templates/monitoring.html", 'utf8');
   var ServersListView = require("./serversListView");
+  var Backbone = require('backbone');
 
   var ServicesCollection = require("../../models/servicesCollection");
 
