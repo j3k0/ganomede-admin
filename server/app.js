@@ -19,7 +19,6 @@ const apiBase = config.http.apiBase;
 
 app.use(favicon(path.resolve(__dirname, '../web/images/favicon.ico')));
 app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(cookieParser());
 app.use(passport.initialize());
 
