@@ -3,10 +3,8 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const session = require('express-session');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
-const flash = require('flash');
 const passport = require('passport');
 const config = require('../config');
 const auth = require('./auth');
@@ -23,10 +21,7 @@ app.use(favicon(path.resolve(__dirname, '../web/images/favicon.ico')));
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(cookieParser());
-app.use(session({secret: 'ganomede-admin', saveUninitialized: true, resave: true}));
 app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
 
 //
 // Routers.
