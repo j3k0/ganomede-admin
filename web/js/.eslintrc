@@ -26,8 +26,7 @@
   "globals": {
     "$": true,
     "__dirname": true,
-    "Gauge": true,
-    "swal": true
+    "Gauge": true
   },
 
   "rules": {

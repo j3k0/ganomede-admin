@@ -1,6 +1,7 @@
 'use strict';
 
 var underscore = require('underscore');
+var swal = require('sweetalert');
 
 module.exports = {
   // Saves @model with updated @attributes.
@@ -16,7 +17,7 @@ module.exports = {
 
     var options = underscore.assign({
       success: function () {
-        window.swal(messages.success, null, 'success');
+        swal(messages.success, null, 'success');
         cb(false);
       },
 

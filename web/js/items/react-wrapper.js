@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var swal = require('sweetalert');
 var ItemModel = require('./models/itemModel');
 var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
