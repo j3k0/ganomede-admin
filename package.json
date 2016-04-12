@@ -5,8 +5,8 @@
   "description": "admin panel for triominos",
   "main": "index.js",
   "engines": {
-    "node": ">=4",
-    "npm": ">=2"
+    "node": ">=5",
+    "npm": ">=3"
   },
   "scripts": {
     "test": "make test",

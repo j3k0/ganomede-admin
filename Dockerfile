@@ -1,4 +1,4 @@
-FROM node:5.0.0
+FROM node:5.10.1
 
 MAINTAINER Jean-Christophe Hoelt <hoelt@fovea.cc>
 
@@ -34,7 +34,6 @@ COPY server /home/app/code/server
 
 ENV ADMIN_USERNAME=admin
 ENV ADMIN_PASSWORD=admin
-ENV ADMIN_TOKEN=abcd1234
 ENV VIRTUAL_CURRENCY_CURRENCY_CODES=
 
 EXPOSE 8000
