@@ -97,7 +97,7 @@ var ItemsListComponent = React.createBackboneClass({
   }
 });
 
-module.exports = function () {
+module.exports = function ItemsContainer () {
   return (
     <CollectionLoader
       collection={ItemsCollection.singleton()}

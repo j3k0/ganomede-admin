@@ -67,7 +67,7 @@ function PacksList (props) {
   return (<div>{packs}</div>);
 }
 
-module.exports = function () {
+module.exports = function PacksContainer () {
   return (
     <CollectionLoader
       collection={packs}
