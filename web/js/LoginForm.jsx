@@ -35,7 +35,7 @@ var Form = React.createClass({
     return (
       <div className="row">
         <div className="col-md-6">
-          <img src="img/logo.png" alt="" width="200" height="150" />
+          <img src="images/logo.png" alt="" width="200" height="150" />
         </div>
 
         <div className="col-md-6">
