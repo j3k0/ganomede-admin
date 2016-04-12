@@ -78,7 +78,7 @@ class Upstream {
 
   request (options, callback) {
     options.url = options.url
-      ? `${this.prefix}/${options.url}`
+      ? this.prefix + options.url
       : this.prefix;
 
     options.json = true;

@@ -2,7 +2,7 @@
 
 var React = require('react');
 var ReactRouter = require('react-router');
-var App = require('./app');
+var App = require('./app.jsx');
 var ItemsList = require('./items/react-wrapper');
 var PacksList = require('./packs');
 var LoginForm = require('./LoginForm.jsx');

@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var swal = require('sweetalert');
 var ItemModel = require('./models/itemModel');
 var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
@@ -97,7 +98,7 @@ var ItemsListComponent = React.createBackboneClass({
   }
 });
 
-module.exports = function () {
+module.exports = function ItemsContainer () {
   return (
     <CollectionLoader
       collection={ItemsCollection.singleton()}
