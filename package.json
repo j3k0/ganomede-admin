@@ -37,6 +37,7 @@
     "react-router": "^2.1.1",
     "react.backbone": "^0.8.0",
     "request": "^2.55.0",
+    "serve-favicon": "^2.3.0",
     "sweetalert": "~0.4.0",
     "underscore": "^1.7.0"
   },

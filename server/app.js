@@ -1,8 +1,10 @@
 'use strict';
 
 const express = require('express');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const flash = require('flash');
 const passport = require('passport');
@@ -17,6 +19,7 @@ const apiBase = config.http.apiBase;
 // Middlewares.
 //
 
+app.use(favicon(path.resolve(__dirname, '../web/images/favicon.ico')));
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(cookieParser());

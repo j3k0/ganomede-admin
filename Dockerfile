@@ -15,10 +15,8 @@ RUN npm install
 RUN mkdir /home/app/code/web
 COPY web/css /home/app/code/web/css
 COPY web/images /home/app/code/web/images
-COPY web/img /home/app/code/web/img
 COPY web/js /home/app/code/web/js
 COPY web/libs /home/app/code/web/libs
-COPY web/pics /home/app/code/web/pics
 COPY web/index.html /home/app/code/web/index.html
 COPY web/Makefile /home/app/code/web/Makefile
 RUN (cd web &&  ../node_modules/.bin/browserify \
