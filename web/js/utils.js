@@ -4,6 +4,10 @@ var underscore = require('underscore');
 var swal = require('sweetalert');
 
 module.exports = {
+  prefixPath: function (path) {
+    return /*'/admin/v1/web' + */path;
+  },
+
   // Saves @model with updated @attributes.
   // Mergres in custom @xhrOptions.
   // Shows SweetAlert message after XHR completes using @messages.

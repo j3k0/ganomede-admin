@@ -3,14 +3,27 @@
 var React = require('react');
 var ReactRouter = require('react-router');
 var login = require('./models/login');
+var utils = require('./utils');
 
 function NavLink (props) {
   return (
-    <ReactRouter.Link {...props} activeClassName='active' />
+    <li className="items-menu">
+      <ReactRouter.Link
+        {...props}
+        activeClassName='active'
+        to={utils.prefixPath(props.to)}
+      />
+    </li>
   );
 };
 
 function Header (props) {
+  const menuLinks = [
+    <NavLink key={0} to='/items'>Items</NavLink>,
+    <NavLink key={1} to='/packs'>Packs</NavLink>,
+    <NavLink key={2} to='/users'>Users</NavLink>
+  ];
+
   return (
     <nav className="navbar navbar-default">
       <div className="container-fluid">
@@ -26,12 +39,7 @@ function Header (props) {
 
         <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul className="nav navbar-nav">
-            <li className="items-menu">
-              <NavLink to='/items'>Items</NavLink>
-            </li>
-            <li>
-              <NavLink to='/packs'>Packs</NavLink>
-            </li>
+            {menuLinks}
           </ul>
 
           { (function () {
