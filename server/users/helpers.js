@@ -1,5 +1,6 @@
 'use strict';
 
+const async = require('async');
 const upstreams = require('../upstreams');
 const config = require('../../config');
 
@@ -24,7 +25,7 @@ const transactions = function (username, callback) {
 };
 
 // callback(error, dataURI)
-const avatars = function (username, callback) {
+const avatar = function (username, callback) {
   upstreams.avatars.request({
     url: `/${username}/256.png`,
     encoding: null // request buffer
@@ -50,6 +51,17 @@ const metadata = function (username, callback) {
 module.exports = {
   balance,
   transactions,
-  avatars,
-  metadata
+  avatar,
+  metadata,
+
+  profile: (username, callback) => {
+    const bind = fn => fn.bind(null, username);
+
+    async.parallel({
+      balance: bind(balance),
+      transactions: bind(transactions),
+      avatar: bind(avatar),
+      metadata: bind(metadata)
+    }, callback);
+  }
 };

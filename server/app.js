@@ -42,6 +42,7 @@ app.use(`${apiBase}/web`, require('./static.router'));
 app.use(`${apiBase}/api`, auth.router);
 app.use(auth.mwValidate);
 app.use(`${apiBase}/api`, require('./vcurrency'));
+app.use(`${apiBase}/api/users`, require('./users'));
 app.use(`${apiBase}/api/islogged`, function (req, res) {
   res.json({success: true});
 });

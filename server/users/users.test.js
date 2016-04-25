@@ -3,10 +3,10 @@
 const expect = require('expect.js');
 const helpers = require('./helpers');
 
-const kUsername = 'jeko';
-
 describe('Users', function () {
   const balanceSorter = (l, r) => l.currency < r.currency ? -1 : 1;
+  const kUsername = 'jeko';
+  const kProfile = {};
 
   it('balance()', function (done) {
     // mock.balanceOf(kUsername);
@@ -17,6 +17,8 @@ describe('Users', function () {
         {currency: 'silver', count: 0},
         {currency: 'copper', count: 0}
       ].sort(balanceSorter));
+
+      kProfile.balance = balance.sort(balanceSorter);
       done();
     });
   });
@@ -25,22 +27,37 @@ describe('Users', function () {
     helpers.transactions(kUsername, (err, transactions) => {
       expect(err).to.be(null);
       expect(transactions).to.be.an(Array);
+
+      kProfile.transactions = transactions;
       done();
     });
   });
 
   it('avatar()', function (done) {
-    helpers.avatars(kUsername, (err, dataUri) => {
+    helpers.avatar(kUsername, (err, avatar) => {
       expect(err).to.be(null);
-      expect(dataUri).to.match(/^data:image\/png;base64,.+/);
+      expect(avatar).to.match(/^data:image\/png;base64,.+/);
+
+      kProfile.avatar = avatar;
       done();
     });
   });
 
   it('metadata()', function (done) {
-    helpers.metadata(kUsername, (err, data) => {
+    helpers.metadata(kUsername, (err, metadata) => {
       expect(err).to.be(null);
-      expect(data).to.eql({location: 'Beirut'});
+      expect(metadata).to.eql({location: 'Beirut'});
+
+      kProfile.metadata = metadata;
+      done();
+    });
+  });
+
+  it('profile()', function (done) {
+    helpers.profile(kUsername, (err, profile) => {
+      expect(err).to.be(null);
+      profile.balance = profile.balance.sort(balanceSorter);
+      expect(profile).to.eql(kProfile);
       done();
     });
   });
