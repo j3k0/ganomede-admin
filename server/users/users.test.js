@@ -56,8 +56,16 @@ describe('Users', function () {
   it('profile()', function (done) {
     helpers.profile(kUsername, (err, profile) => {
       expect(err).to.be(null);
-      profile.balance = profile.balance.sort(balanceSorter);
-      expect(profile).to.eql(kProfile);
+      expect(profile).to.eql({
+        username: kUsername,
+        transactions: kProfile.transactions,
+        metadata: kProfile.metadata,
+        avatar: kProfile.avatar,
+        balance: kProfile.balance.reduce((prev, curAmount) => {
+          prev[curAmount.currency] = curAmount.count;
+          return prev;
+        }, {})
+      });
       done();
     });
   });

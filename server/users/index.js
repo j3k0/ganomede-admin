@@ -10,16 +10,7 @@ router.get('/:username', function (req, res, next) {
     if (err)
       return next(err);
 
-    const reply = Object.assign(
-      {username: req.params.username},
-      profile,
-      {balance: profile.balance.reduce((prev, currencyCount) => {
-        prev[currencyCount.currency] = currencyCount.count;
-        return prev;
-      }, {})}
-    );
-
-    res.json(reply);
+    res.json(profile);
   });
 });
 

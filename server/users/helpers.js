@@ -62,6 +62,20 @@ module.exports = {
       transactions: bind(transactions),
       avatar: bind(avatar),
       metadata: bind(metadata)
-    }, callback);
+    }, (err, profile) => {
+      if (err)
+        return callback(err);
+
+      const formatted = Object.assign(
+        {username},
+        profile,
+        {balance: profile.balance.reduce((prev, currencyCount) => {
+          prev[currencyCount.currency] = currencyCount.count;
+          return prev;
+        }, {})}
+      );
+
+      callback(null, formatted);
+    });
   }
 };
