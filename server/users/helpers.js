@@ -27,7 +27,7 @@ const transactions = function (username, callback) {
 // callback(error, dataURI)
 const avatar = function (username, callback) {
   upstreams.avatars.request({
-    url: `/${username}/256.png`,
+    url: `/${username}/64.png`,
     encoding: null // request buffer
   }, (err, buf) => {
     if (err)
@@ -56,12 +56,13 @@ module.exports = {
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);
+    const ignoreError = fn => (cb) => fn((err, data) => cb(null, data));
 
     async.parallel({
       balance: bind(balance),
       transactions: bind(transactions),
-      avatar: bind(avatar),
-      metadata: bind(metadata)
+      avatar: ignoreError(bind(avatar)),
+      metadata: ignoreError(bind(metadata))
     }, (err, profile) => {
       if (err)
         return callback(err);

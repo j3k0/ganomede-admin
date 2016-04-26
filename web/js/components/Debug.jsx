@@ -2,14 +2,22 @@
 
 var React = require('react');
 
-function pre (props) {
+function Debug (props) {
   return (
-    <pre className="well">
-      {JSON.stringify(props.data, null, 2)}
-    </pre>
+    <div className="debug">
+      {props.children}
+    </div>
   );
 }
 
-module.exports = {
-  pre: pre
-};
+Debug.pre = function pre (props) {
+  return (
+    <Debug>
+      <pre className="well">
+        {JSON.stringify(props.data, null, 2)}
+      </pre>
+    </Debug>
+  );
+}
+
+module.exports = Debug;

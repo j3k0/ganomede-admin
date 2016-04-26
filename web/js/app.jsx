@@ -18,7 +18,7 @@ function NavLink (props) {
 };
 
 function Header (props) {
-  const menuLinks = [
+  var menuLinks = [
     <NavLink key={0} to='/items'>Items</NavLink>,
     <NavLink key={1} to='/packs'>Packs</NavLink>,
     <NavLink key={2} to='/users'>Users</NavLink>
