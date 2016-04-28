@@ -5,15 +5,15 @@ const upstreams = require('../upstreams');
 const config = require('../../config');
 
 const authUrl = (username, path) => {
-  const token = `${process.env.API_SECRET}.${username}`;
+  const token = encodeURIComponent(`${process.env.API_SECRET}.${username}`);
   return `/auth/${token}${path}`;
 };
 
 const balance = function (username, callback) {
-  const path = `/coins/${config.services.virtualcurrency.currencies.join(',')}/count`;
+  const currencies = encodeURIComponent(config.services.virtualcurrency.currencies.join(','));
 
   upstreams.virtualcurrency.request({
-    url: authUrl(username, path)
+    url: authUrl(username, `/coins/${currencies}/count`)
   }, callback);
 };
 
