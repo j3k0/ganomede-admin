@@ -9,7 +9,6 @@ describe('Users', function () {
   const kProfile = {};
 
   it('balance()', function (done) {
-    // mock.balanceOf(kUsername);
     helpers.balance(kUsername, (err, balance) => {
       expect(err).to.be(null);
       expect(balance.sort(balanceSorter)).to.be.eql([
@@ -66,6 +65,16 @@ describe('Users', function () {
           return prev;
         }, {})
       });
+      done();
+    });
+  });
+
+  it('reward', function (done) {
+    helpers.reward(kUsername, 1, 'gold', (err, transaction) => {
+      expect(err).to.be(null);
+      expect(transaction).to.be.ok();
+      expect(transaction).to.have.keys('ok', 'id', 'rev');
+      expect(transaction.ok).to.be(true);
       done();
     });
   });

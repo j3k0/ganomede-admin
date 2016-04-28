@@ -19,6 +19,8 @@ const config = {
     db: process.env.COUCHDB_DB || 'blog'
   }, */
 
+  pkg,
+
   http: {
     host: process.env.HOST || '0.0.0.0',
     port: +process.env.PORT || 8000,

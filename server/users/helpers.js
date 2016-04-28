@@ -48,11 +48,26 @@ const metadata = function (username, callback) {
   });
 };
 
+const reward = function (username, amount, currency, callback) {
+  upstreams.virtualcurrency.request({
+    method: 'post',
+    url: `/rewards`,
+    body: {
+      secret: process.env.API_SECRET,
+      from: config.pkg.api,
+      to: username,
+      amount,
+      currency
+    }
+  }, callback);
+};
+
 module.exports = {
   balance,
   transactions,
   avatar,
   metadata,
+  reward,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);
