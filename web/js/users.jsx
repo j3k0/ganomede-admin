@@ -61,7 +61,7 @@ function Profile (props) {
         <div className='col-md-2'>
           <b>Balance</b>
           <ul className='list-unstyled'>{
-            Object.keys(props.balance).map(cur => {
+            Object.keys(props.balance).sort().map(cur => {
               return (<li key={cur}>{props.balance[cur]}&nbsp;{cur}</li>);
             })
           }</ul>
