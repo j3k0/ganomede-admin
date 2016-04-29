@@ -2,6 +2,7 @@
 
 var React = require('react');
 var ReactRouter = require('react-router');
+var Loader = require('./components/Loader.jsx');
 var login = require('./models/login');
 var utils = require('./utils');
 
@@ -68,9 +69,21 @@ var App = React.createClass({
     router: React.PropTypes.object
   },
 
+  // Pass in stuff to children.
+  childContextTypes: {
+    currencies: React.PropTypes.arrayOf(React.PropTypes.string)
+  },
+
+  getChildContext: function () {
+    return {currencies: this.state.currencies};
+  },
+
   getInitialState: function () {
     return {
-      loggedIn: false
+      loggedIn: false,
+      loading: true,
+      error: false,
+      currencies: []
     };
   },
 
@@ -81,7 +94,23 @@ var App = React.createClass({
     this.setState({loggedIn: newLoggedIn});
   },
 
-  componentDidMount: function () {
+  componentWillMount: function () {
+    require('./items/models/itemsCollection').singleton().fetch({
+      success: function (collection) {
+        this.setState({
+          loading: false,
+          currencies: collection.currencies
+        });
+      }.bind(this),
+      error: function (collection, xhr) {
+        var err = new Error(xhr.responseText);
+        err.reason = xhr.responseJSON;
+        this.setState({
+          loading: false,
+          error: err
+        });
+      }.bind(this)
+    });
     login.sub(this.onLoggedInChanged);
   },
 
@@ -105,7 +134,9 @@ var App = React.createClass({
         <div className="container">
           <div className="row">
             <div id='content' className="span12">
-              {this.props.children}
+              <Loader loading={this.state.loading} error={this.state.error}>
+                {this.props.children}
+              </Loader>
             </div>
           </div>
         </div>

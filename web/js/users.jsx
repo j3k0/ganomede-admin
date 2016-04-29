@@ -33,6 +33,10 @@ function Transaction (props) {
 }
 
 var AwardForm = React.createClass({
+  contextTypes: {
+    currencies: React.PropTypes.arrayOf(React.PropTypes.string)
+  },
+
   render: function () {
     return (
       <form className='form-inline' onSubmit={
@@ -45,11 +49,13 @@ var AwardForm = React.createClass({
         }
       }>
         <input type='text' ref='amountInput' defaultValue={0} />
-        <select ref='currencyInput' defaultValue='silver'>
-          <option value='gold'>gold</option>
-          <option value='silver'>silver</option>
-          <option value='copper'>copper</option>
-        </select>
+        <select ref='currencyInput' defaultValue={this.context.currencies[0]}>{
+          this.context.currencies.map(function (currency) {
+            return (
+              <option value={currency}>{currency}</option>
+            );
+          })
+        }</select>
         <input type='submit' className='btn btn-default' value='Award' />
       </form>
     );
