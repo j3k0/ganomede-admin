@@ -1,11 +1,36 @@
 'use strict';
 
+var React = require('react');
+var ReactDOMServer = require('react-dom/server');
 var underscore = require('underscore');
 var swal = require('sweetalert');
+var request = require('request');
+var url = require('url');
+var Debug = require('./components/Debug.jsx');
 
-module.exports = {
+var utils = {
   prefixPath: function (path) {
     return /*'/admin/v1/web' + */path;
+  },
+
+  xhr: function (options, callback) {
+    options.url = url.resolve(String(window.location), options.url);
+    options.json = true;
+    request(options, callback);
+  },
+
+  errorToHtml: function (error) {
+    var isUpstream = error && error.name === 'UpstreamError';
+    var errorText = isUpstream ? error.reason : error;
+    var errorTitle = isUpstream ? error.message : 'Server Error';
+
+    return ReactDOMServer.renderToStaticMarkup(
+      <div>
+        <div>{errorTitle}</div>
+        <br/>
+        <Debug.pre data={errorText}/>
+      </div>
+    );
   },
 
   // Saves @model with updated @attributes.
@@ -26,26 +51,12 @@ module.exports = {
       },
 
       error: function (model, response, options) {
-        var error = options.xhr.responseJSON;
-        var isUpstream = error && error.name === 'UpstreamError';
-        var errorText = isUpstream
-          ? error.reason
-          : (options.xhr.responseJSON || options.xhr.responseText);
-
-        var errorTitle = isUpstream
-          ? error.message
-          : 'Server Error';
-
-        var body = $('<div>')
-          .append($('<div>').text(errorTitle))
-          .append('<br/>')
-          .append($('<pre class="well">').css('text-align', 'left').text(JSON.stringify(errorText, null, 2)))
-          .html();
+        var error = options.xhr.responseJSON || options.xhr.responseText;
 
         swal({
           type: 'error',
           title: messages.error,
-          text: '<div>' + body + '</div>',
+          text: '<div>' + utils.errorToHtml(error) + '</div>',
           html: true
         });
 
@@ -76,3 +87,5 @@ module.exports = {
     };
   }
 };
+
+module.exports = utils;

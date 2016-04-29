@@ -7,6 +7,7 @@ var swal = require('sweetalert');
 var moment = require('moment');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
+var utils = require('./utils');
 
 var User = backbone.Model.extend({
   idAttribute: 'username',
@@ -30,6 +31,30 @@ function Transaction (props) {
     </span>
   );
 }
+
+var AwardForm = React.createClass({
+  render: function () {
+    return (
+      <form className='form-inline' onSubmit={
+        event => {
+          event.preventDefault();
+          this.props.onAward({
+            amount: parseInt(this.refs.amountInput.value, 10),
+            currency: this.refs.currencyInput.value
+          })
+        }
+      }>
+        <input type='text' ref='amountInput' defaultValue={0} />
+        <select ref='currencyInput' defaultValue='silver'>
+          <option value='gold'>gold</option>
+          <option value='silver'>silver</option>
+          <option value='copper'>copper</option>
+        </select>
+        <input type='submit' className='btn btn-default' value='Award' />
+      </form>
+    );
+  }
+});
 
 function Profile (props) {
   // TODO
@@ -58,13 +83,15 @@ function Profile (props) {
       </div>
 
       <div className='row'>
-        <div className='col-md-2'>
+        <div className='col-md-4'>
           <b>Balance</b>
           <ul className='list-unstyled'>{
             Object.keys(props.balance).sort().map(cur => {
               return (<li key={cur}>{props.balance[cur]}&nbsp;{cur}</li>);
             })
           }</ul>
+
+          <AwardForm onAward={props.onAward}/>
         </div>
 
         <div className='col-md-4'>
@@ -112,17 +139,19 @@ var Search = React.createClass({
       username: username
     });
 
-    var updateState = function (success) {
+    var updateState = function (error) {
       this.setState({
         profile: profile,
         loading: false,
-        error: !success
+        error: error
       });
-    };
+    }.bind(this);
 
     profile.fetch({
-      success: updateState.bind(this, true),
-      error: updateState.bind(this, false)
+      success: updateState.bind(this, null),
+      error: function (model, xhr, options) {
+        updateState(xhr.responseJSON || xhr.responseText || 'Server Error');
+      }
     });
   },
 
@@ -159,6 +188,57 @@ var Search = React.createClass({
     );
   },
 
+  award: function (award) {
+    var title = 'Awarding ' + this.state.username;
+    var message = [
+      'You are about to send',
+      award.amount,
+      award.currency,
+      'to',
+      this.state.username + '.',
+      '\nProceed?'
+    ].join(' ');
+
+    swal({
+      title: title,
+      text: message,
+      type: 'info',
+      showCancelButton: true,
+      closeOnConfirm: false,
+      showLoaderOnConfirm: true
+    }, function () {
+      var showSuccessMessage = swal.bind(swal, {
+        title: title,
+        type: 'success',
+        text: 'Award received',
+      });
+
+      var showErrorMessage = function (error) {
+        swal({
+          type: 'error',
+          title: title,
+          text: utils.errorToHtml(error),
+          html: true
+        });
+      };
+
+      utils.xhr({
+        method: 'post',
+        url: this.state.profile.url() + '/rewards',
+        body: award
+      }, (err, res, data) => {
+        if (err)
+          return showErrorMessage(err);
+
+        if (res.statusCode !== 200)
+          return showErrorMessage(data);
+
+        this.fetchProfile(this.state.username);
+        showSuccessMessage();
+      });
+    }.bind(this));
+  },
+
   renderProfile: function () {
     // Render hint if we have no username.
     if (this.state.index)
@@ -169,7 +249,7 @@ var Search = React.createClass({
 
     return (
       <Loader loading={this.state.loading} error={this.state.error}>
-        <Profile {...profile} />
+        <Profile {...profile} onAward={this.award} />
       </Loader>
     );
   },

@@ -14,4 +14,13 @@ router.get('/:username', function (req, res, next) {
   });
 });
 
+router.post('/:username/rewards', function (req, res, next) {
+  helpers.reward(req.params.username, req.body.amount, req.body.currency, (err, transaction) => {
+    if (err)
+      return next(err);
+
+    res.json(transaction);
+  });
+});
+
 module.exports = router;

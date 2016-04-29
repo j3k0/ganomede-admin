@@ -47,4 +47,13 @@ app.use(`${apiBase}/api/islogged`, function (req, res) {
   res.json({success: true});
 });
 
+// Handle some known errors.
+app.use(function (err, req, res, next) {
+  if (err instanceof Error && err.name === 'UpstreamError')
+    return res.status(500).json(err);
+
+  // Not sure what to do, use default Express handler.
+  next(err);
+});
+
 module.exports = app;
