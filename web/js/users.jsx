@@ -11,7 +11,7 @@ var utils = require('./utils');
 
 var User = backbone.Model.extend({
   idAttribute: 'username',
-  urlRoot: '../api/users'
+  urlRoot: utils.apiPath('/users')
 });
 
 function Transaction (props) {
@@ -52,7 +52,7 @@ var AwardForm = React.createClass({
         <select ref='currencyInput' defaultValue={this.context.currencies[0]}>{
           this.context.currencies.map(function (currency) {
             return (
-              <option value={currency}>{currency}</option>
+              <option key={currency} value={currency}>{currency}</option>
             );
           })
         }</select>
@@ -138,7 +138,7 @@ var Search = React.createClass({
     var profile = new User({username: username});
 
     // We are no longer at index route and are loading user profile.
-    this.context.router.push('/users/' + username);
+    this.context.router.push(utils.webPath('/users/' + username));
     this.setState({
       index: false,
       loading: true,

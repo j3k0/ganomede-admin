@@ -6,14 +6,20 @@ var Loader = require('./components/Loader.jsx');
 var login = require('./models/login');
 var utils = require('./utils');
 
+function Link (props) {
+  return (
+    <ReactRouter.Link
+      {...props}
+      activeClassName='active'
+      to={utils.webPath(props.to)}
+    />
+  );
+}
+
 function NavLink (props) {
   return (
     <li className="items-menu">
-      <ReactRouter.Link
-        {...props}
-        activeClassName='active'
-        to={utils.prefixPath(props.to)}
-      />
+      <Link {...props} />
     </li>
   );
 };
@@ -35,7 +41,7 @@ function Header (props) {
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
           </button>
-          <a className="navbar-brand" href="#">Triominos administration</a>
+          <Link className="navbar-brand" to="/">Triominos administration</Link>
         </div>
 
         <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -89,7 +95,7 @@ var App = React.createClass({
 
   onLoggedInChanged: function (model, newLoggedIn) {
     if (newLoggedIn === false)
-      this.context.router.push('/');
+      this.context.router.push(utils.webPath('/'));
 
     this.setState({loggedIn: newLoggedIn});
   },
@@ -107,7 +113,10 @@ var App = React.createClass({
         err.reason = xhr.responseJSON;
         this.setState({
           loading: false,
-          error: err
+          // TODO
+          // this is a temporary workaround, since currencies is
+          // protected by auth, we need not to "throw" so user sees login form.
+          error: xhr.status === 401 ? null : err
         });
       }.bind(this)
     });
