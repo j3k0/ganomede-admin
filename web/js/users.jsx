@@ -52,7 +52,7 @@ var AwardForm = React.createClass({
         <select ref='currencyInput' defaultValue={this.context.currencies[0]}>{
           this.context.currencies.map(function (currency) {
             return (
-              <option value={currency}>{currency}</option>
+              <option key={currency} value={currency}>{currency}</option>
             );
           })
         }</select>

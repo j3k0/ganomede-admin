@@ -4,9 +4,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var GanomedeAdminRouter = require('./router');
 var login = require('./models/login');
-var $ = require('jquery');
-
-window.jQuery = window.$ = require('jquery');
+var $ = window.jQuery = window.$ = require('jquery');
 
 // Make jQuery() not throw when parsing empty string
 // received as response to request that expects json.
