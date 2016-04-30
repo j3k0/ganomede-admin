@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function main {
+function exportEnv {
   # admin server config
   export API_SECRET="1"
   export PORT="1337"
@@ -17,8 +17,25 @@ function main {
   export VIRTUAL_CURRENCY_PORT_8080_TCP_PORT='8000'
   export VIRTUAL_CURRENCY_CURRENCY_CODES="gold,silver,copper"
 
-  # go!
-  nodemon -w server/ -w config.js index.js
+  # avatars
+  export AVATARS_PORT_8080_TCP_PORT='80'
+  export AVATARS_PORT_8080_TCP_ADDR='prod.ggs.ovh'
+
+  # users
+  export USERS_PORT_8080_TCP_PORT='80'
+  export USERS_PORT_8080_TCP_ADDR='prod.ggs.ovh'
 }
 
-main
+function main {
+  exportEnv
+
+  if [[ "_$1" = "_test" ]]; then
+    echo "Runing tests…"
+    npm run test
+  else
+    echo "Running server…"
+    nodemon -w server/ -w config.js index.js
+  fi
+}
+
+main $1
