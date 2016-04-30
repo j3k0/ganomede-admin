@@ -17,13 +17,13 @@ var UserProfile = users.Profile;
 
 function GanomedeRouter (/*props*/) {
   return (
-    <Router history={ReactRouter.hashHistory}>
-      <Route path={utils.prefixPath('/')} component={App}>
+    <Router history={ReactRouter.browserHistory}>
+      <Route path={utils.webPath('/')} component={App}>
         <IndexRoute component={LoginForm} />
-        <Route path={utils.prefixPath('/items')} component={ItemsList} />
-        <Route path={utils.prefixPath('/packs')} component={PacksList} />
-        <Route path={utils.prefixPath('/users')} component={UsersSearch}>
-          <Route path={utils.prefixPath('/users/:username')} component={UserProfile} />
+        <Route path={utils.webPath('/items')} component={ItemsList} />
+        <Route path={utils.webPath('/packs')} component={PacksList} />
+        <Route path={utils.webPath('/users')} component={UsersSearch}>
+          <Route path={utils.webPath('/users/:username')} component={UserProfile} />
         </Route>
       </Route>
     </Router>

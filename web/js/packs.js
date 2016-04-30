@@ -8,7 +8,7 @@ require('react.backbone');
 
 var packs = (function () {
   var Packs = backbone.Collection.extend({
-    url: '../api/packs'
+    url: utils.apiPath('/packs')
   });
 
   return new Packs();

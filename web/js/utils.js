@@ -9,12 +9,20 @@ var url = require('url');
 var Debug = require('./components/Debug.jsx');
 
 var utils = {
-  prefixPath: function (path) {
-    return /*'/admin/v1/web' + */path;
+  prefixPath: function (modul, path) {
+    return '/admin/v1/' + modul + path;
+  },
+
+  webPath: function (path) {
+    return this.prefixPath('web', path);
+  },
+
+  apiPath: function (path) {
+    return this.prefixPath('api', path);
   },
 
   xhr: function (options, callback) {
-    options.url = url.resolve(String(window.location), options.url);
+    options.url = url.resolve(String(window.location.origin), options.url);
     options.json = true;
     request(options, callback);
   },
