@@ -18,12 +18,14 @@ function exportEnv {
   export VIRTUAL_CURRENCY_CURRENCY_CODES="gold,silver,copper"
 
   # avatars
-  export AVATARS_PORT_8080_TCP_PORT='80'
+  export AVATARS_PORT_8080_TCP_PROTOCOL='https'
   export AVATARS_PORT_8080_TCP_ADDR='prod.ggs.ovh'
+  export AVATARS_PORT_8080_TCP_PORT='443'
 
   # users
-  export USERS_PORT_8080_TCP_PORT='80'
+  export USERS_PORT_8080_TCP_PROTOCOL='https'
   export USERS_PORT_8080_TCP_ADDR='prod.ggs.ovh'
+  export USERS_PORT_8080_TCP_PORT='443'
 }
 
 function main {
