@@ -2,15 +2,35 @@
 
 var React = require('react');
 var ReactRouter = require('react-router');
+var Loader = require('./components/Loader.jsx');
 var login = require('./models/login');
+var utils = require('./utils');
+
+function Link (props) {
+  return (
+    <ReactRouter.Link
+      {...props}
+      activeClassName='active'
+      to={utils.webPath(props.to)}
+    />
+  );
+}
 
 function NavLink (props) {
   return (
-    <ReactRouter.Link {...props} activeClassName='active' />
+    <li className="items-menu">
+      <Link {...props} />
+    </li>
   );
 };
 
 function Header (props) {
+  var menuLinks = [
+    <NavLink key={0} to='/items'>Items</NavLink>,
+    <NavLink key={1} to='/packs'>Packs</NavLink>,
+    <NavLink key={2} to='/users'>Users</NavLink>
+  ];
+
   return (
     <nav className="navbar navbar-default">
       <div className="container-fluid">
@@ -21,17 +41,12 @@ function Header (props) {
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
           </button>
-          <a className="navbar-brand" href="#">Triominos administration</a>
+          <Link className="navbar-brand" to="/">Triominos administration</Link>
         </div>
 
         <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul className="nav navbar-nav">
-            <li className="items-menu">
-              <NavLink to='/items'>Items</NavLink>
-            </li>
-            <li>
-              <NavLink to='/packs'>Packs</NavLink>
-            </li>
+            {menuLinks}
           </ul>
 
           { (function () {
@@ -60,20 +75,51 @@ var App = React.createClass({
     router: React.PropTypes.object
   },
 
+  // Pass in stuff to children.
+  childContextTypes: {
+    currencies: React.PropTypes.arrayOf(React.PropTypes.string)
+  },
+
+  getChildContext: function () {
+    return {currencies: this.state.currencies};
+  },
+
   getInitialState: function () {
     return {
-      loggedIn: false
+      loggedIn: false,
+      loading: true,
+      error: false,
+      currencies: []
     };
   },
 
   onLoggedInChanged: function (model, newLoggedIn) {
     if (newLoggedIn === false)
-      this.context.router.push('/');
+      this.context.router.push(utils.webPath('/'));
 
     this.setState({loggedIn: newLoggedIn});
   },
 
-  componentDidMount: function () {
+  componentWillMount: function () {
+    require('./items/models/itemsCollection').singleton().fetch({
+      success: function (collection) {
+        this.setState({
+          loading: false,
+          currencies: collection.currencies
+        });
+      }.bind(this),
+      error: function (collection, xhr) {
+        var err = new Error(xhr.responseText);
+        err.reason = xhr.responseJSON;
+        this.setState({
+          loading: false,
+          // TODO
+          // this is a temporary workaround, since currencies is
+          // protected by auth, we need not to "throw" so user sees login form.
+          error: xhr.status === 401 ? null : err
+        });
+      }.bind(this)
+    });
     login.sub(this.onLoggedInChanged);
   },
 
@@ -97,7 +143,9 @@ var App = React.createClass({
         <div className="container">
           <div className="row">
             <div id='content' className="span12">
-              {this.props.children}
+              <Loader loading={this.state.loading} error={this.state.error}>
+                {this.props.children}
+              </Loader>
             </div>
           </div>
         </div>

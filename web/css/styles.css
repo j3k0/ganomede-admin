@@ -43,3 +43,32 @@ button.btn-add-item {
 .logout-button {
     cursor: pointer;
 }
+
+.avatar, .no-avatar{
+    min-width: 64px;
+    min-height: 64px;
+}
+
+.no-avatar {
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #ccc;
+}
+
+.clickable {
+    cursor: pointer;
+    border-bottom: 1px dotted #ccc;
+}
+
+.clickable:hover {
+    background-color: aqua
+}
+
+.debug pre {
+    text-align: left;
+}
+
+.unobtrusive {
+    color: #ccc;
+    font-size: smaller;
+}

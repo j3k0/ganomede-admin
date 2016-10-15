@@ -18,14 +18,23 @@
     "react"
   ],
 
+  "extends": [
+    "../../.eslintrc",
+    "plugin:react/recommended"
+  ],
+
   "globals": {
     "$": true,
     "__dirname": true,
-    "Gauge": true,
-    "swal": true
+    "Gauge": true
   },
 
   "rules": {
-    "no-var": 0
+    // Don't enforce let/const for browser.
+    "no-var": 0,
+    // Enforce function X() {} so we have react display name.
+    "func-style": ["error", "declaration"],
+    // Don't require props declaration.
+    "react/prop-types": 0
   }
 }

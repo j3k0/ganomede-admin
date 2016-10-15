@@ -8,7 +8,7 @@ require('react.backbone');
 
 var packs = (function () {
   var Packs = backbone.Collection.extend({
-    url: '../api/packs'
+    url: utils.apiPath('/packs')
   });
 
   return new Packs();
@@ -67,7 +67,7 @@ function PacksList (props) {
   return (<div>{packs}</div>);
 }
 
-module.exports = function () {
+module.exports = function PacksContainer () {
   return (
     <CollectionLoader
       collection={packs}

@@ -6,10 +6,11 @@ The collection is fetched through the api following the country code.
 
   var Backbone = require('backbone');
   var ItemModel = require("./itemModel.js");
+  var utils = require('../../utils');
 
   var ItemsCollection = Backbone.Collection.extend({
     model: ItemModel,
-    url: '../api/items',
+    url: utils.apiPath('/items'),
 
     parse: function (result) {
       // Server responds with list of currencies and items.
