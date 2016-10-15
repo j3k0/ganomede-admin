@@ -87,18 +87,32 @@ var AwardForm = React.createClass({
 
 function BanInfo (props) {
   var ban = props.ban;
+  var onToggle = props.onToggle;
+
+  var status = ban.exists
+    ? (<WarningLabel>
+        <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
+          Banned {utils.formatDateFromNow(ban.createdAt)}
+        </ClickForDetails>
+      </WarningLabel>)
+    : 'In Good Standing';
+
+  var toggler = (
+    <a href="#"
+       onClick={event => {
+         event.preventDefault();
+         onToggle(ban.exists ? 'unban' : 'ban');
+       }}
+    >
+      {ban.exists ? 'Unban' : 'Ban'}
+    </a>
+  );
 
   return (
     <div>
-      {
-        ban.exists
-          ? (<WarningLabel>
-              <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
-                Banned {utils.formatDateFromNow(ban.createdAt)}
-              </ClickForDetails>
-            </WarningLabel>)
-          : 'In Good Standing'
-      }
+      {status}
+      {' '}
+      {toggler}
     </div>
   );
 }
@@ -107,7 +121,6 @@ function ProfilePiece (props) {
   return (
     <div>
       {props.value || <span className="unobtrusive">{props.missingText}</span>}
-
     </div>
   );
 }
@@ -139,7 +152,7 @@ function Profile (props) {
           />
 
           <ProfilePiece
-            value={props.banInfo && <BanInfo ban={props.banInfo}/>}
+            value={props.banInfo && <BanInfo ban={props.banInfo} onToggle={props.toggleBan}/>}
             missingText="Ban Info Missing"
           />
         </div>
@@ -302,6 +315,38 @@ var Search = React.createClass({
     }.bind(this));
   },
 
+  toggleBan: function (action) {
+    utils.xhr({
+      method: 'post',
+      url: this.state.profile.url() + '/' + action
+    }, (err, res, data) => {
+      var title = action[0].toUpperCase() + action.slice(1);
+
+      var showSuccessMessage = swal.bind(swal, {
+        title: title,
+        type: 'success',
+        text: `User ${this.state.username} is now ${action}ed.`,
+      });
+
+      var showErrorMessage = function (error) {
+        swal({
+          type: 'error',
+          title: title,
+          text: utils.errorToHtml(error),
+          html: true
+        });
+      };
+
+      if (err)
+        return showErrorMessage(err);
+
+      if (res.statusCode !== 200)
+        return showErrorMessage(data);
+
+      showSuccessMessage();
+    });
+  },
+
   renderProfile: function () {
     // Render hint if we have no username.
     if (this.state.index)
@@ -312,7 +357,11 @@ var Search = React.createClass({
 
     return (
       <Loader loading={this.state.loading} error={this.state.error}>
-        <Profile {...profile} onAward={this.award} />
+        <Profile
+          {...profile}
+          onAward={this.award}
+          toggleBan={this.toggleBan}
+        />
       </Loader>
     );
   },

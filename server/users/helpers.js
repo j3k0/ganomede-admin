@@ -69,6 +69,21 @@ const banInfo = function (username, callback) {
   }, callback);
 };
 
+// ban user: banSet(username, true)
+// unban user: banSet(username, false)
+const banSet = function (username, ban, callback) {
+  const method = ban ? 'post' : 'delete';
+  const url = ban
+    ? '/banned-users'
+    : `/banned-users/${username}`;
+
+  upstreams.users.request({
+    method,
+    url,
+    body: {secret: process.env.API_SECRET}
+  }, callback);
+};
+
 module.exports = {
   balance,
   transactions,
@@ -76,6 +91,7 @@ module.exports = {
   metadata,
   reward,
   banInfo,
+  banSet,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);
