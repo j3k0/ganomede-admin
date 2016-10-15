@@ -27,7 +27,7 @@ var Pack = React.createBackboneClass({
     );
   },
 
-  render: function () {
+  render: function Pack () {
     var pack = this.getModel();
 
     return (

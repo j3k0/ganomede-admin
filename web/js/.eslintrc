@@ -1,6 +1,6 @@
 {
   "env": {
-    "es6": false,
+    "es6": true,
     "node": false,
     "mocha": false,
     "browser": true,
@@ -8,7 +8,7 @@
   },
 
   "parserOptions": {
-    "ecmaVersion": 5,
+    "ecmaVersion": 6,
     "ecmaFeatures": {
       "jsx": true
     }
@@ -32,8 +32,6 @@
   "rules": {
     // Don't enforce let/const for browser.
     "no-var": 0,
-    // Enforce function X() {} so we have react display name.
-    "func-style": ["error", "declaration"],
     // Don't require props declaration.
     "react/prop-types": 0
   }

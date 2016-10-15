@@ -68,7 +68,7 @@ var AwardForm = React.createClass({
           this.props.onAward({
             amount: parseInt(this.refs.amountInput.value, 10),
             currency: this.refs.currencyInput.value
-          })
+          });
         }
       }>
         <input type='text' ref='amountInput' defaultValue={0} />
@@ -172,7 +172,7 @@ function Profile (props) {
       </div>
     </div>
   );
-};
+}
 
 var Search = React.createClass({
   contextTypes: {
@@ -212,7 +212,7 @@ var Search = React.createClass({
 
     profile.fetch({
       success: updateState.bind(this, null),
-      error: function (model, xhr, options) {
+      error: function (model, xhr/*, options*/) {
         updateState(xhr.responseJSON || xhr.responseText || 'Server Error');
       }
     });
