@@ -62,12 +62,20 @@ const reward = function (username, amount, currency, callback) {
   }, callback);
 };
 
+const banInfo = function (username, callback) {
+  upstreams.users.request({
+    method: 'get',
+    url: `/banned-users/${username}`
+  }, callback);
+};
+
 module.exports = {
   balance,
   transactions,
   avatar,
   metadata,
   reward,
+  banInfo,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);
@@ -76,6 +84,7 @@ module.exports = {
     async.parallel({
       balance: bind(balance),
       transactions: bind(transactions),
+      banInfo: bind(banInfo),
       avatar: ignoreError(bind(avatar)),
       metadata: ignoreError(bind(metadata))
     }, (err, profile) => {

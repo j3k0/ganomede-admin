@@ -6,6 +6,7 @@ var underscore = require('underscore');
 var swal = require('sweetalert');
 var request = require('request');
 var url = require('url');
+var moment = require('moment');
 var Debug = require('./components/Debug.jsx');
 
 var utils = {
@@ -93,6 +94,14 @@ var utils = {
       ref = new ctor(options);
       return ref;
     };
+  },
+
+  formatDate: function (date) {
+    return moment(date).format('lll');
+  },
+
+  formatDateFromNow: function (date) {
+    return moment(date).fromNow();
   }
 };
 

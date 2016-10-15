@@ -4,7 +4,6 @@ var backbone = require('backbone');
 var React = require('react');
 var ReactDOMServer = require('react-dom/server');
 var swal = require('sweetalert');
-var moment = require('moment');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
@@ -14,21 +13,45 @@ var User = backbone.Model.extend({
   urlRoot: utils.apiPath('/users')
 });
 
-function Transaction (props) {
+function ClickForDetails (props) {
+  var title = props.title;
+  var details = props.details;
+
   var onClick = swal.bind(swal, {
     type: 'info',
     html: true,
-    title: 'Transaction',
-    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={props}/>),
+    title: title,
+    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={details}/>),
     allowOutsideClick: true
-  });
+  }, () => {});
 
   return (
-    <span className='clickable' onClick={onClick}>
-      {props.reason} {props.data.amount}&nbsp;{props.data.currency}
-      {' '}
-      <span className='unobtrusive'>{moment(props.timestamp).fromNow()}</span>
+    <span className="clickable" onClick={onClick}>
+      {props.children}
     </span>
+  );
+}
+
+function WarningLabel (props) {
+  return (
+    <small
+      className='label label-danger'
+      style={{marginRight: '.5em'}}
+    >
+      {props.children}
+    </small>
+  );
+}
+
+function Transaction (props) {
+  var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
+
+  return (
+    <ClickForDetails title={title} details={props}>
+     {props.reason} {props.data.amount}&nbsp;{props.data.currency}
+     {' '}
+     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}</span>
+    </ClickForDetails>
   );
 }
 
@@ -62,12 +85,39 @@ var AwardForm = React.createClass({
   }
 });
 
+function BanInfo (props) {
+  var ban = props.ban;
+
+  return (
+    <div>
+      {
+        ban.exists
+          ? (<WarningLabel>
+              <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
+                Banned {utils.formatDateFromNow(ban.createdAt)}
+              </ClickForDetails>
+            </WarningLabel>)
+          : 'In Good Standing'
+      }
+    </div>
+  );
+}
+
+function ProfilePiece (props) {
+  return (
+    <div>
+      {props.value || <span className="unobtrusive">{props.missingText}</span>}
+
+    </div>
+  );
+}
+
 function Profile (props) {
   // TODO
   // Remove this temporary warning in case user is missing.
   var warning = props.metadata.location
     ? undefined
-    : (<small className='label label-danger' style={{marginRight: '.5em'}}>Might Not Exist</small>);
+    : (<WarningLabel>Might Not Exist</WarningLabel>);
 
   return (
     <div className='container-fluid'>
@@ -82,9 +132,16 @@ function Profile (props) {
             {warning}
             {props.username}
           </h4>
-          { props.metadata.location ||
-            <span className='unobtrusive'>Location Missing</span>
-          }
+
+          <ProfilePiece
+            value={props.metadata.location}
+            missingText="Location Missing"
+          />
+
+          <ProfilePiece
+            value={props.banInfo && <BanInfo ban={props.banInfo}/>}
+            missingText="Ban Info Missing"
+          />
         </div>
       </div>
 
