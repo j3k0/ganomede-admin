@@ -4,8 +4,10 @@ const async = require('async');
 const upstreams = require('../upstreams');
 const config = require('../../config');
 
+const apiSecret = process.env.API_SECRET;
+
 const authUrl = (username, path) => {
-  const token = encodeURIComponent(`${process.env.API_SECRET}.${username}`);
+  const token = encodeURIComponent(`${apiSecret}.${username}`);
   return `/auth/${token}${path}`;
 };
 
@@ -53,7 +55,7 @@ const reward = function (username, amount, currency, callback) {
     method: 'post',
     url: `/rewards`,
     body: {
-      secret: process.env.API_SECRET,
+      secret: apiSecret,
       from: config.pkg.api,
       to: username,
       amount,
@@ -69,19 +71,20 @@ const banInfo = function (username, callback) {
   }, callback);
 };
 
-// ban user: banSet(username, true)
-// unban user: banSet(username, false)
-const banSet = function (username, ban, callback) {
-  const method = ban ? 'post' : 'delete';
-  const url = ban
-    ? '/banned-users'
-    : `/banned-users/${username}`;
+// ban user
+const banSetTrue = function (username, callback) {
+  const method = 'post';
+  const url    = '/banned-users';
+  const body   = { apiSecret, username };
+  upstreams.users.request({ method, url, body }, callback);
+};
 
-  upstreams.users.request({
-    method,
-    url,
-    body: {secret: process.env.API_SECRET}
-  }, callback);
+// unban user
+const banSetFalse = function (username, callback) {
+  const method = 'delete';
+  const url = `/banned-users/${username}`;
+  const body = { apiSecret };
+  upstreams.users.request({ method, url, body }, callback);
 };
 
 module.exports = {
@@ -91,7 +94,8 @@ module.exports = {
   metadata,
   reward,
   banInfo,
-  banSet,
+  banSetTrue,
+  banSetFalse,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);

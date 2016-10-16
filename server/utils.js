@@ -52,6 +52,7 @@ class Upstream {
       // Check network errors.
       if (err) {
         this.logError(err);
+        log.error({ options, body });
         return callback(this.createError(err));
       }
 
@@ -59,6 +60,7 @@ class Upstream {
       if (!/^2\d{2}$/.test(String(res.statusCode))) {
         const reason = `HTTP ${res.statusCode}: ${http.STATUS_CODES[res.statusCode]}`;
         this.logError(reason);
+        log.error({ options, body });
         return callback(this.createError(reason, body));
       }
 

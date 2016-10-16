@@ -2,7 +2,10 @@
 
 function exportEnv {
   # admin server config
-  export API_SECRET="1"
+  if [ "x$API_SECRET" = "x" ]; then
+    API_SECRET="1"
+  fi
+  export API_SECRET
   export PORT="1337"
   export ADMIN_USERNAME="1"
   export ADMIN_PASSWORD="1"
@@ -14,7 +17,9 @@ function exportEnv {
   export ANALYTICS_LINK1_NAME="Tessst"
 
   # vcurrency config
-  export VIRTUAL_CURRENCY_PORT_8080_TCP_PORT='8000'
+  export VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL='https'
+  export VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR='prod.ggs.ovh'
+  export VIRTUAL_CURRENCY_PORT_8080_TCP_PORT='443'
   export VIRTUAL_CURRENCY_CURRENCY_CODES="gold,silver,copper"
 
   # avatars
