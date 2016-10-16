@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var swal = require('sweetalert');
 var ItemModel = require('./models/itemModel');
 var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
@@ -33,7 +34,7 @@ var ItemComponent = React.createBackboneClass({
     );
   },
 
-  render: function () {
+  render: function ItemComponent () {
     var item = this.getModel();
     var displayId = item.get('id') || item.get('displayId');
 
@@ -76,7 +77,7 @@ var ItemsListComponent = React.createBackboneClass({
     }.bind(this));
   },
 
-  render: function () {
+  render: function ItemsListComponent () {
     var collection = this.getCollection();
     var itemsList = collection.map(function (item, idx) {
       var key = [idx, item.id].join(':');
@@ -97,7 +98,7 @@ var ItemsListComponent = React.createBackboneClass({
   }
 });
 
-module.exports = function () {
+module.exports = function ItemsContainer () {
   return (
     <CollectionLoader
       collection={ItemsCollection.singleton()}
