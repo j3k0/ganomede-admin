@@ -1,6 +1,6 @@
 {
   "name": "admin",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "api": "admin/v1",
   "description": "admin panel for triominos",
   "main": "index.js",
