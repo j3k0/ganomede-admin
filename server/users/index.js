@@ -23,4 +23,16 @@ router.post('/:username/rewards', function (req, res, next) {
   });
 });
 
+const banSet = (isBanned) => (req, res, next) => {
+  helpers.banSet(req.params.username, isBanned, (err) => {
+    if (err)
+      return next(err);
+
+    res.sendStatus(200);
+  });
+};
+
+router.post('/:username/ban', banSet(true));
+router.post('/:username/unban', banSet(false));
+
 module.exports = router;

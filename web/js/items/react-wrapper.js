@@ -34,7 +34,7 @@ var ItemComponent = React.createBackboneClass({
     );
   },
 
-  render: function () {
+  render: function ItemComponent () {
     var item = this.getModel();
     var displayId = item.get('id') || item.get('displayId');
 
@@ -77,7 +77,7 @@ var ItemsListComponent = React.createBackboneClass({
     }.bind(this));
   },
 
-  render: function () {
+  render: function ItemsListComponent () {
     var collection = this.getCollection();
     var itemsList = collection.map(function (item, idx) {
       var key = [idx, item.id].join(':');

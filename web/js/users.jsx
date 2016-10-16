@@ -4,7 +4,6 @@ var backbone = require('backbone');
 var React = require('react');
 var ReactDOMServer = require('react-dom/server');
 var swal = require('sweetalert');
-var moment = require('moment');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
@@ -14,21 +13,45 @@ var User = backbone.Model.extend({
   urlRoot: utils.apiPath('/users')
 });
 
-function Transaction (props) {
+function ClickForDetails (props) {
+  var title = props.title;
+  var details = props.details;
+
   var onClick = swal.bind(swal, {
     type: 'info',
     html: true,
-    title: 'Transaction',
-    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={props}/>),
+    title: title,
+    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={details}/>),
     allowOutsideClick: true
-  });
+  }, () => {});
 
   return (
-    <span className='clickable' onClick={onClick}>
-      {props.reason} {props.data.amount}&nbsp;{props.data.currency}
-      {' '}
-      <span className='unobtrusive'>{moment(props.timestamp).fromNow()}</span>
+    <span className="clickable" onClick={onClick}>
+      {props.children}
     </span>
+  );
+}
+
+function WarningLabel (props) {
+  return (
+    <small
+      className='label label-danger'
+      style={{marginRight: '.5em'}}
+    >
+      {props.children}
+    </small>
+  );
+}
+
+function Transaction (props) {
+  var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
+
+  return (
+    <ClickForDetails title={title} details={props}>
+     {props.reason} {props.data.amount}&nbsp;{props.data.currency}
+     {' '}
+     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}</span>
+    </ClickForDetails>
   );
 }
 
@@ -45,7 +68,7 @@ var AwardForm = React.createClass({
           this.props.onAward({
             amount: parseInt(this.refs.amountInput.value, 10),
             currency: this.refs.currencyInput.value
-          })
+          });
         }
       }>
         <input type='text' ref='amountInput' defaultValue={0} />
@@ -62,12 +85,52 @@ var AwardForm = React.createClass({
   }
 });
 
+function BanInfo (props) {
+  var ban = props.ban;
+  var onToggle = props.onToggle;
+
+  var status = ban.exists
+    ? (<WarningLabel>
+        <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
+          Banned {utils.formatDateFromNow(ban.createdAt)}
+        </ClickForDetails>
+      </WarningLabel>)
+    : 'In Good Standing';
+
+  var toggler = (
+    <a href="#"
+       onClick={event => {
+         event.preventDefault();
+         onToggle(ban.exists ? 'unban' : 'ban');
+       }}
+    >
+      {ban.exists ? 'Unban' : 'Ban'}
+    </a>
+  );
+
+  return (
+    <div>
+      {status}
+      {' '}
+      {toggler}
+    </div>
+  );
+}
+
+function ProfilePiece (props) {
+  return (
+    <div>
+      {props.value || <span className="unobtrusive">{props.missingText}</span>}
+    </div>
+  );
+}
+
 function Profile (props) {
   // TODO
   // Remove this temporary warning in case user is missing.
   var warning = props.metadata.location
     ? undefined
-    : (<small className='label label-danger' style={{marginRight: '.5em'}}>Might Not Exist</small>);
+    : (<WarningLabel>Might Not Exist</WarningLabel>);
 
   return (
     <div className='container-fluid'>
@@ -82,9 +145,16 @@ function Profile (props) {
             {warning}
             {props.username}
           </h4>
-          { props.metadata.location ||
-            <span className='unobtrusive'>Location Missing</span>
-          }
+
+          <ProfilePiece
+            value={props.metadata.location}
+            missingText="Location Missing"
+          />
+
+          <ProfilePiece
+            value={props.banInfo && <BanInfo ban={props.banInfo} onToggle={props.toggleBan}/>}
+            missingText="Ban Info Missing"
+          />
         </div>
       </div>
 
@@ -115,7 +185,7 @@ function Profile (props) {
       </div>
     </div>
   );
-};
+}
 
 var Search = React.createClass({
   contextTypes: {
@@ -155,7 +225,7 @@ var Search = React.createClass({
 
     profile.fetch({
       success: updateState.bind(this, null),
-      error: function (model, xhr, options) {
+      error: function (model, xhr/*, options*/) {
         updateState(xhr.responseJSON || xhr.responseText || 'Server Error');
       }
     });
@@ -245,6 +315,38 @@ var Search = React.createClass({
     }.bind(this));
   },
 
+  toggleBan: function (action) {
+    utils.xhr({
+      method: 'post',
+      url: this.state.profile.url() + '/' + action
+    }, (err, res, data) => {
+      var title = action[0].toUpperCase() + action.slice(1);
+
+      var showSuccessMessage = swal.bind(swal, {
+        title: title,
+        type: 'success',
+        text: `User ${this.state.username} is now ${action}ed.`,
+      });
+
+      var showErrorMessage = function (error) {
+        swal({
+          type: 'error',
+          title: title,
+          text: utils.errorToHtml(error),
+          html: true
+        });
+      };
+
+      if (err)
+        return showErrorMessage(err);
+
+      if (res.statusCode !== 200)
+        return showErrorMessage(data);
+
+      showSuccessMessage();
+    });
+  },
+
   renderProfile: function () {
     // Render hint if we have no username.
     if (this.state.index)
@@ -255,7 +357,11 @@ var Search = React.createClass({
 
     return (
       <Loader loading={this.state.loading} error={this.state.error}>
-        <Profile {...profile} onAward={this.award} />
+        <Profile
+          {...profile}
+          onAward={this.award}
+          toggleBan={this.toggleBan}
+        />
       </Loader>
     );
   },
