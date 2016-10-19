@@ -11,14 +11,6 @@ const parseServiceAddress = (service) => {
 };
 
 const config = {
-  /* couch: {
-    host: process.env.COUCHDB_HOST || 'localhost',
-    port: +process.env.COUCHDB_PORT || 5984,
-    user: process.env.COUCHDB_USER || '',
-    password: process.env.COUCHDB_PASSWORD || '',
-    db: process.env.COUCHDB_DB || 'blog'
-  }, */
-
   pkg,
 
   http: {
@@ -50,7 +42,8 @@ const config = {
     ),
 
     avatars: parseServiceAddress('AVATARS'),
-    users: parseServiceAddress('USERS')
+    users: parseServiceAddress('USERS'),
+    data: parseServiceAddress('DATA')
   }
 };
 
