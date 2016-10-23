@@ -7,6 +7,7 @@ var ItemsList = require('./items/react-wrapper');
 var PacksList = require('./packs');
 var LoginForm = require('./LoginForm.jsx');
 var users = require('./users.jsx');
+var data = require('./data.jsx');
 var utils = require('./utils');
 
 var Router = ReactRouter.Router;
@@ -24,6 +25,9 @@ function GanomedeRouter (/*props*/) {
         <Route path={utils.webPath('/packs')} component={PacksList} />
         <Route path={utils.webPath('/users')} component={UsersSearch}>
           <Route path={utils.webPath('/users/:username')} component={UserProfile} />
+        </Route>
+        <Route path={utils.webPath('/data')} component={data.Layout}>
+          <Route path={utils.webPath('/data/:docId')} component={data.Document} />
         </Route>
       </Route>
     </Router>

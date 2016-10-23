@@ -22,13 +22,14 @@ function NavLink (props) {
       <Link {...props} />
     </li>
   );
-};
+}
 
 function Header (props) {
   var menuLinks = [
     <NavLink key={0} to='/items'>Items</NavLink>,
     <NavLink key={1} to='/packs'>Packs</NavLink>,
-    <NavLink key={2} to='/users'>Users</NavLink>
+    <NavLink key={2} to='/users'>Users</NavLink>,
+    <NavLink key={3} to='/data'>Data</NavLink>
   ];
 
   return (
@@ -66,7 +67,7 @@ function Header (props) {
       </div>
     </nav>
   );
-};
+}
 
 var App = React.createClass({
   // Get access to react router instance via
