@@ -2,6 +2,55 @@
 
 const React = require('react');
 const JsonEditor = require('./components/JsonEditor.jsx');
+const utils = require('./utils');
+
+const docs = {
+  url (id) {
+    const docIdParam = (arguments.length === 1)
+      ? `/${encodeURIComponent(id)}`
+      : '';
+
+    return utils.apiPath(`/data/docs${docIdParam}`);
+  },
+
+  list (query, callback) {
+    utils.xhr({
+      method: 'get',
+      url: this.url()
+    }, callback);
+  },
+
+  search (query, callback) {
+    utils.xhr({
+      method: 'get',
+      url: this.url(),
+      qs: {q: query}
+    }, callback);
+  },
+
+  fetch (id, callback) {
+    utils.xhr({
+      method: 'get',
+      url: this.url(id),
+      gzip: true
+    }, callback);
+  },
+
+  replace (id, newDoc, callback) {
+    utils.xhr({
+      method: 'post',
+      url: this.url(id),
+      body: newDoc
+    }, callback);
+  },
+
+  delete (id, callback) {
+    utils.xhr({
+      method: 'delete',
+      url: this.url(id)
+    }, callback);
+  }
+};
 
 class Document extends React.Component {
   constructor (props) {
