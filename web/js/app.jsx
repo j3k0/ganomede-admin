@@ -5,24 +5,7 @@ var ReactRouter = require('react-router');
 var Loader = require('./components/Loader.jsx');
 var login = require('./models/login');
 var utils = require('./utils');
-
-function Link (props) {
-  return (
-    <ReactRouter.Link
-      {...props}
-      activeClassName='active'
-      to={utils.webPath(props.to)}
-    />
-  );
-}
-
-function NavLink (props) {
-  return (
-    <li className="items-menu">
-      <Link {...props} />
-    </li>
-  );
-}
+var {Link, NavLink} = require('./components/Links.jsx');
 
 function Header (props) {
   var menuLinks = [

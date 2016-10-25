@@ -30,8 +30,8 @@ var utils = {
 
   errorToHtml: function (error) {
     var isUpstream = error && error.name === 'UpstreamError';
-    var errorText = isUpstream ? error.reason : error;
-    var errorTitle = isUpstream ? error.message : 'Server Error';
+    var errorText = isUpstream ? error.reason : (error.message || error);
+    var errorTitle = isUpstream ? error.message : 'Error';
 
     return ReactDOMServer.renderToStaticMarkup(
       <div>
@@ -40,6 +40,22 @@ var utils = {
         <Debug.pre data={errorText}/>
       </div>
     );
+  },
+
+  xhrMessages: ({errorTitle, successTitle}) => {
+    const success = (text) => swal(
+      successTitle,
+      text ? JSON.stringify(text) : null,
+      'success'
+    );
+    const error = (err) => swal({
+      type: 'error',
+      title: errorTitle,
+      text: '<div>' + utils.errorToHtml(err) + '</div>',
+      html: true
+    });
+
+    return {success, error};
   },
 
   // Saves @model with updated @attributes.
@@ -53,22 +69,19 @@ var utils = {
       ? callback
       : function () {};
 
+    var {success, error} = utils.xhrMessages({
+      errorTitle: messages.error,
+      successTitle: messages.success
+    });
+
     var options = underscore.assign({
       success: function () {
-        swal(messages.success, null, 'success');
+        success();
         cb(false);
       },
 
       error: function (model, response, options) {
-        var error = options.xhr.responseJSON || options.xhr.responseText;
-
-        swal({
-          type: 'error',
-          title: messages.error,
-          text: '<div>' + utils.errorToHtml(error) + '</div>',
-          html: true
-        });
-
+        error(options.xhr.responseJSON || options.xhr.responseText);
         cb(true);
       }
     }, xhrOptions);

@@ -27,16 +27,23 @@ class JsonEditor extends React.Component {
   constructor (props) {
     super(props);
     this.editor = null; // CodeMirror Instance
+    this.editorNode = null; // Where to render stuff.
   }
 
-  initCodeMirror (node) {
-    this.editor = codemirror(node);
+  componentDidMount () {
+    this.editor = codemirror(this.editorNode);
     this.val(this.props.json);
+    if (this.props.onChange)
+      this.editor.on('change', this.handleChange.bind(this));
   }
 
-  componentWillReceiveProps (nextProps) {
-    if (this.props.json !== nextProps.json)
-      this.val(nextProps.json);
+  componentDidUpdate () {
+    if (this.val() !== this.props.json)
+      this.val(this.props.json);
+  }
+
+  handleChange () {
+    this.props.onChange(this.val());
   }
 
   val (newVal) {
@@ -47,7 +54,7 @@ class JsonEditor extends React.Component {
 
   render () {
     return (
-      <div ref={node => this.initCodeMirror(node)}></div>
+      <div ref={node => this.editorNode = node}></div>
     );
   }
 }

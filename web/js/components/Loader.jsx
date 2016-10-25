@@ -3,23 +3,25 @@
 var React = require('react');
 
 function Loader (props) {
-  var content = props.error
+  var {error, children, loading} = props;
+
+  var content = error
     ? ( <div>
           Error occured. Please refresh a page and try again.
           <pre className="well">{
-            [ props.error.message,
-              JSON.stringify(props.error, null, 2)
+            [ error.message,
+              JSON.stringify(error, null, 2)
             ].join('\n\n')
           }</pre>
         </div>
       )
-    : props.children;
+    : children;
 
   return (
     <div>
-      { props.loading ? 'Loading…' : content }
+      { loading ? 'Loading…' : content }
     </div>
   );
-};
+}
 
 module.exports = Loader;
