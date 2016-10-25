@@ -343,6 +343,7 @@ var Search = React.createClass({
       if (res.statusCode !== 200)
         return showErrorMessage(data);
 
+      this.fetchProfile(this.state.username);
       showSuccessMessage();
     });
   },
