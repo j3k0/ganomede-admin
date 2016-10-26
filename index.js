@@ -4,6 +4,8 @@ const config = require('./config');
 const app = require('./server/app');
 const log = require('./server/log');
 
+log('Running with config', config);
+
 const server = app.listen(config.http.port, config.http.host, function () {
   const host = server.address().address;
   const port = server.address().port;

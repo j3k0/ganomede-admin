@@ -13,9 +13,9 @@ const createUpstream = (name) => new utils.Upstream({
   pathname: `/${name}/v1`
 });
 
-module.exports = {
-  virtualcurrency: createUpstream('virtualcurrency'),
-  users: createUpstream('users'),
-  avatars: createUpstream('avatars'),
-  data: createUpstream('data')
-};
+module.exports = Object.keys(config.services)
+  .filter(name => config.services[name])
+  .reduce((self, name) => {
+    self[name] = createUpstream(name);
+    return self;
+  }, {});

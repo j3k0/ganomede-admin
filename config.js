@@ -3,11 +3,14 @@
 const pkg = require('./package.json');
 
 const parseServiceAddress = (service) => {
-  return {
-    protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
-    host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
-    port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
-  };
+  const present = process.env.hasOwnProperty(service + '_PORT_8080_TCP_ADDR');
+
+  return present
+    ? { protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
+        host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
+        port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
+      }
+    : null;
 };
 
 const config = {
