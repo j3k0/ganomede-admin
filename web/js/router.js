@@ -16,19 +16,26 @@ var IndexRoute = ReactRouter.IndexRoute;
 var UsersSearch = users.Search;
 var UserProfile = users.Profile;
 
-function GanomedeRouter (/*props*/) {
+function GanomedeRouter () {
+  const {services} = window.REACT_INITIAL_STATE;
+
   return (
     <Router history={ReactRouter.browserHistory}>
-      <Route path={utils.webPath('/')} component={App}>
+      <Route path={utils.webPath('/')} component={App} >
         <IndexRoute component={LoginForm} />
         <Route path={utils.webPath('/items')} component={ItemsList} />
         <Route path={utils.webPath('/packs')} component={PacksList} />
         <Route path={utils.webPath('/users')} component={UsersSearch}>
           <Route path={utils.webPath('/users/:username')} component={UserProfile} />
         </Route>
-        <Route path={utils.webPath('/data')} component={data.Layout}>
-          <Route path={utils.webPath('/data/:docId')} component={data.Document} />
-        </Route>
+
+        {
+          services.includes('data') && (
+            <Route path={utils.webPath('/data')} component={data.Layout}>
+              <Route path={utils.webPath('/data/:docId')} component={data.Document} />
+            </Route>
+          )
+        }
       </Route>
     </Router>
   );
