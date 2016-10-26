@@ -9,6 +9,8 @@ var LoginForm = require('./LoginForm.jsx');
 var users = require('./users.jsx');
 var data = require('./data.jsx');
 var utils = require('./utils');
+var {Link} = require('./components/Links.jsx');
+var Debug = require('./components/Debug.jsx');
 
 var Router = ReactRouter.Router;
 var Route = ReactRouter.Route;
@@ -37,6 +39,27 @@ function GanomedeRouter () {
           )
         }
       </Route>
+
+      <Route path="*" component={(props) => (
+        <div className="container">
+          <h3>Page Not Found</h3>
+
+          <div>
+            <Link to="/">Home Page</Link>
+          </div>
+
+          <div>
+            <h4>React Initial State</h4>
+            Perhaps env var for a service is missing.
+            <Debug.pre data={window.REACT_INITIAL_STATE} />
+          </div>
+
+          <div>
+            <h4>Routing Info</h4>
+            <Debug.pre data={props} />
+          </div>
+        </div>
+      )}/>
     </Router>
   );
 }
