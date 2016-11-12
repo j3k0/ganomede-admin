@@ -1,6 +1,6 @@
 'use strict';
 
-const React = require('React');
+const React = require('react');
 const ReactRouter = require('react-router');
 const utils = require('../utils');
 
