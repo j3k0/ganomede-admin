@@ -3,22 +3,17 @@
 const pkg = require('./package.json');
 
 const parseServiceAddress = (service) => {
-  return {
-    protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
-    host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
-    port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
-  };
+  const present = process.env.hasOwnProperty(service + '_PORT_8080_TCP_ADDR');
+
+  return present
+    ? { protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
+        host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
+        port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
+      }
+    : null;
 };
 
 const config = {
-  /* couch: {
-    host: process.env.COUCHDB_HOST || 'localhost',
-    port: +process.env.COUCHDB_PORT || 5984,
-    user: process.env.COUCHDB_USER || '',
-    password: process.env.COUCHDB_PASSWORD || '',
-    db: process.env.COUCHDB_DB || 'blog'
-  }, */
-
   pkg,
 
   http: {
@@ -50,7 +45,8 @@ const config = {
     ),
 
     avatars: parseServiceAddress('AVATARS'),
-    users: parseServiceAddress('USERS')
+    users: parseServiceAddress('USERS'),
+    data: parseServiceAddress('DATA')
   }
 };
 

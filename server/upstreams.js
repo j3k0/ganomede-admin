@@ -6,25 +6,16 @@
 const utils = require('./utils');
 const config = require('../config');
 
-module.exports = {
-  virtualcurrency: new utils.Upstream({
-    protocol: config.services.virtualcurrency.protocol,
-    hostname: config.services.virtualcurrency.host,
-    port: config.services.virtualcurrency.port,
-    pathname: '/virtualcurrency/v1'
-  }),
+const createUpstream = (name) => new utils.Upstream({
+  protocol: config.services[name].protocol,
+  hostname: config.services[name].host,
+  port: config.services[name].port,
+  pathname: `/${name}/v1`
+});
 
-  users: new utils.Upstream({
-    protocol: config.services.users.protocol,
-    hostname: config.services.users.host,
-    port: config.services.users.port,
-    pathname: '/users/v1'
-  }),
-
-  avatars: new utils.Upstream({
-    protocol: config.services.avatars.protocol,
-    hostname: config.services.avatars.host,
-    port: config.services.avatars.port,
-    pathname: '/avatars/v1'
-  })
-};
+module.exports = Object.keys(config.services)
+  .filter(name => config.services[name])
+  .reduce((self, name) => {
+    self[name] = createUpstream(name);
+    return self;
+  }, {});

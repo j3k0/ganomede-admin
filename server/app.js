@@ -49,6 +49,7 @@ app.use(`${apiRoot}`, auth.router, auth.mwValidate);
 app.use(`${apiRoot}/items`, require('./vcurrency').itemsRouter);
 app.use(`${apiRoot}/packs`, require('./vcurrency').packsRouter);
 app.use(`${apiRoot}/users`, require('./users'));
+app.use(`${apiRoot}/data`, require('./data.router'));
 app.use(`${apiRoot}/islogged`, function (req, res) {
   res.json({success: true});
 });

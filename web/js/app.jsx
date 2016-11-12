@@ -1,34 +1,19 @@
 'use strict';
 
 var React = require('react');
-var ReactRouter = require('react-router');
 var Loader = require('./components/Loader.jsx');
 var login = require('./models/login');
 var utils = require('./utils');
+var {Link, NavLink} = require('./components/Links.jsx');
 
-function Link (props) {
-  return (
-    <ReactRouter.Link
-      {...props}
-      activeClassName='active'
-      to={utils.webPath(props.to)}
-    />
-  );
-}
+function Header ({loggedIn, onLogout}) {
+  const {services} = window.REACT_INITIAL_STATE;
 
-function NavLink (props) {
-  return (
-    <li className="items-menu">
-      <Link {...props} />
-    </li>
-  );
-};
-
-function Header (props) {
   var menuLinks = [
     <NavLink key={0} to='/items'>Items</NavLink>,
     <NavLink key={1} to='/packs'>Packs</NavLink>,
-    <NavLink key={2} to='/users'>Users</NavLink>
+    <NavLink key={2} to='/users'>Users</NavLink>,
+    services.includes('data') && <NavLink key={3} to='/data'>Data</NavLink>
   ];
 
   return (
@@ -50,13 +35,13 @@ function Header (props) {
           </ul>
 
           { (function () {
-              if (!props.loggedIn)
+              if (!loggedIn)
                 return;
 
               return (
                 <ul id="logout-ul" className="nav navbar-nav navbar-right">
                   <li>
-                    <a onClick={props.onLogout} className="logout-button">Logout</a>
+                    <a onClick={onLogout} className="logout-button">Logout</a>
                   </li>
                 </ul>
               );
@@ -66,7 +51,7 @@ function Header (props) {
       </div>
     </nav>
   );
-};
+}
 
 var App = React.createClass({
   // Get access to react router instance via

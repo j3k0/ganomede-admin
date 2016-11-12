@@ -28,16 +28,6 @@ Links to dispay in a "link box" on the Analytics page.
  - `ANALYTICS_LINK2_URL` --> link of analytics service 2
  - `ANALYTICS_LINK2_NAME`--> name of analytics service 2, etc....
 
-## Database
-
-This project use couchdb as database.
-
- - `COUCHDB_PORT`     --> couchdb port
- - `COUCHDB_HOST`     --> couchdb host
- - `COUCHDB_USER` 	   --> couchdb username
- - `COUCHDB_PASSWORD` --> couchdb password
- - `COUCHDB_DB`       --> couchdb database name
-
 ## Other microservices
 
 Most of functionality depends on interacting with other ganomede
@@ -48,7 +38,22 @@ deafult to locally running intstance):
    - `VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL` virtual currency protocol (`http` or `https`, defaults to `http`);
    - `VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR` virtual currecny host;
    - `VIRTUAL_CURRENCY_PORT_8080_TCP_PORT` virtual currency port;
-   - `VIRTUAL_CURRENCY_CURRENCY_CODES` comma-separated list of allowed currency codes for item purchases (e.g.: `gold,silver,copper`).
+   - `VIRTUAL_CURRENCY_CURRENCY_CODES` comma-separated list of allowed currency codes for item purchases (e.g.: `gold,silver,copper`);
+
+- [users module](https://github.com/j3k0/ganomede-users)
+   - `USERS_PORT_8080_TCP_PROTOCOL` users protocol (`http` or `https`, defaults to `http`);
+   - `USERS_PORT_8080_TCP_ADDR` users host;
+   - `USERS_PORT_8080_TCP_PORT` users port;
+
+- [avatars module](https://github.com/j3k0/ganomede-avatars)
+   - `AVATARS_PORT_8080_TCP_PROTOCOL` avatars protocol (`http` or `https`, defaults to `http`);
+   - `AVATARS_PORT_8080_TCP_ADDR` avatars host;
+   - `AVATARS_PORT_8080_TCP_PORT` avatars port;
+
+- [data module](https://github.com/j3k0/ganomede-data)
+   - `DATA_PORT_8080_TCP_PROTOCOL` data protocol (`http` or `https`, defaults to `http`);
+   - `DATA_PORT_8080_TCP_ADDR` data host;
+   - `DATA_PORT_8080_TCP_PORT` data port;
 
 # Run
 

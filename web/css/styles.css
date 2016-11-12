@@ -72,3 +72,7 @@ button.btn-add-item {
     color: #ccc;
     font-size: smaller;
 }
+
+.CodeMirror {
+  border: 1px solid #e7e7e7;
+}
