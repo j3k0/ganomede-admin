@@ -2,6 +2,7 @@
 
 const React = require('react');
 const lodash = require('lodash');
+const swal = require('sweetalert');
 const JsonEditor = require('./components/JsonEditor.jsx');
 const Loader = require('./components/Loader.jsx');
 const {Link} = require('./components/Links.jsx');
@@ -155,7 +156,12 @@ class Document extends React.Component {
     });
   }
 
-  onDelete (docId) {
+  notifiyAboutDeletion (docId) {
+    if (this.props.onDelete)
+      this.props.onDelete(docId);
+  }
+
+  actuallyDelete (docId) {
     const {error, success} = utils.xhrMessages({
       errorTitle: 'Failed to Delete',
       successTitle: 'Document Deleted'
@@ -166,8 +172,20 @@ class Document extends React.Component {
         return error(err);
 
       success();
+      this.notifiyAboutDeletion(docId);
       this.context.router.push(utils.webPath('/data'));
     });
+  }
+
+  onDelete (docId) {
+    swal({
+      title: "Are you sure?",
+      text: "You will not be able to recover this document.",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonText: "DELETE",
+      cancelButtonText: "Cancel"
+    }, (confirmed) => confirmed && this.actuallyDelete(docId));
   }
 
   render () {
@@ -209,7 +227,26 @@ Document.contextTypes = {
   router: React.PropTypes.object
 };
 
-class Layout extends React.Component {
+class ListOfDocuments extends React.Component {
+  constructor (props) {
+    super(props);
+  }
+
+  render () {
+    const {ids} = this.props;
+    const divs = ids.map(id => (
+      <div key={id}>
+        <Link to={`/data/${id}`}>{id}</Link>
+      </div>
+    ));
+
+    return (
+      <div>{divs}</div>
+    );
+  }
+}
+
+class DocsSearch extends React.Component {
   constructor (props) {
     super(props);
 
@@ -219,18 +256,16 @@ class Layout extends React.Component {
     );
 
     this.state = {
-      loading: true,
-      error: null,
-      searchTerm: '',
-      searchResults: [],
-      newDocId: '',
-      newDocJson: '{}'
+      term: '',
+      results: [],
+      loading: false,
+      error: null
     };
   }
 
   listDocs () {
-    const fn = this.state.searchTerm
-      ? docs.search.bind(docs, this.state.searchTerm)
+    const fn = this.state.term
+      ? docs.search.bind(docs, this.state.term)
       : docs.list.bind(docs);
 
     this.setState({
@@ -241,16 +276,16 @@ class Layout extends React.Component {
     fn((error, res, ids) => {
       const change = error
         ? {error}
-        : {searchResults: ids};
+        : {results: ids};
 
       this.setState(Object.assign({loading: false}, change));
     });
   }
 
   onSearchInputChanged (event) {
-    const searchTerm = event.target.value;
+    const term = event.target.value;
     this.setState({
-      searchTerm,
+      term,
       loading: true,
       error: null
     }, this.debouncedListDocs);
@@ -260,12 +295,45 @@ class Layout extends React.Component {
     this.listDocs();
   }
 
+  render () {
+    const {term, results, loading, error} = this.state;
+
+    return (
+      <div>
+        Search docs…
+        <input value={term}
+               onChange={this.onSearchInputChanged.bind(this)}
+        />
+
+        <Loader loading={loading} error={error}>
+          {
+            results.length === 0
+              ? 'Nothing found'
+              : <ListOfDocuments ids={results} />
+          }
+        </Loader>
+      </div>
+    );
+  }
+}
+
+class Layout extends React.Component {
+  constructor (props) {
+    super(props);
+
+    this.state = {
+      newDocId: '',
+      newDocJson: '{}'
+    };
+  }
+
   onInsert () {
     const {newDocId, newDocJson} = this.state;
     const {error, success} = utils.xhrMessages({
       errorTitle: 'Failed to Insert',
       successTitle: 'Document Created'
     });
+    const refreshSearch = this.refs.search.listDocs.bind(this.refs.search);
 
     docs.insert(newDocId, newDocJson, (err, res, body) => {
       if (err)
@@ -275,44 +343,24 @@ class Layout extends React.Component {
       this.setState({
         newDocId: '',
         newDocJson: '{}'
-      }, this.debouncedListDocs);
+      }, refreshSearch);
     });
   }
 
   render () {
     const {
-      searchResults, searchTerm,
-      loading, error,
       newDocId, newDocJson
     } = this.state;
-    const {children} = this.props;
     const hasExistingDoc = this.props.params.hasOwnProperty('docId');
 
     return (
       <div>
-        <div>
-          Search docs…
-          <input value={searchTerm}
-                 onChange={this.onSearchInputChanged.bind(this)}
-          />
-        </div>
-
-        <Loader loading={loading} error={error}>
-          {
-            searchResults.length === 0
-              ? 'Nothing found'
-              : searchResults.map(id => (
-                  <div key={id}>
-                    <Link to={`/data/${id}`}>{id}</Link>
-                  </div>
-                ))
-          }
-        </Loader>
+        <DocsSearch ref="search" />
 
         <div>
           {
             hasExistingDoc
-              ? children
+              ? <Document params={this.props.params} onDelete={() => this.refs.search.listDocs()} />
               : <div>
                   <h3>Insert New Document</h3>
                   <input

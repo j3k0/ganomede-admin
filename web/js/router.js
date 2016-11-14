@@ -34,7 +34,7 @@ function GanomedeRouter () {
         {
           services.includes('data') && (
             <Route path={utils.webPath('/data')} component={data.Layout}>
-              <Route path={utils.webPath('/data/:docId')} component={data.Document} />
+              <Route path={utils.webPath('/data/:docId')} component={data.Layout} />
             </Route>
           )
         }
