@@ -233,15 +233,34 @@ class ListOfDocuments extends React.Component {
   }
 
   render () {
-    const {ids} = this.props;
-    const divs = ids.map(id => (
+    const {ids, showAll} = this.props;
+    const sortedIds = ids.sort();
+    const divs = (showAll ? sortedIds : sortedIds.slice(0, 10)).map(id => (
       <div key={id}>
-        <Link to={`/data/${id}`}>{id}</Link>
+        <Link to={`/data/${id}`}>
+          <span style={{whiteSpace: 'nowrap'}}>{id}</span>
+        </Link>
       </div>
     ));
 
+    const wholeSetDisplayed = showAll || (ids.length === divs.length);
+    const showAllText = wholeSetDisplayed ? '' : ` out of ${ids.length}`;
+    const text = `Showing ${divs.length}${showAllText} results:`;
+
+    const styles = {
+      maxHeight: '15em',
+      overflow: 'scroll',
+      border: '1px solid #e7e7e7',
+      padding: '.3em .5em'
+    };
+
     return (
-      <div>{divs}</div>
+      <div>
+        {text}
+        <div style={styles}>
+          {divs}
+        </div>
+      </div>
     );
   }
 }
@@ -258,6 +277,7 @@ class DocsSearch extends React.Component {
     this.state = {
       term: '',
       results: [],
+      showAll: true,
       loading: false,
       error: null
     };
@@ -291,25 +311,47 @@ class DocsSearch extends React.Component {
     }, this.debouncedListDocs);
   }
 
+  onShowAllChanged (newShowAll) {
+    this.setState({showAll: newShowAll});
+  }
+
   componentDidMount () {
     this.listDocs();
   }
 
   render () {
-    const {term, results, loading, error} = this.state;
+    const {term, results, showAll, loading, error} = this.state;
 
     return (
       <div>
-        Search docs…
-        <input value={term}
-               onChange={this.onSearchInputChanged.bind(this)}
-        />
+        <form className="form-inline">
+          <div className="form-group">
+            <label>Search docs…</label>
+            <input type="text"
+                   className="form-control"
+                   value={term}
+                   onChange={this.onSearchInputChanged.bind(this)}
+            />
+          </div>
+
+          <div className="checkbox">
+            <label>
+              <input type="checkbox"
+                     checked={showAll}
+                     onChange={event => this.onShowAllChanged(event.target.checked)}
+              />
+              {' Show all results' }
+            </label>
+          </div>
+        </form>
 
         <Loader loading={loading} error={error}>
           {
             results.length === 0
               ? 'Nothing found'
-              : <ListOfDocuments ids={results} />
+              : <div>
+                  <ListOfDocuments ids={results} showAll={showAll} />
+                </div>
           }
         </Loader>
       </div>
