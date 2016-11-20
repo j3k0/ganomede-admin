@@ -247,9 +247,8 @@ class ListOfDocuments extends React.Component {
   }
 
   render () {
-    const {ids, showAll} = this.props;
-    const sortedIds = ids.sort();
-    const divs = (showAll ? sortedIds : sortedIds.slice(0, 10)).map(id => (
+    const {ids} = this.props;
+    const divs = ids.sort().map(id => (
       <div key={id}>
         <Link to={`/data/${id}`}>
           <span style={{whiteSpace: 'nowrap'}}>{id}</span>
@@ -257,23 +256,16 @@ class ListOfDocuments extends React.Component {
       </div>
     ));
 
-    const wholeSetDisplayed = showAll || (ids.length === divs.length);
-    const showAllText = wholeSetDisplayed ? '' : ` out of ${ids.length}`;
-    const text = `Showing ${divs.length}${showAllText} results:`;
-
     const styles = {
-      maxHeight: '15em',
+      height: '15em',
       overflow: 'scroll',
       border: '1px solid #e7e7e7',
       padding: '.3em .5em'
     };
 
     return (
-      <div>
-        {text}
-        <div style={styles}>
-          {divs}
-        </div>
+      <div style={styles}>
+        {divs}
       </div>
     );
   }
@@ -291,7 +283,8 @@ class DocsSearch extends React.Component {
     this.state = {
       term: '',
       results: [],
-      showAll: true,
+      showResults: props.showResults,
+      showResultsChangedByUser: false,
       loading: false,
       error: null
     };
@@ -304,7 +297,8 @@ class DocsSearch extends React.Component {
 
     this.setState({
       loading: true,
-      error: null
+      error: null,
+      showResults: true
     });
 
     fn((error, res, ids) => {
@@ -333,39 +327,73 @@ class DocsSearch extends React.Component {
     this.listDocs();
   }
 
-  render () {
-    const {term, results, showAll, loading, error} = this.state;
+  componentWillReceiveProps (newProps) {
+    const {showResults, showResultsChangedByUser} = this.state;
+
+    if (showResultsChangedByUser)
+      return;
+
+    if (newProps.showResults !== showResults)
+      this.setState({showResults: newProps.showResults});
+  }
+
+  toggleResultsVisibility () {
+    const {showResults} = this.state;
+    this.setState({
+      showResults: !showResults,
+      showResultsChangedByUser: true
+    });
+  }
+
+  renderShowToggler () {
+    const {showResults, results} = this.state;
+    const verb = showResults ? 'hide' : 'show';
 
     return (
       <div>
-        <form className="form-inline">
-          <div className="form-group">
-            <label>Search docs…</label>
-            <input type="text"
-                   className="form-control"
-                   value={term}
-                   onChange={this.onSearchInputChanged.bind(this)}
-            />
-          </div>
+        <span className="clickable"
+            onClick={() => this.toggleResultsVisibility()}
+        >
+         Found {results.length} documents
+         {' '}
+         <small>(click to {verb})</small>
+         :
+        </span>
+       </div>
+     );
+  }
 
-          <div className="checkbox">
-            <label>
-              <input type="checkbox"
-                     checked={showAll}
-                     onChange={event => this.onShowAllChanged(event.target.checked)}
-              />
-              {' Show all results' }
+  render () {
+    const {term, results, showResults, loading, error} = this.state;
+
+    return (
+      <div>
+        <form className="form-horizontal">
+          <div className="form-group">
+            <label className="col-sm-2 control-label">
+              Search docs…
             </label>
+
+            <div className="col-sm-6">
+              <input type="text"
+                     className="form-control"
+                     placeholder="Type in document ID or its part…"
+                     value={term}
+                     onChange={this.onSearchInputChanged.bind(this)}
+              />
+            </div>
+
+            <div className="col-sm-4">
+              <label className="control-label">{this.renderShowToggler()}</label>
+            </div>
           </div>
         </form>
 
         <Loader loading={loading} error={error}>
-          {
-            results.length === 0
-              ? 'Nothing found'
-              : <div>
-                  <ListOfDocuments ids={results} showAll={showAll} />
-                </div>
+          {(results.length === 0) && 'Nothing found'}
+          {showResults && results.length
+            ? <ListOfDocuments ids={results} />
+            : null
           }
         </Loader>
       </div>
@@ -425,7 +453,7 @@ class DataCreation extends React.Component {
     ];
 
     this.state = {
-      activeTab: this.TABS.csvImport,
+      activeTab: this.TABS.newDoc,
       newDocId: '',
       newDocJson: '',
       csvError: null,
@@ -587,7 +615,7 @@ class DataLayout extends React.Component {
 
     return (
       <div>
-        <DocsSearch ref="search" />
+        <DocsSearch showResults={!hasExistingDoc} ref="search" />
         <br />
         {child}
       </div>
