@@ -1,6 +1,7 @@
 'use strict';
 
-var React = require('react');
+const util = require('util');
+const React = require('react');
 
 function Debug (props) {
   return (
@@ -11,13 +12,18 @@ function Debug (props) {
 }
 
 Debug.pre = function pre (props) {
+  const {data} = props;
+  const text = typeof data === 'string'
+    ? data
+    : util.inspect(data, {depth: null});
+
   return (
     <Debug>
       <pre className="well">
-        {JSON.stringify(props.data, null, 2)}
+        {text}
       </pre>
     </Debug>
   );
-}
+};
 
 module.exports = Debug;

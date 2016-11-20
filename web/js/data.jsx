@@ -3,10 +3,13 @@
 const React = require('react');
 const lodash = require('lodash');
 const swal = require('sweetalert');
+const {Tab, Tabs, TabList, TabPanel} = require('react-tabs');
 const JsonEditor = require('./components/JsonEditor.jsx');
+const Debug = require('./components/Debug.jsx');
 const Loader = require('./components/Loader.jsx');
 const {Link} = require('./components/Links.jsx');
 const utils = require('./utils');
+const csvImport = require('./data-csv-import');
 
 const docs = {
   url (id) {
@@ -70,6 +73,17 @@ const docs = {
       method: 'post',
       url: this.url(),
       body: id ? {id, document} : {document}
+    }, this.wrapCb(callback));
+  },
+
+  batchInsert (documents, callback) {
+    // TODO
+    // check docs
+
+    utils.xhr({
+      method: 'post',
+      url: this.url('_bulk_upsert'),
+      body: {documents}
     }, this.wrapCb(callback));
   },
 
@@ -359,23 +373,77 @@ class DocsSearch extends React.Component {
   }
 }
 
-class Layout extends React.Component {
+const ImportPreview = (props) => {
+  const {documents} = props;
+  const keys = Object.keys(documents);
+  const firstList = documents[keys[0]];
+
+  const headers = keys.map((id) => (
+    <th key={id}>{id}</th>
+  ));
+
+  const rows = firstList.map((_, rowIndex) => {
+    const cells = keys.map((documentId) => (
+      <td key={documentId}>{documents[documentId][rowIndex]}</td>
+    ));
+
+    return (
+      <tr key={rowIndex}>{cells}</tr>
+    );
+  });
+
+  return (
+    <div>
+      <p>
+        About to create <strong>{keys.length} documents</strong>
+        {' '}
+        with <strong>{firstList.length} items each</strong>.
+      </p>
+
+      <table className="table table-condensed table-hover">
+        <thead>
+          <tr>{headers}</tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
+  );
+};
+
+class DataCreation extends React.Component {
   constructor (props) {
     super(props);
 
-    this.state = {
-      newDocId: '',
-      newDocJson: '{}'
+    this.TABS = {
+      'newDoc': 0,
+      'csvImport': 1
     };
+
+    this.TAB_LABELS = [
+      'Create New Document',
+      'Import CSV File'
+    ];
+
+    this.state = {
+      activeTab: this.TABS.csvImport,
+      newDocId: '',
+      newDocJson: '',
+      csvError: null,
+      csvResult: null
+    };
+
+    this.tabHeaders = this.TAB_LABELS.map((label, index) => (
+      <Tab key={index}>{label}</Tab>
+    ));
   }
 
   onInsert () {
+    const {onCreate} = this.props;
     const {newDocId, newDocJson} = this.state;
     const {error, success} = utils.xhrMessages({
       errorTitle: 'Failed to Insert',
       successTitle: 'Document Created'
     });
-    const refreshSearch = this.refs.search.listDocs.bind(this.refs.search);
 
     docs.insert(newDocId, newDocJson, (err, res, body) => {
       if (err)
@@ -385,50 +453,146 @@ class Layout extends React.Component {
       this.setState({
         newDocId: '',
         newDocJson: '{}'
-      }, refreshSearch);
+      }, onCreate);
     });
   }
 
+  onImport () {
+    const {onCreate} = this.props;
+    const {csvResult} = this.state;
+    const {error, success} = utils.xhrMessages({
+      errorTitle: 'Failed to Import',
+      successTitle: 'Import Succeeded'
+    });
+
+    docs.batchInsert(csvResult, (err, res, body) => {
+      if (err)
+        return error(err);
+
+      success(body);
+      this.setState({
+        csvError: null,
+        csvResult: null
+      }, onCreate);
+    });
+  }
+
+  handleTabChange (newIndex) {
+    this.setState({activeTab: newIndex});
+  }
+
+  readFile (file) {
+    csvImport(file, (csvError, csvResult) => {
+      const change = csvError
+        ? {csvError, csvResult: null}
+        : {csvError: null, csvResult};
+
+      this.setState(change);
+    });
+  }
+
+  renderTab (activeTab) {
+    switch (activeTab) {
+      case this.TABS.newDoc: {
+        const {newDocId, newDocJson} = this.state;
+
+        return (
+          <div>
+            <h3>Insert New Document</h3>
+            <input
+              type="text"
+              placeholder="Custom ID"
+              value={newDocId}
+              onChange={e => this.setState({newDocId: e.target.value})}
+            />
+            <button className="btn btn-primary" role="button"
+                    onClick={() => this.onInsert()}
+            >
+              Insert
+            </button>
+            <JsonEditor
+              json={newDocJson}
+              onChange={json => this.setState({newDocJson: json})}
+            />
+          </div>
+        );
+      }
+
+      case this.TABS.csvImport: {
+        const {csvError, csvResult} = this.state;
+
+        const errorMessage = csvError && (<Debug.pre data={csvError} />);
+        const importPreview = csvResult && (<ImportPreview documents={csvResult} />);
+        const saveButton = csvResult && (
+          <button className="btn btn-primary" role="button"
+                  onClick={() => this.onImport()}
+          >
+            Save
+          </button>
+        );
+
+        return (
+          <div>
+            <input type="file"
+                   accept=".csv"
+                   onChange={event => {
+                    const file = event.target.files[0];
+                    if (file)
+                      this.readFile(file);
+                   }}
+            />
+
+            {saveButton}
+            {errorMessage || importPreview}
+          </div>
+        );
+      }
+
+      default:
+        throw new Error('Invalid Tab');
+    }
+  }
+
   render () {
-    const {
-      newDocId, newDocJson
-    } = this.state;
+    const {activeTab} = this.state;
+    const tabContents = this.TAB_LABELS.map((label, index) => (
+      <TabPanel key={index}>
+        {this.renderTab(index)}
+      </TabPanel>
+    ));
+
+    return (
+      <Tabs
+        onSelect={this.handleTabChange.bind(this)}
+        selectedIndex={activeTab}
+      >
+        <TabList>{this.tabHeaders}</TabList>
+        {tabContents}
+      </Tabs>
+    );
+  }
+}
+
+class DataLayout extends React.Component {
+  constructor (props) {
+    super(props);
+  }
+
+  render () {
     const hasExistingDoc = this.props.params.hasOwnProperty('docId');
+    const refreshSearch = () => this.refs.search.listDocs();
+    const child = hasExistingDoc
+      ? (<Document params={this.props.params} onDelete={refreshSearch} />)
+      : (<DataCreation onCreate={refreshSearch} />);
 
     return (
       <div>
         <DocsSearch ref="search" />
-
-        <div>
-          {
-            hasExistingDoc
-              ? <Document params={this.props.params} onDelete={() => this.refs.search.listDocs()} />
-              : <div>
-                  <h3>Insert New Document</h3>
-                  <input
-                    type="text"
-                    placeholder="Custom ID"
-                    value={newDocId}
-                    onChange={e => this.setState({newDocId: e.target.value})}
-                  />
-                  <button className="btn btn-primary" role="button"
-                          onClick={() => this.onInsert()}
-                  >
-                    Insert
-                  </button>
-                  <JsonEditor
-                    json={newDocJson}
-                    onChange={json => this.setState({newDocJson: json})}
-                  />
-                </div>
-          }
-        </div>
+        <br />
+        {child}
       </div>
     );
   }
 }
 
-module.exports = {
-  Layout,
-  Document
-};
+module.exports = DataLayout;
