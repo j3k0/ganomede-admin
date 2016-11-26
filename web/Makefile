@@ -7,4 +7,4 @@ build:
 	../node_modules/.bin/browserify ${FLAGS}
 
 watch:
-	../node_modules/.bin/watchify --verbose ${FLAGS}
+	../node_modules/.bin/watchify --debug --verbose ${FLAGS}

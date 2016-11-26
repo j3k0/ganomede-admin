@@ -7,7 +7,7 @@ var ItemsList = require('./items/react-wrapper');
 var PacksList = require('./packs');
 var LoginForm = require('./LoginForm.jsx');
 var users = require('./users.jsx');
-var data = require('./data.jsx');
+var DataLayout = require('./data.jsx');
 var utils = require('./utils');
 var {Link} = require('./components/Links.jsx');
 var Debug = require('./components/Debug.jsx');
@@ -33,8 +33,8 @@ function GanomedeRouter () {
 
         {
           services.includes('data') && (
-            <Route path={utils.webPath('/data')} component={data.Layout}>
-              <Route path={utils.webPath('/data/:docId')} component={data.Document} />
+            <Route path={utils.webPath('/data')} component={DataLayout}>
+              <Route path={utils.webPath('/data/:docId')} component={DataLayout} />
             </Route>
           )
         }
