@@ -32,19 +32,19 @@ souris,paris
     }
   },
 
-  'stops iterating when it encounters empty value': {
-    input: `number,letter
-1,a
-2,b
-3,c
-,d
-5,e
+  'skips empty values in columns': {
+    input: `fr:animaux,en:animals,es:ciudades
+Chien,Dog,Madrid
+Chat,Cat,Barcelona
+,Dragon,Mexico
+,,Lima
 `,
     shouldError: false,
     errorMessage: null,
     result: {
-      number: [1, 2, 3].map(String),
-      letter: ['a', 'b', 'c']
+      'fr:animaux': ['Chien', 'Chat'],
+      'en:animals': ['Dog', 'Cat', 'Dragon'],
+      'es:ciudades': ['Madrid', 'Barcelona', 'Mexico', 'Lima']
     }
   },
 

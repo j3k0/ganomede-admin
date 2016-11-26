@@ -33,15 +33,15 @@ const parseCsv = (csv) => {
   }, {});
 
   for (let i = 0; i < values.length; ++i) {
-    const val = values[i];
-    const allHaveValue = columnsToCount.every(index => !!val[index]);
-
-    if (!allHaveValue)
-      break;
+    const row = values[i];
 
     columnsToCount.forEach(index => {
       const id = ids[index];
-      documents[id].push(val[index]);
+      const list = documents[id];
+      const val = row[index];
+
+      if (val)
+        list.push(val);
     });
   }
 
