@@ -403,29 +403,38 @@ class DocsSearch extends React.Component {
 
 const ImportPreview = (props) => {
   const {documents} = props;
-  const keys = Object.keys(documents);
-  const firstList = documents[keys[0]];
+  const ids = Object.keys(documents);
+  const lists = lodash.values(documents);
 
-  const headers = keys.map((id) => (
-    <th key={id}>{id}</th>
+  const headers = ids.map((id, index) => (
+    <th key={id}>
+      {id + ' '}
+      <small className="unobtrusive">
+        {lists[index].length} items
+      </small>
+    </th>
   ));
 
-  const rows = firstList.map((_, rowIndex) => {
-    const cells = keys.map((documentId) => (
-      <td key={documentId}>{documents[documentId][rowIndex]}</td>
-    ));
+  const rows = [];
+  const longestList = Math.max(...lists.map(list => list.length));
 
-    return (
-      <tr key={rowIndex}>{cells}</tr>
-    );
-  });
+  for (let row = 0; row < longestList; ++row) {
+    const tds = ids.map((id, col) => {
+      const list = lists[col];
+      const value = list[row];
+
+      return (
+        <td key={col}>{value || ''}</td>
+      );
+    });
+
+    rows.push(<tr key={row}>{tds}</tr>);
+  }
 
   return (
     <div>
       <p>
-        About to create <strong>{keys.length} documents</strong>
-        {' '}
-        with <strong>{firstList.length} items each</strong>.
+        About to create <strong>{lists.length} documents</strong>.
       </p>
 
       <table className="table table-condensed table-hover">
