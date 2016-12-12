@@ -41,35 +41,56 @@ class Lists {
   }
 }
 
-const parseCsv = (csv) => {
-  const lines = csv
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .map(line => line.split(','));
+class Parser {
+  constructor (csv) {
+    const lines = csv
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => line.split(','));
 
-  if (lines.length < 2)
-    return new Error('Invalid CSV format: expected at least 2 lines');
+    this.ids = lines[0];
+    this.values = lines.slice(1);
+    this.errors = [];
 
-  const lists = new Lists();
+    if (lines.length < 2)
+      this.errors.push(new Error('Invalid CSV format: expected at least 2 lines'));
+  }
 
-  const ids = lines[0];
-  const values = lines.slice(1);
+  failed () {
+    return this.errors.length > 0;
+  }
 
-  ids.forEach((listId, column) => {
-    // ignore columns without ids
-    if (!listId)
+  parse () {
+    if (this.failed())
       return;
 
-    for (let row = 0; row < values.length; ++row) {
-      const word = values[row][column];
-      // ignore empty words
-      if (word)
-        lists.addToList(listId, word);
-    }
-  });
+    const lists = new Lists();
 
-  return lists.asObject();
+    this.ids.forEach((listId, column) => {
+      // ignore columns without ids
+      if (!listId)
+        return;
+
+      for (let row = 0; row < this.values.length; ++row) {
+        const word = this.values[row][column];
+        // ignore empty words
+        if (word)
+          lists.addToList(listId, word);
+      }
+    });
+
+    return lists;
+  }
+}
+
+const parseCsv = (csv) => {
+  const parser = new Parser(csv);
+  const docs = parser.parse();
+
+  return parser.failed()
+    ? parser.errors[0]
+    : docs.asObject();
 };
 
 // callback(err, {docsToInsert})
