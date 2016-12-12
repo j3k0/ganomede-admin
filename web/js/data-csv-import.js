@@ -9,6 +9,38 @@ const readCsv = (file, callback) => {
   reader.readAsText(file, 'UTF-8');
 };
 
+class UniqueWords {
+  constructor () {
+    this.set = new Set();
+  }
+
+  add (word) {
+    this.set.add(word);
+  }
+
+  words () {
+    return Array.from(this.set.values());
+  }
+}
+
+class Lists {
+  constructor () {
+    this.lists = Object.create(null);
+  }
+
+  addToList (id, word) {
+    const list = this.lists[id] = this.lists[id] || new UniqueWords();
+    list.add(word);
+  }
+
+  asObject () {
+    return Object.keys(this.lists).reduce((self, key) => {
+      self[key] = this.lists[key].words();
+      return self;
+    }, Object.create(null));
+  }
+}
+
 const parseCsv = (csv) => {
   const lines = csv
     .split('\n')
@@ -19,33 +51,25 @@ const parseCsv = (csv) => {
   if (lines.length < 2)
     return new Error('Invalid CSV format: expected at least 2 lines');
 
-  const ids = lines.slice(0, 1)[0];
+  const lists = new Lists();
+
+  const ids = lines[0];
   const values = lines.slice(1);
 
-  const columnsToCount = ids
-    .map((id, idx) => idx)
-    .filter(index => !!ids[index]);
+  ids.forEach((listId, column) => {
+    // ignore columns without ids
+    if (!listId)
+      return;
 
-  const documents = columnsToCount.reduce((self, idx) => {
-    const id = ids[idx];
-    self[id] = [];
-    return self;
-  }, {});
+    for (let row = 0; row < values.length; ++row) {
+      const word = values[row][column];
+      // ignore empty words
+      if (word)
+        lists.addToList(listId, word);
+    }
+  });
 
-  for (let i = 0; i < values.length; ++i) {
-    const row = values[i];
-
-    columnsToCount.forEach(index => {
-      const id = ids[index];
-      const list = documents[id];
-      const val = row[index];
-
-      if (val)
-        list.push(val);
-    });
-  }
-
-  return documents;
+  return lists.asObject();
 };
 
 // callback(err, {docsToInsert})

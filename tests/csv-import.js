@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const lodash = require('lodash');
 const {expect} = require('chai');
 const {parseCsv} = require('../web/js/data-csv-import');
@@ -22,6 +24,24 @@ describe('parseCsv()', () => {
         expect(actual).not.to.be.instanceof(Error);
         expect(actual).to.eql(result);
       }
+    });
+  });
+
+  describe('Github issues', () => {
+    it('ganomede-data#4', () => {
+      const filepath = path.join(__dirname, 'csv-import-issue-4.csv');
+      const csv = fs.readFileSync(filepath, 'utf8');
+      const actual = parseCsv(csv);
+      const problematicKey = 'NL:LANDSCHAP';
+      const expectedValues = [
+        'BOS',
+        'DAM',
+        'WAD',
+        'WAL',
+        'ZEE'
+      ];
+
+      expect(actual[problematicKey].slice(0, 5)).to.eql(expectedValues);
     });
   });
 });

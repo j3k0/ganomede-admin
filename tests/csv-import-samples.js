@@ -12,7 +12,7 @@ souris,paris
     errorMessage: null,
     result: {
       'fr:animals': ['chien', 'chat', 'elephant', 'souris'],
-      'fr:towns': ['paris', 'rouen', 'toulouse', 'paris']
+      'fr:towns': ['paris', 'rouen', 'toulouse']
     }
   },
 
