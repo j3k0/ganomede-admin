@@ -447,6 +447,21 @@ const ImportPreview = (props) => {
   );
 };
 
+const Messages = ({level, messages}) => {
+  if (messages.length === 0)
+    return null;
+
+  const alerts = messages.map((text, index) => (
+    <li key={index}>{text}</li>
+  ));
+
+  return (
+    <div className={`alert alert-${level}`}>
+      <ul>{alerts}</ul>
+    </div>
+  );
+};
+
 class DataCreation extends React.Component {
   constructor (props) {
     super(props);
@@ -466,7 +481,9 @@ class DataCreation extends React.Component {
       newDocId: '',
       newDocJson: '',
       csvError: null,
-      csvResult: null
+      csvResult: null,
+      csvErrors: [],
+      csvWarnings: []
     };
 
     this.tabHeaders = this.TAB_LABELS.map((label, index) => (
@@ -496,11 +513,16 @@ class DataCreation extends React.Component {
 
   onImport () {
     const {onCreate} = this.props;
-    const {csvResult} = this.state;
+    const {csvResult, csvErrors} = this.state;
     const {error, success} = utils.xhrMessages({
       errorTitle: 'Failed to Import',
       successTitle: 'Import Succeeded'
     });
+
+    // should not really happen, so alert() instead of pretty message for now
+    const canInsert = csvResult && (csvErrors.length === 0);
+    if (!canInsert)
+      return setTimeout(() => alert('CSV has errors, can not import.'), 0);
 
     docs.batchInsert(csvResult, (err, res, body) => {
       if (err)
@@ -509,7 +531,9 @@ class DataCreation extends React.Component {
       success(body);
       this.setState({
         csvError: null,
-        csvResult: null
+        csvResult: null,
+        csvErrors: [],
+        csvWarnings: []
       }, onCreate);
     });
   }
@@ -519,10 +543,10 @@ class DataCreation extends React.Component {
   }
 
   readFile (file) {
-    csvImport(file, (csvError, csvResult) => {
+    csvImport(file, (csvError, csvResult, {errors, warnings}) => {
       const change = csvError
-        ? {csvError, csvResult: null}
-        : {csvError: null, csvResult};
+        ? {csvError, csvResult: null, csvErrors: [], csvWarnings: []}
+        : {csvError: null, csvResult, csvErrors: errors, csvWarnings: warnings};
 
       this.setState(change);
     });
@@ -556,17 +580,20 @@ class DataCreation extends React.Component {
       }
 
       case this.TABS.csvImport: {
-        const {csvError, csvResult} = this.state;
+        const {csvError, csvResult, csvErrors, csvWarnings} = this.state;
 
         const errorMessage = csvError && (<Debug.pre data={csvError} />);
         const importPreview = csvResult && (<ImportPreview documents={csvResult} />);
-        const saveButton = csvResult && (
+        const saveButton = csvResult && (csvErrors.length === 0) && (
           <button className="btn btn-primary" role="button"
                   onClick={() => this.onImport()}
           >
             Save
           </button>
         );
+
+        const errors = (csvErrors.length > 0) && <Messages level="danger" messages={csvErrors} />;
+        const warnings = (csvWarnings.length > 0) && <Messages level="warning" messages={csvErrors} />;
 
         return (
           <div>
@@ -580,7 +607,10 @@ class DataCreation extends React.Component {
             />
 
             {saveButton}
-            {errorMessage || importPreview}
+            {errorMessage}
+            {errors}
+            {warnings}
+            {errorMessage ? null : importPreview}
           </div>
         );
       }
