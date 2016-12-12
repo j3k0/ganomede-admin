@@ -12,17 +12,16 @@ describe('parseCsv()', () => {
     const {input, shouldError, errorMessage, result} = sample;
 
     it(description, () => {
-      const actual = parseCsv(input);
+      const {documents, errors} = parseCsv(input);
 
       if (shouldError) {
-        expect(actual).to.be.instanceof(Error);
+        expect(errors.length).to.be.greaterThan(0);
         errorMessage instanceof RegExp
-          ? expect(actual.message).to.match(errorMessage)
-          : expect(actual.message).to.equal(errorMessage);
+          ? expect(errors[0]).to.match(errorMessage)
+          : expect(errors[0]).to.equal(errorMessage);
       }
       else {
-        expect(actual).not.to.be.instanceof(Error);
-        expect(actual).to.eql(result);
+        expect(documents).to.eql(result);
       }
     });
   });
@@ -31,7 +30,7 @@ describe('parseCsv()', () => {
     it('ganomede-data#4', () => {
       const filepath = path.join(__dirname, 'csv-import-issue-4.csv');
       const csv = fs.readFileSync(filepath, 'utf8');
-      const actual = parseCsv(csv);
+      const {documents: actual} = parseCsv(csv);
       const problematicKey = 'NL:LANDSCHAP';
       const expectedValues = [
         'BOS',

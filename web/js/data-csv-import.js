@@ -15,7 +15,10 @@ class UniqueWords {
   }
 
   add (word) {
-    this.set.add(word);
+    const isNew = !this.set.has(word);
+    if (isNew)
+      this.set.add(word);
+    return isNew;
   }
 
   words () {
@@ -28,9 +31,17 @@ class Lists {
     this.lists = Object.create(null);
   }
 
+  // returns TRUE if new list
+  createList (id) {
+    const isNew = !this.lists[id];
+    if (isNew)
+      this.lists[id] = new UniqueWords();
+    return isNew;
+  }
+
+  // returns TRUE if new word
   addToList (id, word) {
-    const list = this.lists[id] = this.lists[id] || new UniqueWords();
-    list.add(word);
+    return this.lists[id].add(word);
   }
 
   asObject () {
@@ -52,9 +63,10 @@ class Parser {
     this.ids = lines[0];
     this.values = lines.slice(1);
     this.errors = [];
+    this.warnings = [];
 
     if (lines.length < 2)
-      this.errors.push(new Error('Invalid CSV format: expected at least 2 lines'));
+      this.errors.push('Invalid CSV format: expected at least 2 lines');
   }
 
   failed () {
@@ -69,18 +81,31 @@ class Parser {
 
     this.ids.forEach((listId, column) => {
       // ignore columns without ids
-      if (!listId)
+      if (!listId) {
+        this.warnings.push(`Column #${column + 1} is missing ID.`);
         return;
+      }
+
+      // duplicate column IDs
+      if (!lists.createList(listId))
+        this.errors.push(`Multiple columns have same ID "${listId}".`);
 
       for (let row = 0; row < this.values.length; ++row) {
         const word = this.values[row][column];
+
         // ignore empty words
-        if (word)
-          lists.addToList(listId, word);
+        if (!word)
+          continue;
+
+        const newWord = lists.addToList(listId, word);
+
+        // duplicate words
+        if (!newWord)
+          this.errors.push(`Column #${column + 1} (${listId}) has duplicate words (${word}).`);
       }
     });
 
-    return lists;
+    return lists.asObject();
   }
 }
 
@@ -88,9 +113,11 @@ const parseCsv = (csv) => {
   const parser = new Parser(csv);
   const docs = parser.parse();
 
-  return parser.failed()
-    ? parser.errors[0]
-    : docs.asObject();
+  return {
+    documents: docs,
+    errors: parser.errors,
+    warnings: parser.warnings
+  };
 };
 
 // callback(err, {docsToInsert})
@@ -99,11 +126,8 @@ module.exports = (file, callback) => {
     if (err)
       return callback(err);
 
-    const documents = parseCsv(csv);
-
-    return documents instanceof Error
-      ? callback(documents)
-      : callback(null, documents);
+    const {documents, errors, warnings} = parseCsv(csv);
+    callback(null, documents, {errors, warnings});
   });
 };
 
