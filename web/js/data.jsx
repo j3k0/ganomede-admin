@@ -457,10 +457,44 @@ const Messages = ({level, messages}) => {
 
   return (
     <div className={`alert alert-${level}`}>
-      <ul>{alerts}</ul>
+      <ol>{alerts}</ol>
     </div>
   );
 };
+
+const WarningsList = ({title, warnings}) => {
+  return (warnings.length > 0) && (
+    <li>
+      {title}
+      <Messages level="warning" messages={warnings} />
+    </li>
+  );
+};
+
+const RenderWarnings = ({warnings}) => {
+  const {ignoredColumns, mergedColumns, removedDuplicates} = warnings;
+  const totalWarnings = ignoredColumns.length + mergedColumns.length + removedDuplicates.length;
+
+  if (totalWarnings === 0)
+    return null;
+
+  return (
+    <div>
+      Fixed {totalWarnings} warnings in CSV file:
+      <ul>
+        {ignoredColumns && <WarningsList title="Ignored Columns" warnings={ignoredColumns} /> }
+        {mergedColumns && <WarningsList title="Merged Columns with Same ID" warnings={mergedColumns} /> }
+        {removedDuplicates && <WarningsList title="Duplicate Words Removed" warnings={removedDuplicates} /> }
+      </ul>
+    </div>
+  );
+};
+
+const defaultWarnings = () => ({
+  ignoredColumns: [],
+  mergedColumns: [],
+  removedDuplicates: []
+});
 
 class DataCreation extends React.Component {
   constructor (props) {
@@ -483,7 +517,7 @@ class DataCreation extends React.Component {
       csvError: null,
       csvResult: null,
       csvErrors: [],
-      csvWarnings: []
+      csvWarnings: defaultWarnings()
     };
 
     this.tabHeaders = this.TAB_LABELS.map((label, index) => (
@@ -529,11 +563,13 @@ class DataCreation extends React.Component {
         return error(err);
 
       success(body);
+
+      this.refs['csv-file-input'].value = null;
       this.setState({
         csvError: null,
         csvResult: null,
         csvErrors: [],
-        csvWarnings: []
+        csvWarnings: defaultWarnings()
       }, onCreate);
     });
   }
@@ -545,7 +581,7 @@ class DataCreation extends React.Component {
   readFile (file) {
     csvImport(file, (csvError, csvResult, {errors, warnings}) => {
       const change = csvError
-        ? {csvError, csvResult: null, csvErrors: [], csvWarnings: []}
+        ? {csvError, csvResult: null, csvErrors: [], csvWarnings: defaultWarnings()}
         : {csvError: null, csvResult, csvErrors: errors, csvWarnings: warnings};
 
       this.setState(change);
@@ -593,12 +629,12 @@ class DataCreation extends React.Component {
         );
 
         const errors = (csvErrors.length > 0) && <Messages level="danger" messages={csvErrors} />;
-        const warnings = (csvWarnings.length > 0) && <Messages level="warning" messages={csvErrors} />;
 
         return (
           <div>
             <input type="file"
                    accept=".csv"
+                   ref="csv-file-input"
                    onChange={event => {
                     const file = event.target.files[0];
                     if (file)
@@ -609,7 +645,7 @@ class DataCreation extends React.Component {
             {saveButton}
             {errorMessage}
             {errors}
-            {warnings}
+            <RenderWarnings warnings={csvWarnings} />
             {errorMessage ? null : importPreview}
           </div>
         );

@@ -63,7 +63,11 @@ class Parser {
     this.ids = lines[0];
     this.values = lines.slice(1);
     this.errors = [];
-    this.warnings = [];
+    this.warnings = {
+      ignoredColumns: [],
+      mergedColumns: [],
+      removedDuplicates: []
+    };
 
     if (lines.length < 2)
       this.errors.push('Invalid CSV format: expected at least 2 lines');
@@ -82,13 +86,13 @@ class Parser {
     this.ids.forEach((listId, column) => {
       // ignore columns without ids
       if (!listId) {
-        this.warnings.push(`Column #${column + 1} is missing ID.`);
+        this.warnings.ignoredColumns.push(`#${column + 1}`);
         return;
       }
 
       // duplicate column IDs
       if (!lists.createList(listId))
-        this.errors.push(`Multiple columns have same ID "${listId}".`);
+        this.warnings.mergedColumns.push(`${listId} (#${column + 1})`);
 
       for (let row = 0; row < this.values.length; ++row) {
         const word = this.values[row][column];
@@ -101,7 +105,7 @@ class Parser {
 
         // duplicate words
         if (!newWord)
-          this.errors.push(`Column #${column + 1} (${listId}) has duplicate words (${word}).`);
+          this.warnings.removedDuplicates.push(`${word} from column ${listId} (#${column + 1})`);
       }
     });
 
