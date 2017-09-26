@@ -35,7 +35,7 @@ function exportEnv {
   # data
   export DATA_PORT_8080_TCP_PROTOCOL='https'
   export DATA_PORT_8080_TCP_ADDR='prod.ggs.ovh'
-  export DATA_PORT_8080_TCP_PORT='443'
+  export DATA_PORT_8080_TCP_PORT='8080'
 }
 
 function main {
@@ -46,7 +46,7 @@ function main {
     npm run test
   else
     echo "Running server…"
-    nodemon -w server/ -w config.js index.js
+    ./node_modules/.bin/nodemon -w server/ -w config.js index.js
   fi
 }
 
