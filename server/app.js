@@ -23,6 +23,12 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(cookieParser());
 app.use(passport.initialize());
 
+var logger = function(req, res, next) {
+  console.log(req.method + ' ' + req.originalUrl);
+  next();
+};
+app.use(logger);
+
 //
 // Routers.
 //
