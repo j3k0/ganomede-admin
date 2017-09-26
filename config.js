@@ -2,15 +2,16 @@
 
 const pkg = require('./package.json');
 
-const parseServiceAddress = (service) => {
-  const present = process.env.hasOwnProperty(service + '_PORT_8080_TCP_ADDR');
+const hasService = (service) => {
+  return process.env.hasOwnProperty(`${service}_PORT_8080_TCP_ADDR`) || null;
+};
 
-  return present
-    ? { protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
-        host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
-        port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
-      }
-    : null;
+const parseServiceAddress = (service) => {
+  return {
+    protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
+    host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
+    port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
+  };
 };
 
 const config = {
@@ -44,9 +45,9 @@ const config = {
       }())
     ),
 
-    avatars: parseServiceAddress('AVATARS'),
-    users: parseServiceAddress('USERS'),
-    data: parseServiceAddress('DATA')
+    avatars: hasService('AVATARS') && parseServiceAddress('AVATARS'),
+    users: hasService('USERS') && parseServiceAddress('USERS'),
+    data: hasService('DATA') && parseServiceAddress('DATA')
   }
 };
 

@@ -3,7 +3,7 @@
 const expect = require('expect.js');
 const helpers = require('./helpers');
 
-describe('Users', function () {
+describe.skip('Users', function () {
   const balanceSorter = (l, r) => l.currency < r.currency ? -1 : 1;
   const kUsername = 'jeko';
   const kProfile = {};

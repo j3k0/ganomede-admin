@@ -47,6 +47,7 @@ class Upstream {
       : this.prefix;
 
     options.json = true;
+    options.gzip = true;
 
     request(options, (err, res, body) => {
       // Check network errors.

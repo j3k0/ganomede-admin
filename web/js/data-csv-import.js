@@ -9,43 +9,119 @@ const readCsv = (file, callback) => {
   reader.readAsText(file, 'UTF-8');
 };
 
-const parseCsv = (csv) => {
-  const lines = csv
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .map(line => line.split(','));
-
-  if (lines.length < 2)
-    return new Error('Invalid CSV format: expected at least 2 lines');
-
-  const ids = lines.slice(0, 1)[0];
-  const values = lines.slice(1);
-
-  const columnsToCount = ids
-    .map((id, idx) => idx)
-    .filter(index => !!ids[index]);
-
-  const documents = columnsToCount.reduce((self, idx) => {
-    const id = ids[idx];
-    self[id] = [];
-    return self;
-  }, {});
-
-  for (let i = 0; i < values.length; ++i) {
-    const row = values[i];
-
-    columnsToCount.forEach(index => {
-      const id = ids[index];
-      const list = documents[id];
-      const val = row[index];
-
-      if (val)
-        list.push(val);
-    });
+class UniqueWords {
+  constructor () {
+    this.set = new Set();
   }
 
-  return documents;
+  add (word) {
+    const isNew = !this.set.has(word);
+    if (isNew)
+      this.set.add(word);
+    return isNew;
+  }
+
+  words () {
+    return Array.from(this.set.values());
+  }
+}
+
+class Lists {
+  constructor () {
+    this.lists = Object.create(null);
+  }
+
+  // returns TRUE if new list
+  createList (id) {
+    const isNew = !this.lists[id];
+    if (isNew)
+      this.lists[id] = new UniqueWords();
+    return isNew;
+  }
+
+  // returns TRUE if new word
+  addToList (id, word) {
+    return this.lists[id].add(word);
+  }
+
+  asObject () {
+    return Object.keys(this.lists).reduce((self, key) => {
+      self[key] = this.lists[key].words();
+      return self;
+    }, Object.create(null));
+  }
+}
+
+class Parser {
+  constructor (csv) {
+    const lines = csv
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => line.split(','));
+
+    this.ids = lines[0];
+    this.values = lines.slice(1);
+    this.errors = [];
+    this.warnings = {
+      ignoredColumns: [],
+      mergedColumns: [],
+      removedDuplicates: []
+    };
+
+    if (lines.length < 2)
+      this.errors.push('Invalid CSV format: expected at least 2 lines');
+  }
+
+  failed () {
+    return this.errors.length > 0;
+  }
+
+  parse () {
+    if (this.failed())
+      return;
+
+    const lists = new Lists();
+
+    this.ids.forEach((listId, column) => {
+      // ignore columns without ids
+      if (!listId) {
+        this.warnings.ignoredColumns.push(`#${column + 1}`);
+        return;
+      }
+
+      // duplicate column IDs
+      if (!lists.createList(listId))
+        this.warnings.mergedColumns.push(`${listId} (#${column + 1})`);
+
+      for (let row = 0; row < this.values.length; ++row) {
+        const word = this.values[row][column];
+
+        // ignore empty words
+        if (!word)
+          continue;
+
+        const newWord = lists.addToList(listId, word);
+
+        // duplicate words
+        if (!newWord)
+          this.warnings.removedDuplicates.push(`${word} from column ${listId} (#${column + 1})`);
+      }
+    });
+
+    return lists.asObject();
+  }
+}
+
+const parseCsv = (csv) => {
+  const parser = new Parser(csv);
+  const docs = parser.parse();
+
+  return {
+    documents: docs,
+    errors: parser.errors,
+    warnings: parser.warnings
+  };
 };
 
 // callback(err, {docsToInsert})
@@ -54,11 +130,8 @@ module.exports = (file, callback) => {
     if (err)
       return callback(err);
 
-    const documents = parseCsv(csv);
-
-    return documents instanceof Error
-      ? callback(documents)
-      : callback(null, documents);
+    const {documents, errors, warnings} = parseCsv(csv);
+    callback(null, documents, {errors, warnings});
   });
 };
 
