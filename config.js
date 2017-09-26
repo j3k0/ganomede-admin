@@ -30,19 +30,21 @@ const config = {
   },
 
   services: {
-    virtualcurrency: Object.assign(
-      parseServiceAddress('VIRTUAL_CURRENCY'),
-      (function () {
-        const envName = 'VIRTUAL_CURRENCY_CURRENCY_CODES';
-        const has = process.env.hasOwnProperty(envName);
-        const currencies = String(process.env[envName]).split(',');
+    virtualcurrency: parseServiceAddress('VIRTUAL_CURRENCY')
+      ? Object.assign(
+        parseServiceAddress('VIRTUAL_CURRENCY'),
+        (function () {
+          const envName = 'VIRTUAL_CURRENCY_CURRENCY_CODES';
+          const has = process.env.hasOwnProperty(envName);
+          const currencies = String(process.env[envName]).split(',');
 
-        if (has && currencies.length > 1)
-          return {currencies};
+          if (has && currencies.length > 1)
+            return {currencies};
 
-        throw new Error(`Please provide currency codes via ${envName} env variable.`);
-      }())
-    ),
+          throw new Error(`Please provide currency codes via ${envName} env variable.`);
+        }())
+      )
+      : null,
 
     avatars: parseServiceAddress('AVATARS'),
     users: parseServiceAddress('USERS'),
