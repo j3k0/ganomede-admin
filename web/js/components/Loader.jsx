@@ -18,7 +18,7 @@ function Loader (props) {
     : children;
 
   return (
-    <div>
+    <div data-loading={loading}>
       { loading ? 'Loading…' : content }
     </div>
   );
