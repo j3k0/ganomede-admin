@@ -33,6 +33,8 @@
     // Don't enforce let/const for browser.
     "no-var": 0,
     // Don't require props declaration.
-    "react/prop-types": 0
+    "react/prop-types": 0,
+    // console is okay in browsers. I think :)
+    "no-console": 0
   }
 }

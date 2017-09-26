@@ -24,7 +24,17 @@ var utils = {
 
   xhr: function (options, callback) {
     options.url = url.resolve(String(window.location.origin), options.url);
-    options.json = true;
+
+    // gzip does not play well with browsers.
+    if (options.hasOwnProperty('gzip')) {
+      console.warn('utils.xhr() replaced `options.gzip` with `false`; see https://github.com/j3k0/ganomede-admin/issues/38 and https://github.com/j3k0/ganomede-admin/issues/41 for details on why setting it to `true` is dodgy.');
+      options.gzip = false;
+    }
+
+    // Parse JSON by default, unless we were asked not to.
+    if (!options.hasOwnProperty('json'))
+      options.json = true;
+
     request(options, callback);
   },
 
