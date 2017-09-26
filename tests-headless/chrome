@@ -1,0 +1,112 @@
+#!/usr/bin/env node
+/* eslint-disable no-console */
+/* eslint-env browser */
+'use strict';
+
+const path = require('path');
+const util = require('util');
+const crypto = require('crypto');
+const puppeteer = require('puppeteer');
+const {oneLineTrim} = require('common-tags');
+
+// const timeout = async (millis) => new Promise(resolve => setTimeout(resolve, millis));
+
+const PAGE_URL = 'https://wordsearch.ggs.ovh/admin/v1/web/data/@GameVars';
+const AUTH_TOKEN = (() => {
+  if (process.env.hasOwnProperty('AUTH_TOKEN'))
+    return process.env.AUTH_TOKEN;
+
+  throw new Error('Provide AUTH_TOKEN env var');
+})();
+
+// Replaces bundle.js contents with w/ever is avaialabe at that URL.
+const JS_URL = process.env.hasOwnProperty('JS_URL')
+  ? process.env.JS_URL
+  : null;
+
+const screenshotPath = (label = '', {randomize = true} = {}) => {
+  const baseName = randomize
+    ? oneLineTrim`
+        ${Date.now()}
+        ${label ? `-${label}` : ''}
+        .${crypto.randomBytes(4).toString('hex')}
+      `
+    : label;
+
+  const fileName = `${baseName}.png`.replace(/\s+/g, '-');
+
+  return path.resolve(
+    __dirname,
+    'screenshots',
+    fileName
+  );
+};
+
+async function example() {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  const screenshotFile = screenshotPath('data-zlib-failure', {randomize: false});
+
+  // print stuff from browser console
+  page.on('console', (...args) => {
+    const message = util.format(...args);
+    console.log(`[ BROWSER ]`, message);
+  });
+
+  // auth
+  await page.setCookie({
+    name: 'token',
+    value: AUTH_TOKEN,
+    httpOnly: true,
+    url: PAGE_URL
+  });
+
+  // replace server's bundle.js with our own
+  await page.setRequestInterceptionEnabled(true);
+  page.on('request', (request) => {
+    if (JS_URL && request.url.endsWith('bundle.js'))
+      return request.continue({url: JS_URL});
+
+    request.continue();
+  });
+
+  // navigate and wait for loading to finish
+  await page.goto(PAGE_URL, {waitUntil: 'networkidle'});
+  await page.waitForFunction(() => {
+    const busyLoaders = document.querySelectorAll('div[data-loading="true"]');
+    return busyLoaders.length === 0;
+  }, {polling: 100, timeout: 5e3});
+
+  // check errors
+  const errors = await page.evaluate(() => {
+    const nodes = (selector) => Array.prototype.slice.call(
+      document.querySelectorAll(selector)
+    );
+
+    return nodes('pre.well').map(node => node.innerText);
+  });
+
+  if (errors.length > 0) {
+    console.log('Looks like errors were found:');
+    errors.forEach(node => console.log(node));
+  }
+  else
+    console.log('Everything seems fine.');
+
+  // cleanup
+  await page.screenshot({path: screenshotFile});
+  await browser.close();
+  console.log({screenshotFile});
+}
+
+const main = () => {
+  process.on('unhandledRejection', (err) => {
+    console.error('Unahndled Rejection\n', err);
+    process.exit(1);
+  });
+
+  example();
+};
+
+if (!module.parent)
+  main();

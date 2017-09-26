@@ -91,8 +91,9 @@ const docs = {
     utils.xhr({
       method: 'get',
       url: this.url(id),
-      gzip: true,
-      json: false // no need to parse response
+      // Even though we only need a string to put into editor,
+      // parsing JSON makes it human readable with indents and newlines.
+      json: true
     }, this.wrapCb(callback));
   },
 
