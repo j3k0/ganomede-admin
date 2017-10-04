@@ -14,6 +14,8 @@ const parseServiceAddress = (service) => {
   };
 };
 
+const optionalService = (name) => hasService(name) && parseServiceAddress(name);
+
 const config = {
   pkg,
 
@@ -47,9 +49,10 @@ const config = {
       )
       : null,
 
-    avatars: hasService('AVATARS') && parseServiceAddress('AVATARS'),
-    users: hasService('USERS') && parseServiceAddress('USERS'),
-    data: hasService('DATA') && parseServiceAddress('DATA')
+    avatars: optionalService('AVATARS'),
+    users: optionalService('USERS'),
+    data: optionalService('DATA'),
+    directory: optionalService('DIRECTORY')
   }
 };
 
