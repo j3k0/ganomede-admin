@@ -9,7 +9,8 @@
     "npm": ">=5"
   },
   "scripts": {
-    "test": "make test",
+    "test": "VIRTUAL_CURRENCY_CURRENCY_CODES=\"gold,silver,copper\" LOG_LEVEL=FATAL API_SECRET=1 mocha --bail --no-exit --throw-deprecation tests/helper.js tests/",
+    "testw": "nodemon --watch server/ --watch tests/ --exec 'npm run test'",
     "lint": "make lint"
   },
   "repository": {
@@ -49,7 +50,7 @@
     "eslint-plugin-react": "^6.4.1",
     "expect.js": "^0.3.1",
     "mocha": "^3.1.2",
-    "nodemon": "^1.11.0",
+    "nodemon": "^1.12.1",
     "puppeteer": "^0.11.0",
     "reactify": "^1.1.1",
     "watchify": "^3.7.0"

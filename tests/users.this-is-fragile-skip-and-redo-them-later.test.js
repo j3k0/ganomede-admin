@@ -1,7 +1,7 @@
 'use strict';
 
 const expect = require('expect.js');
-const helpers = require('./helpers');
+const helpers = require('../server/users/helpers');
 
 describe.skip('Users', function () {
   const balanceSorter = (l, r) => l.currency < r.currency ? -1 : 1;

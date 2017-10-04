@@ -1,7 +1,7 @@
 'use strict';
 
 const expect = require('expect.js');
-const utils = require('./utils');
+const utils = require('../server/utils');
 
 describe('utils', function () {
   describe('Upstream', function () {
