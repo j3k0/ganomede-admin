@@ -1,7 +1,7 @@
 'use strict';
 
 const td = require('testdouble');
-const {expect} = require('chai');
+const {assert, expect} = require('chai');
 
 td.print = (what) => {
   const message = td.explain(what).description;
@@ -10,6 +10,7 @@ td.print = (what) => {
 
 global.td = td;
 global.expect = expect;
+global.assert = assert;
 global._testing = true;
 
 afterEach(() => td.reset());
