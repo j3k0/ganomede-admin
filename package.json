@@ -53,6 +53,7 @@
     "nodemon": "^1.12.1",
     "puppeteer": "^0.11.0",
     "reactify": "^1.1.1",
+    "testdouble": "^3.2.6",
     "watchify": "^3.7.0"
   }
 }
