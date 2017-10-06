@@ -38,9 +38,9 @@ function exportEnv {
   export DATA_PORT_8080_TCP_PORT='8080'
 
   # directory
-  export DIRECTORY_PORT_8080_TCP_PROTOCOL='https'
-  export DIRECTORY_PORT_8080_TCP_ADDR='prod.ggs.ovh'
-  export DIRECTORY_PORT_8080_TCP_PORT='8080'
+  export DIRECTORY_PORT_8000_TCP_PROTOCOL='https'
+  export DIRECTORY_PORT_8000_TCP_ADDR='account.ggs.ovh'
+  export DIRECTORY_PORT_8000_TCP_PORT='443'
 }
 
 function main {

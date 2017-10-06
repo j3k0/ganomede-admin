@@ -55,9 +55,9 @@ microservices. Provide links to them with env vars (otherwise, related functiona
    - `DATA_PORT_8080_TCP_PORT` data port;
 
 - [directory module](https://github.com/j3k0/ganomede-directory)
-   - `DIRECTORY_PORT_8080_TCP_PROTOCOL` directory protocol (`http` or `https`, defaults to `http`);
-   - `DIRECTORY_PORT_8080_TCP_ADDR` directory host;
-   - `DIRECTORY_PORT_8080_TCP_PORT` directory port;
+   - `DIRECTORY_PORT_8000_TCP_PROTOCOL` directory protocol (`http` or `https`, defaults to `http`);
+   - `DIRECTORY_PORT_8000_TCP_ADDR` directory host;
+   - `DIRECTORY_PORT_8000_TCP_PORT` directory port;
 
 # Run
 
