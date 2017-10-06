@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const {tag: toTag} = require('ganomede-tagizer');
+const {createClient: createDirectoryClient} = require('ganomede-directory');
 const {awaitable} = require('awaitability');
 const {GanomedeError} = require('ganomede-errors');
 const log = require('../log');
@@ -41,7 +42,7 @@ class UserIdNotFoundError extends GanomedeError {
 }
 
 class UserIdResolver {
-  constructor (directoryClient) {
+  constructor (directoryClient = createDirectoryClient()) {
     this.directory = directoryClient;
   }
 

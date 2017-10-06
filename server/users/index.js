@@ -1,17 +1,28 @@
 'use strict';
 
+const util = require('util');
 const express = require('express');
 const helpers = require('./helpers');
+const UserIdResolver = require('./UserIdResolver');
 
 const router = new express.Router();
+const uidResolver = new UserIdResolver();
+const fetchProfile = util.promisify(helpers.profile);
 
-router.get('/:username', function (req, res, next) {
-  helpers.profile(req.params.username, (err, profile) => {
-    if (err)
-      return next(err);
-
+// This is a place that receives queries for user profiles.
+// But since we use
+// Web UI should be fine if we re
+// Since we want to lookup multiple things get a tag , all the other things
+router.get('/:username', async (req, res, next) => {
+  try {
+    console.log(uidResolver.directory)
+    const userId = await uidResolver.resolve(req.params.username);
+    const profile = await fetchProfile(userId);
     res.json(profile);
-  });
+  }
+  catch (ex) {
+    next(ex);
+  }
 });
 
 router.post('/:username/rewards', function (req, res, next) {
