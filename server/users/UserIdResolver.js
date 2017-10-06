@@ -56,9 +56,8 @@ class UserIdResolver {
       return new LookupResult({found: true, method, args, userId});
     }
     catch (ex) {
-      // Directory client uses `callback(new Error("HTTP" + res.statusCode));`
-      // for non-200 status codes. We are fine with 404, however.
-      if (ex instanceof Error && (ex.message === 'HTTP404'))
+      // We are okay with restify's 404 errors.
+      if (ex instanceof Error && (ex.statusCode === 404))
         return new LookupResult({found: false, method, args});
 
       log.error('UserId resolution failed %j:\n', {method, args}, ex);

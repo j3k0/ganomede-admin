@@ -33,7 +33,7 @@ const config = {
   },
 
   services: {
-    virtualcurrency: parseServiceAddress('VIRTUAL_CURRENCY')
+    virtualcurrency: hasService('VIRTUAL_CURRENCY')
       ? Object.assign(
         parseServiceAddress('VIRTUAL_CURRENCY'),
         (function () {

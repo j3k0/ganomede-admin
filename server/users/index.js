@@ -15,7 +15,6 @@ const fetchProfile = util.promisify(helpers.profile);
 // Since we want to lookup multiple things get a tag , all the other things
 router.get('/:username', async (req, res, next) => {
   try {
-    console.log(uidResolver.directory)
     const userId = await uidResolver.resolve(req.params.username);
     const profile = await fetchProfile(userId);
     res.json(profile);
