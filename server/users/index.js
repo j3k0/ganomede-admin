@@ -1,17 +1,44 @@
 'use strict';
 
+const util = require('util');
 const express = require('express');
+const lodash = require('lodash');
 const helpers = require('./helpers');
+const UserIdResolver = require('./UserIdResolver');
 
 const router = new express.Router();
+const uidResolver = new UserIdResolver();
+const fetchProfile = util.promisify(helpers.profile);
 
-router.get('/:username', function (req, res, next) {
-  helpers.profile(req.params.username, (err, profile) => {
-    if (err)
-      return next(err);
+// This is a place that receives queries for user profiles.
+// But since we use
+// Web UI should be fine if we re
+// Since we want to lookup multiple things get a tag , all the other things
+router.get('/search/:query', async (req, res, next) => {
+  try {
+    res.json(await uidResolver.resolve(req.params.query));
+  }
+  catch (ex) {
+    next(ex);
+  }
+});
 
-    res.json(profile);
-  });
+router.get('/:userId', async (req, res, next) => {
+  try {
+    // Require exact match for user ID.
+    const lookups = await uidResolver.resolve(req.params.userId);
+    const idLookupSucceeded = lookups.results.some(r => r.found && r.method === 'byId');
+    const uniqueUids = lodash.uniq(lookups.matchingIds);
+    const singleExactMatch = idLookupSucceeded && uniqueUids.length === 1 && uniqueUids[0] === req.params.userId;
+
+    if (!singleExactMatch)
+      return next(new UserIdResolver.UserIdNotFoundError(req.params.userId));
+
+    res.json(await fetchProfile(req.params.userId));
+  }
+  catch (ex) {
+    next(ex);
+  }
 });
 
 router.post('/:username/rewards', function (req, res, next) {

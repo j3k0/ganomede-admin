@@ -4,6 +4,7 @@ var backbone = require('backbone');
 var React = require('react');
 var ReactDOMServer = require('react-dom/server');
 var swal = require('sweetalert');
+var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
@@ -54,6 +55,66 @@ function Transaction (props) {
     </ClickForDetails>
   );
 }
+
+const processSearchResults = (rawData) => {
+  if (rawData === null)
+    return null;
+
+  const {query, results, matchingIds} = rawData;
+  const hasMatches = matchingIds.length > 0;
+  const singleMatch = matchingIds.length === 1 || lodash.uniq(matchingIds).length === 1;
+
+  return {
+    query,
+    results,
+    matchingIds,
+    hasMatches,
+    singleMatch
+  };
+};
+
+function SearchResults (props) {
+  // No need to render anything, no lookups were performed.
+  if (props.results === null)
+    return null;
+
+  const {
+    query,
+    results,
+    matchingIds,
+    hasMatches,
+    singleMatch
+  } = props.results;
+
+  return (
+    <div>
+      {
+        hasMatches
+          ? singleMatch
+            ? <span>Found single User ID <strong>{matchingIds[0]}</strong>:</span>
+            : <span>Multiple results, search again for one of the following IDs:</span>
+          : <span>No users found, lookups performed:</span>
+      }
+
+      <ul>
+        {
+          results.map(({found, method, args, userId}, idx) => {
+            return (
+              <li key={`${query}-${idx}`}>
+                <code>{method}({args.map(JSON.stringify).join(', ')})</code>
+                {': '}
+                <span>{found ? <strong>{userId}</strong> : '<no match>'}</span>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  );
+
+
+  return (<Debug.pre data={results} />);
+};
 
 var AwardForm = React.createClass({
   contextTypes: {
@@ -198,10 +259,52 @@ var Search = React.createClass({
     return {
       index: !hasUser,
       username: hasUser ? this.props.params.username : null,
+      searchLoading: false,
+      searchQuery: '',
+      searchResults: null,
+      searchError: null,
       profile: null,
       loading: hasUser,
       error: null
     };
+  },
+
+  // Set one/multi of:
+  // diff is object with keys {loading, query, error, results}
+  setSearchState (diff = {}, callback = function () {}) {
+    const changes = Object.entries(diff).reduce((acc, [key, val]) => {
+      const stateKey = `search${key[0].toUpperCase()}${key.slice(1)}`;
+      if (this.state.hasOwnProperty(stateKey))
+        acc[stateKey] = diff[key];
+
+      return acc;
+    }, {});
+
+    console.dir(changes)
+
+    this.setState(changes, callback);
+  },
+
+  resolveUserId: function (query) {
+    this.setSearchState({loading: true, query});
+
+    utils.xhr({
+      method: 'get',
+      url: utils.apiPath('/users/search/' + encodeURIComponent(query)),
+    }, (err, res, data) => {
+      const error = err || (res.statusCode === 200 ? null : data);
+      this.setSearchState({
+        loading: false,
+        error: error || null,
+        results: error ? null : processSearchResults(data)
+      }, () => {
+        if (this.state.searchError)
+          return;
+
+        if (this.state.searchResults.singleMatch)
+          this.fetchProfile(this.state.searchResults.matchingIds[0]);
+      });
+    });
   },
 
   fetchProfile: function (username) {
@@ -247,20 +350,26 @@ var Search = React.createClass({
 
   renderForm: function () {
     return (
-      <form className='form-inline' onSubmit={
-        event => {
-          event.preventDefault();
-          this.fetchProfile(this.refs.usernameInput.value);
-        }
-      }>
-        <input type='text'
-          ref='usernameInput'
-          className='form-control'
-          placeholder='Type in username…'
-          defaultValue={this.state.username}
-        />
-        <input type='submit' className='btn btn-primary' value='Find' />
-      </form>
+      <div>
+        <form className='form-inline' onSubmit={
+          event => {
+            event.preventDefault();
+            this.resolveUserId(this.refs.usernameInput.value);
+          }
+        }>
+          <input type='text'
+            ref='usernameInput'
+            className='form-control'
+            placeholder='Seach for users: id, alias, etc…'
+            defaultValue={this.state.searchQuery}
+          />
+          <input type='submit' className='btn btn-primary' value='Find' />
+        </form>
+
+        <Loader error={this.state.searchError} loading={this.state.searchLoading}>
+          <SearchResults results={this.state.searchResults} />
+        </Loader>
+      </div>
     );
   },
 
