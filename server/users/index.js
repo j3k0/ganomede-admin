@@ -2,6 +2,7 @@
 
 const util = require('util');
 const express = require('express');
+const lodash = require('lodash');
 const helpers = require('./helpers');
 const UserIdResolver = require('./UserIdResolver');
 
@@ -24,6 +25,15 @@ router.get('/search/:query', async (req, res, next) => {
 
 router.get('/:userId', async (req, res, next) => {
   try {
+    // Require exact match for user ID.
+    const lookups = await uidResolver.resolve(req.params.userId);
+    const idLookupSucceeded = lookups.results.some(r => r.found && r.method === 'byId');
+    const uniqueUids = lodash.uniq(lookups.matchingIds);
+    const singleExactMatch = idLookupSucceeded && uniqueUids.length === 1 && uniqueUids[0] === req.params.userId;
+
+    if (!singleExactMatch)
+      return next(new UserIdResolver.UserIdNotFoundError(req.params.userId));
+
     res.json(await fetchProfile(req.params.userId));
   }
   catch (ex) {

@@ -41,7 +41,7 @@ class Lookups {
 
 class UserIdNotFoundError extends GanomedeError {
   constructor (query) {
-    super('UserID not resolved from query `%s`', query);
+    super('UserID `%s` not found', query);
   }
 }
 
