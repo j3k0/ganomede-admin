@@ -13,11 +13,18 @@ const fetchProfile = util.promisify(helpers.profile);
 // But since we use
 // Web UI should be fine if we re
 // Since we want to lookup multiple things get a tag , all the other things
-router.get('/:username', async (req, res, next) => {
+router.get('/search/:query', async (req, res, next) => {
   try {
-    const userId = await uidResolver.resolve(req.params.username);
-    const profile = await fetchProfile(userId);
-    res.json(profile);
+    res.json(await uidResolver.resolve(req.params.query));
+  }
+  catch (ex) {
+    next(ex);
+  }
+});
+
+router.get('/:userId', async (req, res, next) => {
+  try {
+    res.json(await fetchProfile(req.params.userId));
   }
   catch (ex) {
     next(ex);

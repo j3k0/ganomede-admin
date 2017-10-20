@@ -23,15 +23,19 @@ class Lookups {
   constructor (query, results) {
     this.query = query;
     this.results = results;
+    this.matchingIds = this.results.filter(r => r.found).map(r => r.userId);
+  }
+
+  hasSingleMatch () {
+    return this.matchingIds.length === 1;
+  }
+
+  hasMultipleMatches () {
+    return this.matchingIds.length > 1;
   }
 
   firstMatch () {
-    const match = this.results.find(r => r.found);
-
-    if (!match)
-      throw new UserIdNotFoundError(this.query);
-
-    return match;
+    return this.matchingIds[0];
   }
 }
 
@@ -75,9 +79,8 @@ class UserIdResolver {
   }
 
 
-  async resolve (query) {
-    const lookups = await this.performLookups(query);
-    return lookups.firstMatch().userId;
+  resolve (query) {
+    return this.performLookups(query);
   }
 }
 
