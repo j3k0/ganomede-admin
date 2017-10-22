@@ -74,5 +74,9 @@ button.btn-add-item {
 }
 
 .CodeMirror {
-  border: 1px solid #e7e7e7;
+    border: 1px solid #e7e7e7;
+}
+
+.AdminAction {
+    margin-right: 1em;
 }

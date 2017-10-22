@@ -147,7 +147,6 @@ var AwardForm = React.createClass({
 
 function BanInfo (props) {
   var ban = props.ban;
-  var onToggle = props.onToggle;
 
   var status = ban.exists
     ? (<WarningLabel>
@@ -157,23 +156,8 @@ function BanInfo (props) {
       </WarningLabel>)
     : 'In Good Standing';
 
-  var toggler = (
-    <a href="#"
-       onClick={event => {
-         event.preventDefault();
-         onToggle(ban.exists ? 'unban' : 'ban');
-       }}
-    >
-      {ban.exists ? 'Unban' : 'Ban'}
-    </a>
-  );
-
   return (
-    <div>
-      {status}
-      {' '}
-      {toggler}
-    </div>
+    <div>{status}</div>
   );
 }
 
@@ -182,6 +166,16 @@ function ProfilePiece (props) {
     <div>
       {props.value || <span className="unobtrusive">{props.missingText}</span>}
     </div>
+  );
+}
+
+function AdminAction (props) {
+  const {title, onClick} = props;
+
+  return (
+    <button className="AdminAction btn btn-default" onClick={onClick}>
+      {title}
+    </button>
   );
 }
 
@@ -212,7 +206,7 @@ function Profile (props) {
           />
 
           <ProfilePiece
-            value={props.banInfo && <BanInfo ban={props.banInfo} onToggle={props.toggleBan}/>}
+            value={props.banInfo && <BanInfo ban={props.banInfo} />}
             missingText="Ban Info Missing"
           />
         </div>
@@ -222,12 +216,15 @@ function Profile (props) {
         <div className="col-md-12">
           <b>Admin Actions</b>
           <div>
-            <button
-              className="btn btn-default"
+            <AdminAction
+              title="Reset Password"
               onClick={() => changePasswordPrompt(props.username)}
-            >
-              Reset Password
-            </button>
+            />
+
+            <AdminAction
+              title={props.banInfo.exists ? 'Unban' : 'Ban'}
+              onClick={props.toggleBan.bind(null, props.banInfo.exists ? 'unban' : 'ban')}
+            />
           </div>
         </div>
       </div>
