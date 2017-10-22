@@ -7,6 +7,8 @@ var swal = require('sweetalert');
 var request = require('request');
 var url = require('url');
 var moment = require('moment');
+const {awaitable} = require('awaitability');
+const passwordGenerator = require('password-generator');
 var Debug = require('./components/Debug.jsx');
 
 var utils = {
@@ -22,7 +24,17 @@ var utils = {
     return this.prefixPath('api', path);
   },
 
+  // Returns Promise in case callback is not provided (resolves to `[res, body]`).
+  // Otherwise this is just a wrapper for `request` module.
   xhr: function (options, callback) {
+    // Allow GET string via `xhr('http://example.com')`
+    if (typeof options === 'string') {
+      options = {
+        url: options,
+        method: 'GET'
+      }
+    }
+
     options.url = url.resolve(String(window.location.origin), options.url);
 
     // gzip does not play well with browsers.
@@ -35,7 +47,13 @@ var utils = {
     if (!options.hasOwnProperty('json'))
       options.json = true;
 
-    request(options, callback);
+    return callback
+      ? request(options, callback)
+      : awaitable.spread(request, options);
+  },
+
+  reactToStaticHtml: function (node) {
+    return ReactDOMServer.renderToStaticMarkup(node);
   },
 
   errorToHtml: function (error) {
@@ -43,11 +61,11 @@ var utils = {
     var errorText = isUpstream ? error.reason : (error.message || error);
     var errorTitle = isUpstream ? error.message : 'Error';
 
-    return ReactDOMServer.renderToStaticMarkup(
+    return utils.reactToStaticHtml(
       <div>
         <div>{errorTitle}</div>
         <br/>
-        <Debug.pre data={errorText}/>
+        <Debug.pre data={utils.prettyPrintError(errorText)}/>
       </div>
     );
   },
@@ -125,6 +143,19 @@ var utils = {
 
   formatDateFromNow: function (date) {
     return moment(date).fromNow();
+  },
+
+  prettyPrintError: (error) => {
+    const isHtml = (typeof error === 'string' && error.includes('<!DOCTYPE html>'));
+
+    return isHtml
+      ? error.replace(/(?:\\n|<br>)/g, '\n')
+      : JSON.stringify(error, null, 2);
+  },
+
+  passwordSuggestion () {
+    // 10 memorable letters + 2 digits
+    return passwordGenerator(10) + passwordGenerator(2, false, /^[\d]+$/);
   }
 };
 

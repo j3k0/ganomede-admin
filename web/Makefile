@@ -1,4 +1,4 @@
-FLAGS=--transform [ reactify --es6 --target es5 ] \
+FLAGS=--transform [ babelify --presets [ es2017 react ] ] \
 	--transform brfs \
 	--outfile bundle.js \
 	js/entrypoint.js

@@ -2,7 +2,6 @@
 
 var backbone = require('backbone');
 var React = require('react');
-var ReactDOMServer = require('react-dom/server');
 var swal = require('sweetalert');
 var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
@@ -22,7 +21,7 @@ function ClickForDetails (props) {
     type: 'info',
     html: true,
     title: title,
-    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={details}/>),
+    text: utils.reactToStaticHtml(<Debug.pre data={details}/>),
     allowOutsideClick: true
   }, () => {});
 
@@ -148,7 +147,6 @@ var AwardForm = React.createClass({
 
 function BanInfo (props) {
   var ban = props.ban;
-  var onToggle = props.onToggle;
 
   var status = ban.exists
     ? (<WarningLabel>
@@ -158,23 +156,8 @@ function BanInfo (props) {
       </WarningLabel>)
     : 'In Good Standing';
 
-  var toggler = (
-    <a href="#"
-       onClick={event => {
-         event.preventDefault();
-         onToggle(ban.exists ? 'unban' : 'ban');
-       }}
-    >
-      {ban.exists ? 'Unban' : 'Ban'}
-    </a>
-  );
-
   return (
-    <div>
-      {status}
-      {' '}
-      {toggler}
-    </div>
+    <div>{status}</div>
   );
 }
 
@@ -183,6 +166,16 @@ function ProfilePiece (props) {
     <div>
       {props.value || <span className="unobtrusive">{props.missingText}</span>}
     </div>
+  );
+}
+
+function AdminAction (props) {
+  const {title, onClick} = props;
+
+  return (
+    <button className="AdminAction btn btn-default" onClick={onClick}>
+      {title}
+    </button>
   );
 }
 
@@ -213,9 +206,26 @@ function Profile (props) {
           />
 
           <ProfilePiece
-            value={props.banInfo && <BanInfo ban={props.banInfo} onToggle={props.toggleBan}/>}
+            value={props.banInfo && <BanInfo ban={props.banInfo} />}
             missingText="Ban Info Missing"
           />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-12">
+          <b>Admin Actions</b>
+          <div>
+            <AdminAction
+              title="Reset Password"
+              onClick={() => changePasswordPrompt(props.username)}
+            />
+
+            <AdminAction
+              title={props.banInfo.exists ? 'Unban' : 'Ban'}
+              onClick={props.toggleBan.bind(null, props.banInfo.exists ? 'unban' : 'ban')}
+            />
+          </div>
         </div>
       </div>
 
@@ -247,6 +257,62 @@ function Profile (props) {
     </div>
   );
 }
+
+const changePasswordPrompt = (userId) => {
+  const title = 'Password Change';
+
+  swal({
+    title,
+    text: utils.reactToStaticHtml(
+      <div>
+        Type in new password for <strong>{userId}</strong> below.
+      </div>
+    ),
+    html: true,
+    type: 'input',
+    inputValue: utils.passwordSuggestion(),
+    inputPlaceholder: 'Type in new password…',
+    closeOnConfirm: false,
+    disableButtonsOnConfirm: true,
+    showCancelButton: true,
+    showLoaderOnConfirm: true
+  }, async (newPassword) => {
+    if (newPassword === false)
+      return;
+
+    try {
+      const [res, body] = await utils.xhr({
+        method: 'POST',
+        url: utils.apiPath(`/users/${encodeURIComponent(userId)}/password-reset`),
+        body: {newPassword}
+      });
+
+      if (res.statusCode !== 200)
+        throw body;
+
+      swal({
+        title,
+        type: 'success',
+        text: utils.reactToStaticHtml(
+          <div>
+            Password of user <strong>{userId}</strong> has been changed to
+            {' '}
+            <code>{newPassword}</code>.
+          </div>
+        ),
+        html: true
+      });
+    }
+    catch (ex) {
+      swal({
+        title,
+        type: 'error',
+        text: utils.errorToHtml(ex),
+        html: true
+      });
+    }
+  });
+};
 
 var Search = React.createClass({
   contextTypes: {
