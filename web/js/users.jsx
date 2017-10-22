@@ -2,7 +2,6 @@
 
 var backbone = require('backbone');
 var React = require('react');
-var ReactDOMServer = require('react-dom/server');
 var swal = require('sweetalert');
 var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
@@ -22,7 +21,7 @@ function ClickForDetails (props) {
     type: 'info',
     html: true,
     title: title,
-    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={details}/>),
+    text: utils.reactToStaticHtml(<Debug.pre data={details}/>),
     allowOutsideClick: true
   }, () => {});
 
@@ -219,6 +218,20 @@ function Profile (props) {
         </div>
       </div>
 
+      <div className="row">
+        <div className="col-md-12">
+          <b>Admin Actions</b>
+          <div>
+            <button
+              className="btn btn-default"
+              onClick={() => changePasswordPrompt(props.username)}
+            >
+              Reset Password
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className='row'>
         <div className='col-md-4'>
           <b>Balance</b>
@@ -247,6 +260,62 @@ function Profile (props) {
     </div>
   );
 }
+
+const changePasswordPrompt = (userId) => {
+  const title = 'Password Change';
+
+  swal({
+    title,
+    text: utils.reactToStaticHtml(
+      <div>
+        Type in new password for <strong>{userId}</strong> below.
+      </div>
+    ),
+    html: true,
+    type: 'input',
+    inputValue: utils.passwordSuggestion(),
+    inputPlaceholder: 'Type in new password…',
+    closeOnConfirm: false,
+    disableButtonsOnConfirm: true,
+    showCancelButton: true,
+    showLoaderOnConfirm: true
+  }, async (newPassword) => {
+    if (newPassword === false)
+      return;
+
+    try {
+      const [res, body] = await utils.xhr({
+        method: 'POST',
+        url: utils.apiPath(`/users/${encodeURIComponent(userId)}/password-reset`),
+        body: {newPassword}
+      });
+
+      if (res.statusCode !== 200)
+        throw body;
+
+      swal({
+        title,
+        type: 'success',
+        text: utils.reactToStaticHtml(
+          <div>
+            Password of user <strong>{userId}</strong> has been changed to
+            {' '}
+            <code>{newPassword}</code>.
+          </div>
+        ),
+        html: true
+      });
+    }
+    catch (ex) {
+      swal({
+        title,
+        type: 'error',
+        text: utils.errorToHtml(ex),
+        html: true
+      });
+    }
+  });
+};
 
 var Search = React.createClass({
   contextTypes: {

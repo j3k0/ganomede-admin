@@ -8,6 +8,7 @@ var request = require('request');
 var url = require('url');
 var moment = require('moment');
 const {awaitable} = require('awaitability');
+const passwordGenerator = require('password-generator');
 var Debug = require('./components/Debug.jsx');
 
 var utils = {
@@ -150,6 +151,11 @@ var utils = {
     return isHtml
       ? error.replace(/(?:\\n|<br>)/g, '\n')
       : JSON.stringify(error, null, 2);
+  },
+
+  passwordSuggestion () {
+    // 10 memorable letters + 2 digits
+    return passwordGenerator(10) + passwordGenerator(2, false, /^[\d]+$/);
   }
 };
 
