@@ -1,14 +1,7 @@
 'use strict';
 
-var React = require('react');
-
-const prettyPrintError = (error) => {
-  const isHtml = (typeof error === 'string' && error.includes('<!DOCTYPE html>'));
-
-  return isHtml
-    ? error.replace(/(?:\\n|<br>)/g, '\n')
-    : JSON.stringify(error, null, 2);
-};
+const React = require('react');
+const {prettyPrintError} = require('../utils');
 
 function Loader (props) {
   var {error, children, loading} = props;
