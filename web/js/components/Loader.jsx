@@ -7,7 +7,7 @@ const prettyPrintError = (error) => {
 
   return isHtml
     ? error.replace(/(?:\\n|<br>)/g, '\n')
-    : JSON.stringify(message, null, 2);
+    : JSON.stringify(error, null, 2);
 };
 
 function Loader (props) {
