@@ -2,19 +2,19 @@
 
 const pkg = require('./package.json');
 
-const hasService = (service) => {
-  return process.env.hasOwnProperty(`${service}_PORT_8080_TCP_ADDR`) || null;
+const hasService = (service, port=8080) => {
+  return process.env.hasOwnProperty(`${service}_PORT_${port}_TCP_ADDR`) || null;
 };
 
-const parseServiceAddress = (service) => {
+const parseServiceAddress = (service, port=8080) => {
   return {
-    protocol: process.env[service + '_PORT_8080_TCP_PROTOCOL'] || 'http',
-    host: process.env[service + '_PORT_8080_TCP_ADDR'] || 'localhost',
-    port: parseInt(process.env[service + '_PORT_8080_TCP_PORT'], 10) || 8080
+    protocol: process.env[service + `_PORT_${port}_TCP_PROTOCOL`] || 'http',
+    host: process.env[service + `_PORT_${port}_TCP_ADDR`] || 'localhost',
+    port: parseInt(process.env[service + `_PORT_${port}_TCP_PORT`], 10) || 8080
   };
 };
 
-const optionalService = (name) => hasService(name) && parseServiceAddress(name);
+const optionalService = (name, port=8080) => hasService(name, port) && parseServiceAddress(name, port);
 
 const config = {
   pkg,
@@ -52,7 +52,7 @@ const config = {
     avatars: optionalService('AVATARS'),
     users: optionalService('USERS'),
     data: optionalService('DATA'),
-    directory: optionalService('DIRECTORY')
+    directory: optionalService('DIRECTORY', 8000)
   }
 };
 
