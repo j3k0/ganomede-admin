@@ -32,6 +32,12 @@ const config = {
     }
   },
 
+  // This whole object will be going to frontend
+  branding: {
+    title: process.env.BRANDING_TITLE || 'Ganomede'
+  },
+
+  // Keys from this object will be going to frontend.
   services: {
     virtualcurrency: hasService('VIRTUAL_CURRENCY')
       ? Object.assign(

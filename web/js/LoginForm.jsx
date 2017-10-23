@@ -32,17 +32,15 @@ var Form = React.createClass({
   },
 
   render: function () {
+    const {branding} = window.REACT_INITIAL_STATE;
+
     return (
       <div className="row">
-        <div className="col-md-6">
-          <img src="images/logo.png" alt="" width="200" height="150" />
-        </div>
-
         <div className="col-md-6">
           <form className="pull-right"
                 onSubmit={this.onSubmit}
           >
-            <h3>Login</h3>
+            <h3>Login to {branding.title}</h3>
             <br/>
 
             <div className="input-group">
@@ -81,7 +79,7 @@ var Form = React.createClass({
 });
 
 function Welcome (props) {
-  return (<h2>Welcome to Triominos administration!</h2>);
+  return (<h2>Welcome to {window.REACT_INITIAL_STATE.branding.title} Administration!</h2>);
 };
 
 var LoginForm = React.createClass({

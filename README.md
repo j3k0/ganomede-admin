@@ -1,7 +1,7 @@
 ganomede-admin
 ================
 
-Admin panel for Triominos
+Admin panel for Ganomede
 
 
 # Env variables

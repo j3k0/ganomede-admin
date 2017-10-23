@@ -1,3 +1,31 @@
+body {
+    background-color: #eee;
+}
+
+.App {
+    margin: .5em 1em;
+}
+
+.Header .navbar {
+    margin-bottom: .5em;
+}
+
+.content-wrapper {
+    background-color: white;
+    border-radius: 4px;
+    border-color: 1px solid #e7e7e7;
+}
+
+.content {
+    padding-top: 1.5em;
+    padding-bottom: 1.5em;
+}
+
+.gauge {
+    width: 8.5em;
+    float:left
+}
+
 .dropdown-menu {
     max-height: 400px;
     overflow-y: scroll;
