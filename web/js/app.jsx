@@ -118,19 +118,21 @@ var App = React.createClass({
 
   render: function () {
     return (
-      <div>
-        <div className="header">
+      <div className="App">
+        <div className="Header header">
           <Header loggedIn={this.state.loggedIn}
                   onLogout={this.onLogout}
           />
         </div>
 
-        <div className="container">
-          <div className="row">
-            <div id='content' className="span12">
-              <Loader loading={this.state.loading} error={this.state.error}>
-                {this.props.children}
-              </Loader>
+        <div className="content-wrapper">
+          <div className="content container">
+            <div className="row">
+              <div id='content' className="span12">
+                <Loader loading={this.state.loading} error={this.state.error}>
+                  {this.props.children}
+                </Loader>
+              </div>
             </div>
           </div>
         </div>
