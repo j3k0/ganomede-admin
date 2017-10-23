@@ -7,7 +7,7 @@ var utils = require('./utils');
 var {Link, NavLink} = require('./components/Links.jsx');
 
 function Header ({loggedIn, onLogout}) {
-  const {services} = window.REACT_INITIAL_STATE;
+  const {services, branding} = window.REACT_INITIAL_STATE;
 
   var menuLinks = [
     <NavLink key={0} to='/items'>Items</NavLink>,
@@ -26,7 +26,7 @@ function Header ({loggedIn, onLogout}) {
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
           </button>
-          <Link className="navbar-brand" to="/">Triominos administration</Link>
+          <Link className="navbar-brand" to="/">{branding.title} Administration</Link>
         </div>
 
         <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
