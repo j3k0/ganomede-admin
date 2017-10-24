@@ -1,0 +1,41 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.7.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'npm:http-signature:20150122':
+    - ganomede-directory > restify > http-signature:
+        reason: None given
+        expires: '2017-11-23T17:54:11.625Z'
+    - ganomede-tagizer > ganomede-directory > restify > http-signature:
+        reason: None given
+        expires: '2017-11-23T17:54:11.625Z'
+    - ganomede-directory > ganomede-tagizer > ganomede-directory > restify > http-signature:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+    - ganomede-tagizer > restify > http-signature:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+    - ganomede-directory > ganomede-tagizer > restify > http-signature:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+  'npm:qs:20170213':
+    - http-server > union > qs:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+  'npm:tunnel-agent:20170305':
+    - ganomede-directory > restify > tunnel-agent:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+    - ganomede-tagizer > ganomede-directory > restify > tunnel-agent:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+    - ganomede-directory > ganomede-tagizer > ganomede-directory > restify > tunnel-agent:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+    - ganomede-tagizer > restify > tunnel-agent:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+    - ganomede-directory > ganomede-tagizer > restify > tunnel-agent:
+        reason: None given
+        expires: '2017-11-23T17:54:11.626Z'
+patch: {}
