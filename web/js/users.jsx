@@ -179,6 +179,20 @@ function AdminAction (props) {
   );
 }
 
+function ProfileHeader (props) {
+  const {userId} = props;
+
+  return (
+    <h4 className={props.className}>
+      {lodash.get(props, 'directory.aliases.name') || ''}
+      {' '}
+      <small>
+        User ID <code>{props.userId}</code>
+      </small>
+    </h4>
+  );
+}
+
 function Profile (props) {
   return (
     <div className='container-fluid'>
@@ -189,9 +203,16 @@ function Profile (props) {
             : <span className='media-object no-avatar unobtrusive'>Avatar Missing</span>
         }</div>
         <div className='media-body'>
-          <h4 className="media-heading">
-            {props.username}
-          </h4>
+          <ProfileHeader
+            className="media-heading"
+            userId={props.username}
+            directory={props.directory}
+          />
+
+          <ProfilePiece
+            value={lodash.get(props, 'directory.aliases.email')}
+            missingText="Email Missing"
+          />
 
           <ProfilePiece
             value={props.metadata.location}
