@@ -180,12 +180,6 @@ function AdminAction (props) {
 }
 
 function Profile (props) {
-  // TODO
-  // Remove this temporary warning in case user is missing.
-  var warning = props.metadata.location
-    ? undefined
-    : (<WarningLabel>Might Not Exist</WarningLabel>);
-
   return (
     <div className='container-fluid'>
       <div className='row media'>
@@ -196,7 +190,6 @@ function Profile (props) {
         }</div>
         <div className='media-body'>
           <h4 className="media-heading">
-            {warning}
             {props.username}
           </h4>
 
