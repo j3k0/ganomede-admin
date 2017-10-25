@@ -213,7 +213,11 @@ function Profile (props) {
           />
 
           <ProfilePiece
-            value={lodash.get(props, 'directory.aliases.email')}
+            value={
+              lodash.has(props, 'directory.aliases.email')
+                ? <a href={`mailto:${props.directory.aliases.email}`}>{props.directory.aliases.email}</a>
+                : null
+            }
             missingText="Email Missing"
           />
 
