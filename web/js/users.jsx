@@ -32,13 +32,15 @@ function ClickForDetails (props) {
   );
 }
 
-function WarningLabel (props) {
+function Label (props) {
+  const {level, children} = props;
+
   return (
     <small
-      className='label label-danger'
-      style={{marginRight: '.5em'}}
+    className={`label label-${level}`}
+    style={{marginRight: '.5em'}}
     >
-      {props.children}
+      {children}
     </small>
   );
 }
@@ -146,18 +148,19 @@ var AwardForm = React.createClass({
 });
 
 function BanInfo (props) {
-  var ban = props.ban;
-
-  var status = ban.exists
-    ? (<WarningLabel>
-        <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
+  const {ban} = props;
+  const level = ban.exists ? 'danger' : 'success';
+  const status = ban.exists
+    ? (<ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
           Banned {utils.formatDateFromNow(ban.createdAt)}
         </ClickForDetails>
-      </WarningLabel>)
+      )
     : 'In Good Standing';
 
   return (
-    <div>{status}</div>
+    <Label level={level}>
+      {status}
+    </Label>
   );
 }
 
