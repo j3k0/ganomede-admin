@@ -32,7 +32,7 @@ var utils = {
       options = {
         url: options,
         method: 'GET'
-      }
+      };
     }
 
     options.url = url.resolve(String(window.location.origin), options.url);

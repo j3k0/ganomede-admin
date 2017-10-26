@@ -1,7 +1,6 @@
 'use strict';
 
 const async = require('async');
-const {awaitable} = require('awaitability');
 const upstreams = require('../upstreams');
 const config = require('../../config');
 

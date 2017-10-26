@@ -5,15 +5,15 @@ const app = require('./server/app');
 const log = require('./server/log');
 
 const die = (title) => (exception) => {
-  log.error('****************')
-  log.error('*** CRITICAL ***')
-  log.error('****************')
+  log.error('****************');
+  log.error('*** CRITICAL ***');
+  log.error('****************');
   log.error('');
   log.error(title);
   log.error('');
   log.error(exception);
   log.error('');
-  log.error('****************')
+  log.error('****************');
   log.error('');
 
   process.exit(1);

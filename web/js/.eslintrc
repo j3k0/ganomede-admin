@@ -30,11 +30,12 @@
   },
 
   "rules": {
-    // Don't enforce let/const for browser.
+    // Don't enforce let/const for browser and console is okay.
     "no-var": 0,
-    // Don't require props declaration.
-    "react/prop-types": 0,
-    // console is okay in browsers. I think :)
-    "no-console": 0
+    "no-console": 0,
+
+    // Make it warnings, until we decide to upgrade to React 16
+    "react/prop-types": 1,
+    "react/no-string-refs": 1
   }
 }
