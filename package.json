@@ -11,7 +11,8 @@
   "scripts": {
     "test": "VIRTUAL_CURRENCY_CURRENCY_CODES=\"gold,silver,copper\" LOG_LEVEL=FATAL API_SECRET=1 mocha --bail --throw-deprecation tests/helper.js tests/",
     "testw": "nodemon --watch server/ --watch tests/ --exec 'npm run test'",
-    "lint": "make lint"
+    "lint": "eslint {index,config}.js server/ web/js/ tests/",
+    "lintw": "nodemon --watch server/ --watch tests/ --watch index.js --watch config.js --watch .eslintrc --watch web/js/.eslintrc --exec 'npm run lint'"
   },
   "repository": {
     "type": "git",
