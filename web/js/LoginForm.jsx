@@ -17,7 +17,7 @@ var Form = React.createClass({
     }, function (err, success) {
       if (err) {
         return this.setState({
-          error: String(error)
+          error: String(err)
         });
       }
 
@@ -78,9 +78,9 @@ var Form = React.createClass({
   }
 });
 
-function Welcome (props) {
+function Welcome () {
   return (<h2>Welcome to {window.REACT_INITIAL_STATE.branding.title} Administration!</h2>);
-};
+}
 
 var LoginForm = React.createClass({
   getInitialState: function () {
