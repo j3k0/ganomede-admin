@@ -1,6 +1,7 @@
 'use strict';
 
 const async = require('async');
+const {awaitable} = require('awaitability');
 const upstreams = require('../upstreams');
 const config = require('../../config');
 
@@ -87,6 +88,17 @@ const banSetFalse = function (username, callback) {
   upstreams.users.request({ method, url, body }, callback);
 };
 
+const directory = async (userId, callback) => {
+  if (!upstreams.directory)
+    return setImmediate(callback, new Error('directory service is not configured'));
+
+  const method = 'get';
+  const url = `/users/id/${encodeURIComponent(userId)}`;
+  const qs = {secret: apiSecret};
+
+  upstreams.directory.request({method, url, qs}, callback);
+};
+
 module.exports = {
   balance,
   transactions,
@@ -106,7 +118,8 @@ module.exports = {
       transactions: bind(transactions),
       banInfo: bind(banInfo),
       avatar: ignoreError(bind(avatar)),
-      metadata: ignoreError(bind(metadata))
+      metadata: ignoreError(bind(metadata)),
+      directory: ignoreError(bind(directory))
     }, (err, profile) => {
       if (err)
         return callback(err);

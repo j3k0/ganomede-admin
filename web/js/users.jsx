@@ -32,13 +32,15 @@ function ClickForDetails (props) {
   );
 }
 
-function WarningLabel (props) {
+function Label (props) {
+  const {level, children} = props;
+
   return (
     <small
-      className='label label-danger'
-      style={{marginRight: '.5em'}}
+    className={`label label-${level}`}
+    style={{marginRight: '.5em'}}
     >
-      {props.children}
+      {children}
     </small>
   );
 }
@@ -146,18 +148,19 @@ var AwardForm = React.createClass({
 });
 
 function BanInfo (props) {
-  var ban = props.ban;
-
-  var status = ban.exists
-    ? (<WarningLabel>
-        <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
+  const {ban} = props;
+  const level = ban.exists ? 'danger' : 'success';
+  const status = ban.exists
+    ? (<ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
           Banned {utils.formatDateFromNow(ban.createdAt)}
         </ClickForDetails>
-      </WarningLabel>)
+      )
     : 'In Good Standing';
 
   return (
-    <div>{status}</div>
+    <Label level={level}>
+      {status}
+    </Label>
   );
 }
 
@@ -179,13 +182,21 @@ function AdminAction (props) {
   );
 }
 
-function Profile (props) {
-  // TODO
-  // Remove this temporary warning in case user is missing.
-  var warning = props.metadata.location
-    ? undefined
-    : (<WarningLabel>Might Not Exist</WarningLabel>);
+function ProfileHeader (props) {
+  const {userId} = props;
 
+  return (
+    <h4 className={props.className}>
+      {lodash.get(props, 'directory.aliases.name') || ''}
+      {' '}
+      <small>
+        User ID <code>{props.userId}</code>
+      </small>
+    </h4>
+  );
+}
+
+function Profile (props) {
   return (
     <div className='container-fluid'>
       <div className='row media'>
@@ -195,10 +206,20 @@ function Profile (props) {
             : <span className='media-object no-avatar unobtrusive'>Avatar Missing</span>
         }</div>
         <div className='media-body'>
-          <h4 className="media-heading">
-            {warning}
-            {props.username}
-          </h4>
+          <ProfileHeader
+            className="media-heading"
+            userId={props.username}
+            directory={props.directory}
+          />
+
+          <ProfilePiece
+            value={
+              lodash.has(props, 'directory.aliases.email')
+                ? <a href={`mailto:${props.directory.aliases.email}`}>{props.directory.aliases.email}</a>
+                : null
+            }
+            missingText="Email Missing"
+          />
 
           <ProfilePiece
             value={props.metadata.location}

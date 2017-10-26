@@ -5,6 +5,7 @@ const {tag: toTag} = require('ganomede-tagizer');
 const {createClient: createDirectoryClient} = require('ganomede-directory');
 const {awaitable} = require('awaitability');
 const {GanomedeError} = require('ganomede-errors');
+const upstreams = require('../upstreams');
 const log = require('../log');
 
 class LookupResult {
@@ -80,6 +81,9 @@ class UserIdResolver {
 
 
   resolve (query) {
+    if (!upstreams.directory)
+      throw new Error('directory service is not configured');
+
     return this.performLookups(query);
   }
 }
