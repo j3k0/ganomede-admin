@@ -21,11 +21,6 @@ body {
     padding-bottom: 1.5em;
 }
 
-.gauge {
-    width: 8.5em;
-    float:left
-}
-
 .dropdown-menu {
     max-height: 400px;
     overflow-y: scroll;

@@ -1,7 +1,7 @@
 'use strict';
 
 const UserIdResolver = require('../server/users/UserIdResolver');
-const {Lookups, LookupResult, UserIdNotFoundError} = UserIdResolver;
+const {Lookups} = UserIdResolver;
 
 describe('UserIdResolver', async () => {
   describe('#performLookups()', () => {

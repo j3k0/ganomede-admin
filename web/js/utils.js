@@ -2,7 +2,6 @@
 
 var React = require('react');
 var ReactDOMServer = require('react-dom/server');
-var underscore = require('underscore');
 var swal = require('sweetalert');
 var request = require('request');
 var url = require('url');
@@ -32,7 +31,7 @@ var utils = {
       options = {
         url: options,
         method: 'GET'
-      }
+      };
     }
 
     options.url = url.resolve(String(window.location.origin), options.url);
@@ -102,7 +101,7 @@ var utils = {
       successTitle: messages.success
     });
 
-    var options = underscore.assign({
+    var options = Object.assign({
       success: function () {
         success();
         cb(false);

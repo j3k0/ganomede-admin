@@ -112,10 +112,7 @@ function SearchResults (props) {
       </ul>
     </div>
   );
-
-
-  return (<Debug.pre data={results} />);
-};
+}
 
 var AwardForm = React.createClass({
   contextTypes: {
@@ -190,7 +187,7 @@ function ProfileHeader (props) {
       {lodash.get(props, 'directory.aliases.name') || ''}
       {' '}
       <small>
-        User ID <code>{props.userId}</code>
+        User ID <code>{userId}</code>
       </small>
     </h4>
   );
@@ -359,15 +356,13 @@ var Search = React.createClass({
   // Set one/multi of:
   // diff is object with keys {loading, query, error, results}
   setSearchState (diff = {}, callback = function () {}) {
-    const changes = Object.entries(diff).reduce((acc, [key, val]) => {
+    const changes = Object.entries(diff).reduce((acc, [key]) => {
       const stateKey = `search${key[0].toUpperCase()}${key.slice(1)}`;
       if (this.state.hasOwnProperty(stateKey))
         acc[stateKey] = diff[key];
 
       return acc;
     }, {});
-
-    console.dir(changes)
 
     this.setState(changes, callback);
   },

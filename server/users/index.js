@@ -5,7 +5,6 @@ const express = require('express');
 const lodash = require('lodash');
 const {awaitable} = require('awaitability');
 const helpers = require('./helpers');
-const utils = require('../utils');
 const UserIdResolver = require('./UserIdResolver');
 const upstreams = require('../upstreams');
 
