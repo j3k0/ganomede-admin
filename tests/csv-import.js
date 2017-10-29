@@ -3,7 +3,6 @@
 const fs = require('fs');
 const path = require('path');
 const lodash = require('lodash');
-const {expect} = require('chai');
 const {parseCsv} = require('../web/js/data-csv-import');
 const samples = require('./csv-import-samples');
 

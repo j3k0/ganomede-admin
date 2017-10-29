@@ -13,16 +13,16 @@ RUN npm install
 
 # copy browser code && build a bundle
 RUN mkdir /home/app/code/web
-COPY web/css /home/app/code/web/css
-COPY web/images /home/app/code/web/images
 COPY web/js /home/app/code/web/js
 COPY web/libs /home/app/code/web/libs
-COPY web/index.html /home/app/code/web/index.html
 RUN (cd web && ../node_modules/.bin/browserify \
-      --transform [ reactify --es6 --target es5 ] \
+      --transform [ babelify --presets [ es2017 react ] ] \
       --transform brfs \
       --outfile bundle.js \
       js/entrypoint.js)
+COPY web/css /home/app/code/web/css
+COPY web/images /home/app/code/web/images
+COPY web/index.html /home/app/code/web/index.html
 
 # copy server code
 COPY server/ /home/app/code/server/

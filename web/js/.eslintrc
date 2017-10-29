@@ -8,7 +8,6 @@
   },
 
   "parserOptions": {
-    "ecmaVersion": 6,
     "ecmaFeatures": {
       "jsx": true
     }
@@ -30,11 +29,18 @@
   },
 
   "rules": {
-    // Don't enforce let/const for browser.
+    // Don't enforce let/const for browser and console is okay.
     "no-var": 0,
-    // Don't require props declaration.
+    "no-console": 0,
+
+    // This makes us define all prop types. IDK about that…
     "react/prop-types": 0,
-    // console is okay in browsers. I think :)
-    "no-console": 0
+
+    // Chrome and React extension are capable of figuring this out on their own.
+    "react/display-name": 0,
+
+    // Make it warnings, until we decide to upgrade to React 16
+    "react/no-string-refs": 1,
+    "react/no-deprecated": 1
   }
 }

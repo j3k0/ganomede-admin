@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const config = require('../config');
 const auth = require('./auth');
+const log = require('./log');
 
 const app = express();
 const webRoot = `${config.http.baseUrl}/web`;
@@ -23,8 +24,8 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(cookieParser());
 app.use(passport.initialize());
 
-var logger = function(req, res, next) {
-  console.log(req.method + ' ' + req.originalUrl);
+const logger = function(req, res, next) {
+  log(req.method + ' ' + req.originalUrl);
   next();
 };
 app.use(logger);

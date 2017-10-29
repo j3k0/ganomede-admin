@@ -49,6 +49,15 @@ class Upstream {
     options.json = true;
     options.gzip = true;
 
+    // TODO
+    // for some reason if we specify port explicity,
+    // we get "No server available" from Caddy (or w/ever is used as reverse proxy).
+    //
+    // So for now let's just drop explicit port, but ideally,
+    // this should be handled by Upstream or config.
+    // (OTOH, this is Upstream class, server config then? w/ever, let it be.)
+    options.url = options.url.replace(/:443/, '');
+
     request(options, (err, res, body) => {
       // Check network errors.
       if (err) {

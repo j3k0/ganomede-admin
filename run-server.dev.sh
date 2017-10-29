@@ -20,7 +20,7 @@ function exportEnv {
   export VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL='https'
   export VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR='prod.ggs.ovh'
   export VIRTUAL_CURRENCY_PORT_8080_TCP_PORT='443'
-  export VIRTUAL_CURRENCY_CURRENCY_CODES="gold,silver,copper"
+  export VIRTUAL_CURRENCY_CURRENCY_CODES="wordsearch-gold,wordsearch-silver,wordsearch-bitmask"
 
   # avatars
   export AVATARS_PORT_8080_TCP_PROTOCOL='https'
@@ -35,7 +35,12 @@ function exportEnv {
   # data
   export DATA_PORT_8080_TCP_PROTOCOL='https'
   export DATA_PORT_8080_TCP_ADDR='prod.ggs.ovh'
-  export DATA_PORT_8080_TCP_PORT='8080'
+  export DATA_PORT_8080_TCP_PORT='443'
+
+  # directory
+  export DIRECTORY_PORT_8000_TCP_PROTOCOL='https'
+  export DIRECTORY_PORT_8000_TCP_ADDR='account.ggs.ovh'
+  export DIRECTORY_PORT_8000_TCP_PORT='443'
 }
 
 function main {
@@ -46,7 +51,7 @@ function main {
     npm run test
   else
     echo "Running server…"
-    ./node_modules/.bin/nodemon -w server/ -w config.js index.js
+    ./node_modules/.bin/nodemon --inspect -w config.js -w index.js -w server/ -w config.js index.js
   fi
 }
 

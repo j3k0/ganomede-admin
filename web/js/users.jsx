@@ -2,8 +2,8 @@
 
 var backbone = require('backbone');
 var React = require('react');
-var ReactDOMServer = require('react-dom/server');
 var swal = require('sweetalert');
+var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
@@ -21,7 +21,7 @@ function ClickForDetails (props) {
     type: 'info',
     html: true,
     title: title,
-    text: ReactDOMServer.renderToStaticMarkup(<Debug.pre data={details}/>),
+    text: utils.reactToStaticHtml(<Debug.pre data={details}/>),
     allowOutsideClick: true
   }, () => {});
 
@@ -32,13 +32,15 @@ function ClickForDetails (props) {
   );
 }
 
-function WarningLabel (props) {
+function Label (props) {
+  const {level, children} = props;
+
   return (
     <small
-      className='label label-danger'
-      style={{marginRight: '.5em'}}
+    className={`label label-${level}`}
+    style={{marginRight: '.5em'}}
     >
-      {props.children}
+      {children}
     </small>
   );
 }
@@ -52,6 +54,63 @@ function Transaction (props) {
      {' '}
      <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}</span>
     </ClickForDetails>
+  );
+}
+
+const processSearchResults = (rawData) => {
+  if (rawData === null)
+    return null;
+
+  const {query, results, matchingIds} = rawData;
+  const hasMatches = matchingIds.length > 0;
+  const singleMatch = matchingIds.length === 1 || lodash.uniq(matchingIds).length === 1;
+
+  return {
+    query,
+    results,
+    matchingIds,
+    hasMatches,
+    singleMatch
+  };
+};
+
+function SearchResults (props) {
+  // No need to render anything, no lookups were performed.
+  if (props.results === null)
+    return null;
+
+  const {
+    query,
+    results,
+    matchingIds,
+    hasMatches,
+    singleMatch
+  } = props.results;
+
+  return (
+    <div>
+      {
+        hasMatches
+          ? singleMatch
+            ? <span>Found single User ID <strong>{matchingIds[0]}</strong>:</span>
+            : <span>Multiple results, search again for one of the following IDs:</span>
+          : <span>No users found, lookups performed:</span>
+      }
+
+      <ul>
+        {
+          results.map(({found, method, args, userId}, idx) => {
+            return (
+              <li key={`${query}-${idx}`}>
+                <code>{method}({args.map(JSON.stringify).join(', ')})</code>
+                {': '}
+                <span>{found ? <strong>{userId}</strong> : '<no match>'}</span>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
   );
 }
 
@@ -86,34 +145,19 @@ var AwardForm = React.createClass({
 });
 
 function BanInfo (props) {
-  var ban = props.ban;
-  var onToggle = props.onToggle;
-
-  var status = ban.exists
-    ? (<WarningLabel>
-        <ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
+  const {ban} = props;
+  const level = ban.exists ? 'danger' : 'success';
+  const status = ban.exists
+    ? (<ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
           Banned {utils.formatDateFromNow(ban.createdAt)}
         </ClickForDetails>
-      </WarningLabel>)
+      )
     : 'In Good Standing';
 
-  var toggler = (
-    <a href="#"
-       onClick={event => {
-         event.preventDefault();
-         onToggle(ban.exists ? 'unban' : 'ban');
-       }}
-    >
-      {ban.exists ? 'Unban' : 'Ban'}
-    </a>
-  );
-
   return (
-    <div>
+    <Label level={level}>
       {status}
-      {' '}
-      {toggler}
-    </div>
+    </Label>
   );
 }
 
@@ -125,13 +169,31 @@ function ProfilePiece (props) {
   );
 }
 
-function Profile (props) {
-  // TODO
-  // Remove this temporary warning in case user is missing.
-  var warning = props.metadata.location
-    ? undefined
-    : (<WarningLabel>Might Not Exist</WarningLabel>);
+function AdminAction (props) {
+  const {title, onClick} = props;
 
+  return (
+    <button className="AdminAction btn btn-default" onClick={onClick}>
+      {title}
+    </button>
+  );
+}
+
+function ProfileHeader (props) {
+  const {userId} = props;
+
+  return (
+    <h4 className={props.className}>
+      {lodash.get(props, 'directory.aliases.name') || ''}
+      {' '}
+      <small>
+        User ID <code>{userId}</code>
+      </small>
+    </h4>
+  );
+}
+
+function Profile (props) {
   return (
     <div className='container-fluid'>
       <div className='row media'>
@@ -141,10 +203,20 @@ function Profile (props) {
             : <span className='media-object no-avatar unobtrusive'>Avatar Missing</span>
         }</div>
         <div className='media-body'>
-          <h4 className="media-heading">
-            {warning}
-            {props.username}
-          </h4>
+          <ProfileHeader
+            className="media-heading"
+            userId={props.username}
+            directory={props.directory}
+          />
+
+          <ProfilePiece
+            value={
+              lodash.has(props, 'directory.aliases.email')
+                ? <a href={`mailto:${props.directory.aliases.email}`}>{props.directory.aliases.email}</a>
+                : null
+            }
+            missingText="Email Missing"
+          />
 
           <ProfilePiece
             value={props.metadata.location}
@@ -152,9 +224,26 @@ function Profile (props) {
           />
 
           <ProfilePiece
-            value={props.banInfo && <BanInfo ban={props.banInfo} onToggle={props.toggleBan}/>}
+            value={props.banInfo && <BanInfo ban={props.banInfo} />}
             missingText="Ban Info Missing"
           />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-12">
+          <b>Admin Actions</b>
+          <div>
+            <AdminAction
+              title="Reset Password"
+              onClick={() => changePasswordPrompt(props.username)}
+            />
+
+            <AdminAction
+              title={props.banInfo.exists ? 'Unban' : 'Ban'}
+              onClick={props.toggleBan.bind(null, props.banInfo.exists ? 'unban' : 'ban')}
+            />
+          </div>
         </div>
       </div>
 
@@ -187,6 +276,62 @@ function Profile (props) {
   );
 }
 
+const changePasswordPrompt = (userId) => {
+  const title = 'Password Change';
+
+  swal({
+    title,
+    text: utils.reactToStaticHtml(
+      <div>
+        Type in new password for <strong>{userId}</strong> below.
+      </div>
+    ),
+    html: true,
+    type: 'input',
+    inputValue: utils.passwordSuggestion(),
+    inputPlaceholder: 'Type in new password…',
+    closeOnConfirm: false,
+    disableButtonsOnConfirm: true,
+    showCancelButton: true,
+    showLoaderOnConfirm: true
+  }, async (newPassword) => {
+    if (newPassword === false)
+      return;
+
+    try {
+      const [res, body] = await utils.xhr({
+        method: 'POST',
+        url: utils.apiPath(`/users/${encodeURIComponent(userId)}/password-reset`),
+        body: {newPassword}
+      });
+
+      if (res.statusCode !== 200)
+        throw body;
+
+      swal({
+        title,
+        type: 'success',
+        text: utils.reactToStaticHtml(
+          <div>
+            Password of user <strong>{userId}</strong> has been changed to
+            {' '}
+            <code>{newPassword}</code>.
+          </div>
+        ),
+        html: true
+      });
+    }
+    catch (ex) {
+      swal({
+        title,
+        type: 'error',
+        text: utils.errorToHtml(ex),
+        html: true
+      });
+    }
+  });
+};
+
 var Search = React.createClass({
   contextTypes: {
     router: React.PropTypes.object
@@ -198,10 +343,50 @@ var Search = React.createClass({
     return {
       index: !hasUser,
       username: hasUser ? this.props.params.username : null,
+      searchLoading: false,
+      searchQuery: '',
+      searchResults: null,
+      searchError: null,
       profile: null,
       loading: hasUser,
       error: null
     };
+  },
+
+  // Set one/multi of:
+  // diff is object with keys {loading, query, error, results}
+  setSearchState (diff = {}, callback = function () {}) {
+    const changes = Object.entries(diff).reduce((acc, [key]) => {
+      const stateKey = `search${key[0].toUpperCase()}${key.slice(1)}`;
+      if (this.state.hasOwnProperty(stateKey))
+        acc[stateKey] = diff[key];
+
+      return acc;
+    }, {});
+
+    this.setState(changes, callback);
+  },
+
+  resolveUserId: function (query) {
+    this.setSearchState({loading: true, query});
+
+    utils.xhr({
+      method: 'get',
+      url: utils.apiPath('/users/search/' + encodeURIComponent(query)),
+    }, (err, res, data) => {
+      const error = err || (res.statusCode === 200 ? null : data);
+      this.setSearchState({
+        loading: false,
+        error: error || null,
+        results: error ? null : processSearchResults(data)
+      }, () => {
+        if (this.state.searchError)
+          return;
+
+        if (this.state.searchResults.singleMatch)
+          this.fetchProfile(this.state.searchResults.matchingIds[0]);
+      });
+    });
   },
 
   fetchProfile: function (username) {
@@ -247,20 +432,26 @@ var Search = React.createClass({
 
   renderForm: function () {
     return (
-      <form className='form-inline' onSubmit={
-        event => {
-          event.preventDefault();
-          this.fetchProfile(this.refs.usernameInput.value);
-        }
-      }>
-        <input type='text'
-          ref='usernameInput'
-          className='form-control'
-          placeholder='Type in username…'
-          defaultValue={this.state.username}
-        />
-        <input type='submit' className='btn btn-primary' value='Find' />
-      </form>
+      <div>
+        <form className='form-inline' onSubmit={
+          event => {
+            event.preventDefault();
+            this.resolveUserId(this.refs.usernameInput.value);
+          }
+        }>
+          <input type='text'
+            ref='usernameInput'
+            className='form-control'
+            placeholder='Seach for users: id, alias, etc…'
+            defaultValue={this.state.searchQuery}
+          />
+          <input type='submit' className='btn btn-primary' value='Find' />
+        </form>
+
+        <Loader error={this.state.searchError} loading={this.state.searchLoading}>
+          <SearchResults results={this.state.searchResults} />
+        </Loader>
+      </div>
     );
   },
 

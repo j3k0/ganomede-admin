@@ -1,16 +1,18 @@
 {
   "name": "admin",
-  "version": "1.6.6",
+  "version": "1.6.8",
   "api": "admin/v1",
-  "description": "admin panel for triominos",
+  "description": "admin panel for ganomede",
   "main": "index.js",
   "engines": {
-    "node": ">=6",
-    "npm": ">=3"
+    "node": ">=8",
+    "npm": ">=5"
   },
   "scripts": {
-    "test": "make test",
-    "lint": "make lint"
+    "test": "VIRTUAL_CURRENCY_CURRENCY_CODES=\"gold,silver,copper\" LOG_LEVEL=FATAL API_SECRET=1 mocha --bail --throw-deprecation tests/helper.js tests/",
+    "testw": "nodemon --watch server/ --watch tests/ --exec 'npm run test'",
+    "lint": "eslint --ext js --ext jsx {index,config}.js server/ web/js/ tests/",
+    "lintw": "nodemon --ext js,jsx,json,eslintrc --watch server/ --watch tests/ --watch web/js --watch index.js --watch config.js --watch .eslintrc --watch package.json --watch web/js/.eslintrc --exec 'npm run lint'"
   },
   "repository": {
     "type": "git",
@@ -20,38 +22,45 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.0.0-rc.3",
+    "awaitability": "0.0.1",
     "backbone": "^1.3.3",
     "body-parser": "^1.9.0",
-    "codemirror": "^5.20.2",
+    "codemirror": "^5.31.0",
     "cookie-parser": "^1.3.3",
-    "express": "^4.12.4",
-    "http-server": "^0.9.0",
+    "express": "^4.16.2",
+    "ganomede-directory": "^0.3.5",
+    "ganomede-errors": "^1.0.0",
+    "ganomede-tagizer": "^2.0.1",
     "jquery": "^3.0.0",
-    "moment": "^2.13.0",
-    "passport": "^0.2.1",
+    "moment": "^2.19.1",
+    "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "password-generator": "^2.2.0",
     "react": "^15.3.2",
     "react-dom": "^15.0.1",
     "react-router": "^2.1.1",
     "react-tabs": "^0.8.2",
     "react.backbone": "^0.9.0",
-    "request": "^2.55.0",
-    "serve-favicon": "^2.3.0",
-    "sweetalert": "^1.1.3",
-    "underscore": "^1.7.0"
+    "request": "^2.83.0",
+    "serve-favicon": "^2.4.5",
+    "sweetalert": "^1.1.3"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-es2017": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babelify": "^8.0.0",
     "brfs": "^1.4.3",
-    "browserify": "^13.0.0",
-    "chai": "^3.5.0",
+    "browserify": "^14.5.0",
+    "chai": "^4.1.2",
     "common-tags": "^1.4.0",
-    "eslint": "^3.8.0",
-    "eslint-plugin-react": "^6.4.1",
+    "eslint": "^4.9.0",
+    "eslint-plugin-react": "^7.4.0",
     "expect.js": "^0.3.1",
-    "mocha": "^3.1.2",
-    "nodemon": "^1.11.0",
-    "puppeteer": "^0.11.0",
-    "reactify": "^1.1.1",
+    "mocha": "^4.0.1",
+    "nodemon": "^1.12.1",
+    "puppeteer": "^0.12.0",
+    "testdouble": "^3.2.6",
     "watchify": "^3.7.0"
   }
 }

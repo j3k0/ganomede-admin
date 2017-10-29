@@ -4,15 +4,23 @@ const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const upstreams = require('./upstreams');
+const config = require('../config');
 
 const router = new express.Router();
 const assetsDir = path.resolve(`${__dirname}/../web/`);
 const indexHtml = (function () {
-  const services = Object.keys(upstreams);
-  const initialState = JSON.stringify({services});
+  const initialState = JSON.stringify({
+    // Send service names to frontend (but account for optionals).
+    services: Object.keys(upstreams).filter(key => !!upstreams[key]),
+    // Branding configuration.
+    branding: config.branding
+  });
+
   const template = fs.readFileSync(path.resolve(assetsDir, 'index.html'), 'utf8');
 
-  return template.replace('{{REACT_INITIAL_STATE}}', initialState);
+  return template
+    .replace('{{REACT_INITIAL_STATE}}', initialState)
+    .replace('{{BRANDING_TITLE}}', `${config.branding.title} Administration`);
 }());
 
 const sendIndexHtml = (req, res) => res.send(indexHtml);

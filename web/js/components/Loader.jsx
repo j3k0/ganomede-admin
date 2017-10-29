@@ -1,6 +1,7 @@
 'use strict';
 
-var React = require('react');
+const React = require('react');
+const {prettyPrintError} = require('../utils');
 
 function Loader (props) {
   var {error, children, loading} = props;
@@ -9,8 +10,8 @@ function Loader (props) {
     ? ( <div>
           Error occured. Please refresh a page and try again.
           <pre className="well">{
-            [ error.message,
-              JSON.stringify(error, null, 2)
+            [ error.message || '<no error message || not an Error instance >',
+              prettyPrintError(error)
             ].join('\n\n')
           }</pre>
         </div>

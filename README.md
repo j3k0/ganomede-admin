@@ -1,7 +1,7 @@
 ganomede-admin
 ================
 
-Admin panel for Triominos
+Admin panel for Ganomede
 
 
 # Env variables
@@ -31,8 +31,7 @@ Links to dispay in a "link box" on the Analytics page.
 ## Other microservices
 
 Most of functionality depends on interacting with other ganomede
-microservices. Provide links to them with env vars (otherwise will
-deafult to locally running intstance):
+microservices. Provide links to them with env vars (otherwise, related functionality won't be available):
 
  - [virtual currency module](https://github.com/j3k0/ganomede-virtualcurrency)
    - `VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL` virtual currency protocol (`http` or `https`, defaults to `http`);
@@ -54,6 +53,11 @@ deafult to locally running intstance):
    - `DATA_PORT_8080_TCP_PROTOCOL` data protocol (`http` or `https`, defaults to `http`);
    - `DATA_PORT_8080_TCP_ADDR` data host;
    - `DATA_PORT_8080_TCP_PORT` data port;
+
+- [directory module](https://github.com/j3k0/ganomede-directory)
+   - `DIRECTORY_PORT_8000_TCP_PROTOCOL` directory protocol (`http` or `https`, defaults to `http`);
+   - `DIRECTORY_PORT_8000_TCP_ADDR` directory host;
+   - `DIRECTORY_PORT_8000_TCP_PORT` directory port;
 
 # Run
 
