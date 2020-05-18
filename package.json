@@ -31,8 +31,8 @@
     "ganomede-directory": "^0.3.5",
     "ganomede-errors": "^1.0.0",
     "ganomede-tagizer": "^2.0.1",
-    "jquery": "^3.0.0",
-    "moment": "^2.19.1",
+    "jquery": "^3.5.1",
+    "moment": "^2.25.3",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "password-generator": "^2.2.0",
@@ -61,6 +61,6 @@
     "nodemon": "^1.12.1",
     "puppeteer": "^0.12.0",
     "testdouble": "^3.2.6",
-    "watchify": "^3.7.0"
+    "watchify": "^3.11.1"
   }
 }

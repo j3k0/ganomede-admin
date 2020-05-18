@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:12
 MAINTAINER Jean-Christophe Hoelt <hoelt@fovea.cc>
 
 # Create non-priviledged user
