@@ -103,3 +103,8 @@ button.btn-add-item {
 .AdminAction {
     margin-right: 1em;
 }
+
+.sweetalert-large {
+  width: 900px !important;
+  margin-left: -450px !important;
+}

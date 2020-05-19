@@ -8,6 +8,28 @@ var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
 
+const MailTemplates = {
+  report: {
+    fr: {
+      subject: 'Alerte - Votre compte a été signalé',
+      text: `Bonjour,
+
+
+On nous a signalé des comportements inappropriés venant de votre compte sur Triominos : {username}.
+
+Triominos est un jeu familial et non un espace de rencontres, il existe d'autres applications pour cela. Nous comptons sur vous pour garder cela à l'esprit lorsque vous interagissez avec d'autres joueurs.
+
+Cet email d'avertissement sera suivi d'un bannissement du jeu en cas de récidive. Merci de votre coopération.
+
+
+Cordialement,
+
+L'Equipe de Triominos
+`
+    }
+  }
+};
+
 var User = backbone.Model.extend({
   idAttribute: 'username',
   urlRoot: utils.apiPath('/users')
@@ -256,6 +278,13 @@ function Profile (props) {
               onClick={() => changePasswordPrompt(props.username)}
             />
 
+            {props.directory.aliases.email && <AdminAction
+              title="Send Email"
+              onClick={() => sendEmailPrompt(props.username,
+                props.directory.aliases.email,
+                props.metadata.locale)}
+            />}
+
             <AdminAction
               title={props.banInfo.exists ? 'Unban' : 'Ban'}
               onClick={props.toggleBan.bind(null, props.banInfo.exists ? 'unban' : 'ban')}
@@ -292,6 +321,166 @@ function Profile (props) {
     </div>
   );
 }
+
+const sendEmailPrompt = (userId, userEmail, userLocale) => {
+
+  if (!userEmail) {
+    return;
+  }
+  if (userLocale)
+    userLocale = userLocale.slice(0, 2);
+
+  selectTemplate((templateName) => {
+    selectLocale(templateName, (locale) => {
+      confirm(templateName, locale, (template) => {
+        sendEmail(template);
+      });
+    });
+  });
+
+  function selectTemplate(callback) {
+    if (Object.keys(MailTemplates).length === 1)
+      return callback(Object.keys(MailTemplates)[0]);
+    swal({
+      title: 'Email User',
+      text: utils.reactToStaticHtml(
+        <div>
+          Select a template ({Object.keys(MailTemplates).join(", ")})
+        </div>
+      ),
+      html: true,
+      type: 'input',
+      inputPlaceholder: Object.keys(MailTemplates).join(', '),
+      showCancelButton: true,
+    }, (templateName) => {
+      console.log({templateName});
+      if (templateName === false || !MailTemplates[templateName])
+        return;
+      callback(templateName);
+    });
+  }
+
+  function selectLocale(templateName, callback) {
+    const template = MailTemplates[templateName];
+    if (!template || Object.keys(template) === 0) {
+      return;
+    }
+    const locales = Object.keys(template);
+    if (userLocale && template[userLocale]) {
+      return callback(userLocale);
+    }
+    else if (locales.length === 1) {
+      return callback(locales[0]);
+    }
+    else {
+      swal({
+        title: 'Send Email',
+        text: utils.reactToStaticHtml(
+          <div>
+            Select a locale ({locales.join(', ')})
+          </div>
+        ),
+        html: true,
+        type: 'input',
+        inputPlaceholder: locales.join(', '),
+        showCancelButton: true,
+      }, (locale) => {
+        console.log({templateName, locale});
+        if (locale === false || !template[locale])
+          return;
+        callback(locale);
+      });
+    }
+  }
+
+  function confirm(templateName, locale, callback) {
+    const template = MailTemplates[templateName][locale];
+    let emailText = template.text;
+    let emailSubject = template.subject;
+    console.log('confirm', {templateName, locale, template});
+    if (!template) return;
+    swal({
+      title: template.subject,
+      text: `<code style="display: block; text-align: left;"><a style="display: block" href="#" id="email-text">${applyTemplate(template.text)}</a></code>`,
+      html: true,
+      closeOnConfirm: false,
+      confirmButtonText: 'Send Email',
+      disableButtonsOnConfirm: true,
+      customClass: 'sweetalert-large',
+      showCancelButton: true,
+      showLoaderOnConfirm: true
+    }, (result) => {
+      if (result === false)
+        return;
+      callback({
+        subject: emailSubject,
+        text: emailText,
+      });
+    });
+    setTimeout(() => {
+      $('#email-text').editable({
+        type: 'textarea',
+        mode: 'inline',
+        validate: (value) => {
+          emailText = value;
+        }
+      });
+      $('.sweet-alert h2').editable({
+        type: 'text',
+        mode: 'inline',
+        validate: (value) => {
+          emailSubject = value;
+        }
+      });
+    }, 50);
+  }
+
+  function applyTemplate(template) {
+    return template.replace('{username}', userId);
+  }
+
+  function toHTML(text) {
+    return text.replace(/\n/g, '<br/>');
+  }
+
+  async function sendEmail(template) {
+    try {
+      const [res, body] = await utils.xhr({
+        method: 'POST',
+        url: utils.apiPath(`/send-email`),
+        body: {
+          to: userEmail,
+          subject: applyTemplate(template.subject),
+          text: applyTemplate(template.text),
+          html: toHTML(applyTemplate(template.text))
+        }
+      });
+
+      if (res.statusCode !== 200)
+        throw body;
+
+      swal({
+        title: 'Send Email',
+        type: 'success',
+        text: utils.reactToStaticHtml(
+          <div>
+            Email has been sent to <strong>{userId}</strong>
+          </div>
+        ),
+        html: true
+      });
+    }
+    catch (ex) {
+      swal({
+        title: 'Send Email',
+        type: 'error',
+        text: utils.errorToHtml(ex),
+        html: true
+      });
+    }
+  }
+};
+
 
 const changePasswordPrompt = (userId) => {
   const title = 'Password Change';

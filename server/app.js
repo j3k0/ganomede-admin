@@ -14,6 +14,8 @@ const app = express();
 const webRoot = `${config.http.baseUrl}/web`;
 const apiRoot = `${config.http.baseUrl}/api`;
 
+const mailer = require('./mailer');
+const mailTransport = mailer.createTransport();
 
 //
 // Middlewares.
@@ -60,6 +62,22 @@ app.use(`${apiRoot}/data`, require('./data.router'));
 app.use(`${apiRoot}/islogged`, function (req, res) {
   res.json({success: true});
 });
+
+const mailRouter = new express.Router();
+mailRouter.post(`${apiRoot}/send-email`, async (req, res, next) => {
+  try {
+    log.info({body: req.body}, 'send-email');
+    mailTransport.sendMail(req.body, (err, info) => {
+      if (err)
+        return next(err);
+      res.status(200).json(info);
+    });
+  }
+  catch (ex) {
+    next(ex);
+  }
+});
+app.use(mailRouter);
 
 // Handle some known errors.
 app.use(function (err, req, res, next) {
