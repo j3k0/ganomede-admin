@@ -40,13 +40,12 @@ const avatar = function (username, callback) {
 };
 
 const metadata = function (username, callback) {
-  upstreams.users.request({
-    url: `/${username}/metadata/location`
+  upstreams.usermeta.request({
+    url: `/${username}/location,locale,auth`
   }, (err, json) => {
     if (err)
       return callback(err);
-
-    callback(null, {location: json.value});
+    callback(null, json[username]);
   });
 };
 

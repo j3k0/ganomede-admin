@@ -219,6 +219,23 @@ function Profile (props) {
           />
 
           <ProfilePiece
+            value={
+              props.metadata.auth
+                ? 'last seen: ' + new Date(+props.metadata.auth).toGMTString()
+                : undefined}
+            missingText="Last Auth Missing"
+          />
+
+          <ProfilePiece
+            value={
+              props.metadata.locale
+                ?  <pre>{props.metadata.locale}</pre>
+                : undefined
+            }
+            missingText="Locale Missing"
+          />
+
+          <ProfilePiece
             value={props.metadata.location}
             missingText="Location Missing"
           />
