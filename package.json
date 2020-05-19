@@ -1,6 +1,6 @@
 {
   "name": "admin",
-  "version": "1.6.8",
+  "version": "1.7.0",
   "api": "admin/v1",
   "description": "admin panel for ganomede",
   "main": "index.js",
