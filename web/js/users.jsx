@@ -69,12 +69,36 @@ function Label (props) {
 
 function Transaction (props) {
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
+  var what = (
+    props.data.packId
+    || props.data.itemId
+    || props.data.rewardId
+    || '')
+    .replace('com.triominos.', '').split('.');
+  what = what[what.length - 1];
+  var amount = props.data.amount > 0 ? '+' + props.data.amount : props.data.amount;
+  var currency = props.data.currency.replace(/^[a-z]+-/, '')
+  var extra;
+  if (!what)
+    what = amount + ' ' + currency;
+  else
+    extra = amount + ' ' + currency;
+
+  var p = props.data.packPurchase || {};
+  var reason =
+    props.data.from === 'admin' ? 'award'
+    : p.type === 'claim' ? ''
+    : p.type ? p.type
+    : p.packId ? 'purchase'
+    : props.reason;
+
+  var from = props.data.from;
+  if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
 
   return (
     <ClickForDetails title={title} details={props}>
-     {props.reason} {props.data.amount}&nbsp;{props.data.currency}
-     {' '}
-     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}</span>
+     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}: </span>
+     <span>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</span>
     </ClickForDetails>
   );
 }
@@ -114,14 +138,14 @@ function SearchResults (props) {
       {
         hasMatches
           ? singleMatch
-            ? <span>Found single User ID <strong>{matchingIds[0]}</strong>:</span>
+            ? null
             : <span>Multiple results, search again for one of the following IDs:</span>
-          : <span>No users found, lookups performed:</span>
+          : <strong>No users found.</strong>
       }
 
       <ul>
         {
-          results.map(({found, method, args, userId}, idx) => {
+          hasMatches && !singleMatch && results.map(({found, method, args, userId}, idx) => {
             return (
               <li key={`${query}-${idx}`}>
                 <code>{method}({args.map(JSON.stringify).join(', ')})</code>
@@ -205,17 +229,21 @@ function ProfileHeader (props) {
   const {userId} = props;
 
   return (
-    <h4 className={props.className}>
-      {lodash.get(props, 'directory.aliases.name') || ''}
-      {' '}
-      <small>
-        User ID <code>{userId}</code>
-      </small>
-    </h4>
+    <div>
+      <h4 className={props.className}>{lodash.get(props, 'directory.aliases.name') || ''}</h4>
+      <small>ID:<code>{userId}</code></small>
+    </div>
   );
 }
 
 function Profile (props) {
+  var locale = props.metadata.location || '';
+  if (props.metadata.locale) {
+    if (!locale)
+      locale = props.metadata.locale;
+    else
+      locale += ' (' + props.metadata.locale + ')';
+  }
   return (
     <div className='container-fluid'>
       <div className='row media'>
@@ -243,24 +271,15 @@ function Profile (props) {
           <ProfilePiece
             value={
               props.metadata.auth
-                ? 'last seen: ' + new Date(+props.metadata.auth).toGMTString()
+                ? <span>Seen {utils.formatDateFromNow(new Date(+props.metadata.auth))} <span className="unobtrusive">({utils.formatDate(new Date(+props.metadata.auth))})</span></span>
                 : undefined}
             missingText="Last Auth Missing"
           />
 
-          <ProfilePiece
-            value={
-              props.metadata.locale
-                ?  <pre>{props.metadata.locale}</pre>
-                : undefined
-            }
+          <i><ProfilePiece
+            value={locale}
             missingText="Locale Missing"
-          />
-
-          <ProfilePiece
-            value={props.metadata.location}
-            missingText="Location Missing"
-          />
+          /></i>
 
           <ProfilePiece
             value={props.banInfo && <BanInfo ban={props.banInfo} />}
