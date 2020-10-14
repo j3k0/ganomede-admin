@@ -57,6 +57,7 @@ const config = {
 
     avatars: optionalService('AVATARS'),
     users: optionalService('USERS'),
+    usermeta: optionalService('USERMETA'),
     data: optionalService('DATA'),
     directory: optionalService('DIRECTORY', 8000)
   }

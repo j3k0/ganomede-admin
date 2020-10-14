@@ -4,6 +4,7 @@
 
 const logger = console.log.bind(console);
 
+logger.debug = console.debug;
 logger.info = console.info;
 logger.warn = console.warn;
 logger.error = console.error;

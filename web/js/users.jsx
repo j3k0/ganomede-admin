@@ -8,6 +8,28 @@ var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
 
+const MailTemplates = {
+  report: {
+    fr: {
+      subject: 'Alerte - Votre compte a été signalé',
+      text: `Bonjour,
+
+
+On nous a signalé des comportements inappropriés venant de votre compte sur Triominos : {username}.
+
+Triominos est un jeu familial et non un espace de rencontres, il existe d'autres applications pour cela. Nous comptons sur vous pour garder cela à l'esprit lorsque vous interagissez avec d'autres joueurs.
+
+Cet email d'avertissement sera suivi d'un bannissement du jeu en cas de récidive. Merci de votre coopération.
+
+
+Cordialement,
+
+L'Equipe de Triominos
+`
+    }
+  }
+};
+
 var User = backbone.Model.extend({
   idAttribute: 'username',
   urlRoot: utils.apiPath('/users')
@@ -47,12 +69,36 @@ function Label (props) {
 
 function Transaction (props) {
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
+  var what = (
+    props.data.packId
+    || props.data.itemId
+    || props.data.rewardId
+    || '')
+    .replace('com.triominos.', '').split('.');
+  what = what[what.length - 1];
+  var amount = props.data.amount > 0 ? '+' + props.data.amount : props.data.amount;
+  var currency = props.data.currency.replace(/^[a-z]+-/, '')
+  var extra;
+  if (!what)
+    what = amount + ' ' + currency;
+  else
+    extra = amount + ' ' + currency;
+
+  var p = props.data.packPurchase || {};
+  var reason =
+    props.data.from === 'admin' ? 'award'
+    : p.type === 'claim' ? ''
+    : p.type ? p.type
+    : p.packId ? 'purchase'
+    : props.reason;
+
+  var from = props.data.from;
+  if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
 
   return (
     <ClickForDetails title={title} details={props}>
-     {props.reason} {props.data.amount}&nbsp;{props.data.currency}
-     {' '}
-     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}</span>
+     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}: </span>
+     <span>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</span>
     </ClickForDetails>
   );
 }
@@ -92,14 +138,14 @@ function SearchResults (props) {
       {
         hasMatches
           ? singleMatch
-            ? <span>Found single User ID <strong>{matchingIds[0]}</strong>:</span>
+            ? null
             : <span>Multiple results, search again for one of the following IDs:</span>
-          : <span>No users found, lookups performed:</span>
+          : <strong>No users found.</strong>
       }
 
       <ul>
         {
-          results.map(({found, method, args, userId}, idx) => {
+          hasMatches && !singleMatch && results.map(({found, method, args, userId}, idx) => {
             return (
               <li key={`${query}-${idx}`}>
                 <code>{method}({args.map(JSON.stringify).join(', ')})</code>
@@ -183,17 +229,21 @@ function ProfileHeader (props) {
   const {userId} = props;
 
   return (
-    <h4 className={props.className}>
-      {lodash.get(props, 'directory.aliases.name') || ''}
-      {' '}
-      <small>
-        User ID <code>{userId}</code>
-      </small>
-    </h4>
+    <div>
+      <h4 className={props.className}>{lodash.get(props, 'directory.aliases.name') || ''}</h4>
+      <small>ID:<code>{userId}</code></small>
+    </div>
   );
 }
 
 function Profile (props) {
+  var locale = props.metadata.location || '';
+  if (props.metadata.locale) {
+    if (!locale)
+      locale = props.metadata.locale;
+    else
+      locale += ' (' + props.metadata.locale + ')';
+  }
   return (
     <div className='container-fluid'>
       <div className='row media'>
@@ -219,9 +269,17 @@ function Profile (props) {
           />
 
           <ProfilePiece
-            value={props.metadata.location}
-            missingText="Location Missing"
+            value={
+              props.metadata.auth
+                ? <span>Seen {utils.formatDateFromNow(new Date(+props.metadata.auth))} <span className="unobtrusive">({utils.formatDate(new Date(+props.metadata.auth))})</span></span>
+                : undefined}
+            missingText="Last Auth Missing"
           />
+
+          <i><ProfilePiece
+            value={locale}
+            missingText="Locale Missing"
+          /></i>
 
           <ProfilePiece
             value={props.banInfo && <BanInfo ban={props.banInfo} />}
@@ -238,6 +296,13 @@ function Profile (props) {
               title="Reset Password"
               onClick={() => changePasswordPrompt(props.username)}
             />
+
+            {props.directory.aliases.email && <AdminAction
+              title="Send Email"
+              onClick={() => sendEmailPrompt(props.username,
+                props.directory.aliases.email,
+                props.metadata.locale)}
+            />}
 
             <AdminAction
               title={props.banInfo.exists ? 'Unban' : 'Ban'}
@@ -275,6 +340,166 @@ function Profile (props) {
     </div>
   );
 }
+
+const sendEmailPrompt = (userId, userEmail, userLocale) => {
+
+  if (!userEmail) {
+    return;
+  }
+  if (userLocale)
+    userLocale = userLocale.slice(0, 2);
+
+  selectTemplate((templateName) => {
+    selectLocale(templateName, (locale) => {
+      confirm(templateName, locale, (template) => {
+        sendEmail(template);
+      });
+    });
+  });
+
+  function selectTemplate(callback) {
+    if (Object.keys(MailTemplates).length === 1)
+      return callback(Object.keys(MailTemplates)[0]);
+    swal({
+      title: 'Email User',
+      text: utils.reactToStaticHtml(
+        <div>
+          Select a template ({Object.keys(MailTemplates).join(", ")})
+        </div>
+      ),
+      html: true,
+      type: 'input',
+      inputPlaceholder: Object.keys(MailTemplates).join(', '),
+      showCancelButton: true,
+    }, (templateName) => {
+      console.log({templateName});
+      if (templateName === false || !MailTemplates[templateName])
+        return;
+      callback(templateName);
+    });
+  }
+
+  function selectLocale(templateName, callback) {
+    const template = MailTemplates[templateName];
+    if (!template || Object.keys(template) === 0) {
+      return;
+    }
+    const locales = Object.keys(template);
+    if (userLocale && template[userLocale]) {
+      return callback(userLocale);
+    }
+    else if (locales.length === 1) {
+      return callback(locales[0]);
+    }
+    else {
+      swal({
+        title: 'Send Email',
+        text: utils.reactToStaticHtml(
+          <div>
+            Select a locale ({locales.join(', ')})
+          </div>
+        ),
+        html: true,
+        type: 'input',
+        inputPlaceholder: locales.join(', '),
+        showCancelButton: true,
+      }, (locale) => {
+        console.log({templateName, locale});
+        if (locale === false || !template[locale])
+          return;
+        callback(locale);
+      });
+    }
+  }
+
+  function confirm(templateName, locale, callback) {
+    const template = MailTemplates[templateName][locale];
+    let emailText = template.text;
+    let emailSubject = template.subject;
+    console.log('confirm', {templateName, locale, template});
+    if (!template) return;
+    swal({
+      title: template.subject,
+      text: `<code style="display: block; text-align: left;"><a style="display: block" href="#" id="email-text">${applyTemplate(template.text)}</a></code>`,
+      html: true,
+      closeOnConfirm: false,
+      confirmButtonText: 'Send Email',
+      disableButtonsOnConfirm: true,
+      customClass: 'sweetalert-large',
+      showCancelButton: true,
+      showLoaderOnConfirm: true
+    }, (result) => {
+      if (result === false)
+        return;
+      callback({
+        subject: emailSubject,
+        text: emailText,
+      });
+    });
+    setTimeout(() => {
+      $('#email-text').editable({
+        type: 'textarea',
+        mode: 'inline',
+        validate: (value) => {
+          emailText = value;
+        }
+      });
+      $('.sweet-alert h2').editable({
+        type: 'text',
+        mode: 'inline',
+        validate: (value) => {
+          emailSubject = value;
+        }
+      });
+    }, 50);
+  }
+
+  function applyTemplate(template) {
+    return template.replace('{username}', userId);
+  }
+
+  function toHTML(text) {
+    return text.replace(/\n/g, '<br/>');
+  }
+
+  async function sendEmail(template) {
+    try {
+      const [res, body] = await utils.xhr({
+        method: 'POST',
+        url: utils.apiPath(`/send-email`),
+        body: {
+          to: userEmail,
+          subject: applyTemplate(template.subject),
+          text: applyTemplate(template.text),
+          html: toHTML(applyTemplate(template.text))
+        }
+      });
+
+      if (res.statusCode !== 200)
+        throw body;
+
+      swal({
+        title: 'Send Email',
+        type: 'success',
+        text: utils.reactToStaticHtml(
+          <div>
+            Email has been sent to <strong>{userId}</strong>
+          </div>
+        ),
+        html: true
+      });
+    }
+    catch (ex) {
+      swal({
+        title: 'Send Email',
+        type: 'error',
+        text: utils.errorToHtml(ex),
+        html: true
+      });
+    }
+  }
+};
+
 
 const changePasswordPrompt = (userId) => {
   const title = 'Password Change';

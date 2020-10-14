@@ -58,12 +58,11 @@ var utils = {
   errorToHtml: function (error) {
     var isUpstream = error && error.name === 'UpstreamError';
     var errorText = isUpstream ? error.reason : (error.message || error);
-    var errorTitle = isUpstream ? error.message : 'Error';
+    var errorTitle = isUpstream ? error.message : null;
 
     return utils.reactToStaticHtml(
       <div>
-        <div>{errorTitle}</div>
-        <br/>
+        {errorTitle && <div>{errorTitle}<br/><br/></div>}
         <Debug.pre data={utils.prettyPrintError(errorText)}/>
       </div>
     );

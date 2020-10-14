@@ -20,7 +20,7 @@ function exportEnv {
   export VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL='https'
   export VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR='prod.ggs.ovh'
   export VIRTUAL_CURRENCY_PORT_8080_TCP_PORT='443'
-  export VIRTUAL_CURRENCY_CURRENCY_CODES="wordsearch-gold,wordsearch-silver,wordsearch-bitmask"
+  export VIRTUAL_CURRENCY_CURRENCY_CODES="triominos-gold,triominos-silver,triominos-bitmask"
 
   # avatars
   export AVATARS_PORT_8080_TCP_PROTOCOL='https'
@@ -31,6 +31,11 @@ function exportEnv {
   export USERS_PORT_8080_TCP_PROTOCOL='https'
   export USERS_PORT_8080_TCP_ADDR='prod.ggs.ovh'
   export USERS_PORT_8080_TCP_PORT='443'
+
+  # users
+  export USERMETA_PORT_8080_TCP_PROTOCOL='https'
+  export USERMETA_PORT_8080_TCP_ADDR='prod.ggs.ovh'
+  export USERMETA_PORT_8080_TCP_PORT='443'
 
   # data
   export DATA_PORT_8080_TCP_PROTOCOL='https'

@@ -73,6 +73,7 @@ class UserIdResolver {
   async performLookups (query) {
     const results = await Promise.all([
       this.lookup('byId', {id: query}),
+      this.lookup('byAlias', {type: 'email', value: query}),
       this.lookup('byAlias', {type: 'tag', value: toTag(query)})
     ]);
 
