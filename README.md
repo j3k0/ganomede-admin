@@ -1,10 +1,29 @@
 ganomede-admin
 ================
 
-Admin panel for Ganomede
+Administration panel for Ganomede.
 
+# Getting started
 
-# Env variables
+To start the administration panel, we first need to install dependencies, then bundle the frontend app. To achieve this, run:
+
+   make install
+
+Next step is to run the server with
+
+   node index.js
+
+However, it requires a number of environment variable for configuration. See below for the list.
+
+There is a helper script called `./run-server.dev.sh` that contains placeholder environment variable for you, feel free to modify those to your development needs.
+
+Navigate to [http://localhost:8000](http://localhost:8000) to test. Assuming you didn't modify the `PORT` environment variable.
+
+# Environment variables
+
+Here's the list of environment variables used to configure the service.
+
+## General
 
  - `HOST` and `PORT` for interface/port to listen on
  - `ADMIN_USERNAME` --> administrator username
@@ -59,9 +78,60 @@ microservices. Provide links to them with env vars (otherwise, related functiona
    - `DIRECTORY_PORT_8000_TCP_ADDR` directory host;
    - `DIRECTORY_PORT_8000_TCP_PORT` directory port;
 
-# Run
+# Running unit tests
 
-1. `make install` fetches dependencies and builds client-side JS bundle;
-2. `node index.js` will run the server (`export` all the required env vars);
-  - `./run-server.dev.sh` exports some placeholder env vars for you, feel free to modify those to your development needs;
-3. Go to [http://localhost:8000](http://localhost:8000).
+Test can be run using `npm test`. Notice that test coverage is minimal at that point.
+
+You can launch the tests in "watch" mode, with `npm run testw`. With this on, tests are ran automatically when a change is made to the code.
+
+# Making changes
+
+There are 2 cases:
+
+## Changes to the frontend
+
+After a change to the frontend, it will be necessary to recreate the bundle with:
+
+   make -C web
+
+If you know you'll be iterating, you can launch the bundler in "watch" mode (meaning it will automaticall rebuild when it detects a change). For this run:
+
+   make -C web watch
+
+## Changes to the backend
+
+When changing the backend, you'll have to restart the server with:
+
+   node index.js
+
+As with the frontend, there way to have this done automatically for you:
+
+   npx nodemon --inspect -w config.js -w index.js -w server/ -w config.js index.js
+
+With this command, the server will be restarted automatically after any change in the `server/` directory, `index.js` or `config.js`.
+
+## Linting
+
+The linting process ensures you're following the code convention and can detect some errors in the code.
+
+It is started by running this:
+
+   npm run lint
+
+It's also possible to launch it in "watch" mode with:
+
+   npm run lintw
+
+# Integration with VS Code
+
+I recommand the `npm` extension to run npm scripts right from VS Code. It's particularly useful with unit tests, as you will be able to run them inside a debugger, which makes it easier to pindown a bug.
+
+Once the extension is install, open the "Run and Debug" tab. Select the "NodeJS..." launch task, then find `test`.
+
+You can then run unit tests with `F5`.
+
+# License
+
+(c) 2015, Fovea
+
+All rights reserved
