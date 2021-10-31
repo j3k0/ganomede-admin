@@ -14,6 +14,9 @@ describe('UserIdResolver', async () => {
 
       td.when(directory.byAlias({type: 'tag', value: 'aiice'}, td.callback))
         .thenCallback(null, {id: 'tag-result'});
+      
+      td.when(directory.byAlias({type: 'email', value: 'alice'}, td.callback))
+        .thenCallback(null, {id: 'email-result'});
 
       const lookups = await resolver.performLookups('alice');
 
@@ -22,9 +25,10 @@ describe('UserIdResolver', async () => {
         query: 'alice',
         results: [
           {found: true, method: 'byId', args: [{id: 'alice'}], userId: 'id-result'},
+          {found: true, method: 'byAlias', args: [{type: 'email', value: 'alice'}], userId: 'email-result'},
           {found: true, method: 'byAlias', args: [{type: 'tag', value: 'aiice'}], userId: 'tag-result'}
         ],
-        matchingIds: ['id-result', 'tag-result']
+        matchingIds: ['id-result', 'email-result', 'tag-result']
       });
     });
 
@@ -37,6 +41,9 @@ describe('UserIdResolver', async () => {
 
       td.when(directory.byAlias({type: 'tag', value: 'aiice'}, td.callback))
         .thenCallback(null, {id: 'tag-result'});
+
+      td.when(directory.byAlias({type: 'email', value: 'alice'}, td.callback))
+        .thenCallback(null, {id: 'email-result'});
 
       await resolver.performLookups('alice');
     });
