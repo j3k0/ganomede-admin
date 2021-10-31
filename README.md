@@ -7,11 +7,11 @@ Administration panel for Ganomede.
 
 To start the administration panel, we first need to install dependencies, then bundle the frontend app. To achieve this, run:
 
-   make install
+    make install
 
 Next step is to run the server with
 
-   node index.js
+    node index.js
 
 However, it requires a number of environment variable for configuration. See below for the list.
 
@@ -92,21 +92,21 @@ There are 2 cases:
 
 After a change to the frontend, it will be necessary to recreate the bundle with:
 
-   make -C web
+    make -C web
 
 If you know you'll be iterating, you can launch the bundler in "watch" mode (meaning it will automaticall rebuild when it detects a change). For this run:
 
-   make -C web watch
+    make -C web watch
 
 ## Changes to the backend
 
 When changing the backend, you'll have to restart the server with:
 
-   node index.js
+    node index.js
 
 As with the frontend, there way to have this done automatically for you:
 
-   npx nodemon --inspect -w config.js -w index.js -w server/ -w config.js index.js
+    npx nodemon --inspect -w config.js -w index.js -w server/ -w config.js index.js
 
 With this command, the server will be restarted automatically after any change in the `server/` directory, `index.js` or `config.js`.
 
@@ -116,11 +116,11 @@ The linting process ensures you're following the code convention and can detect 
 
 It is started by running this:
 
-   npm run lint
+    npm run lint
 
 It's also possible to launch it in "watch" mode with:
 
-   npm run lintw
+    npm run lintw
 
 # Integration with VS Code
 
