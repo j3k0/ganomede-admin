@@ -77,7 +77,7 @@ function Transaction (props) {
     .replace('com.triominos.', '').split('.');
   what = what[what.length - 1];
   var amount = props.data.amount > 0 ? '+' + props.data.amount : props.data.amount;
-  var currency = props.data.currency.replace(/^[a-z]+-/, '')
+  var currency = props.data.currency.replace(/^[a-z]+-/, '');
   var extra;
   if (!what)
     what = amount + ' ' + currency;
@@ -128,7 +128,7 @@ function SearchResults (props) {
   const {
     query,
     results,
-    matchingIds,
+    //not used matchingIds,
     hasMatches,
     singleMatch
   } = props.results;

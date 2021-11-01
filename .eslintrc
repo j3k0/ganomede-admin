@@ -15,6 +15,7 @@
     "strict": [2, "global"],
     "semi": [2, "always"],
     "no-var": 2,
-    "one-var": [2, "never"]
+    "one-var": [2, "never"],
+    "no-console": "off",
   }
 }
