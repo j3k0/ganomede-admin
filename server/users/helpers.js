@@ -40,8 +40,14 @@ const avatar = function (username, callback) {
 };
 
 const metadata = function (username, callback) {
+
+  dynamicMetadata(username, 'location,locale,auth', callback);
+};
+
+
+const dynamicMetadata = function (username, metalist, callback) {
   upstreams.usermeta.request({
-    url: `/${username}/location,locale,auth`
+    url: `/${username}/${metalist}`
   }, (err, json) => {
     if (err)
       return callback(err);
@@ -102,6 +108,7 @@ module.exports = {
   transactions,
   avatar,
   metadata,
+  dynamicMetadata,
   reward,
   banInfo,
   banSetTrue,

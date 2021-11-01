@@ -7,6 +7,7 @@ var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
+var CollectionLoader = require('./components/CollectionLoader.jsx');
 
 const MailTemplates = {
   report: {
@@ -207,6 +208,62 @@ function BanInfo (props) {
   );
 }
 
+
+var usermetas = function (userId) {
+  var Metas = backbone.Collection.extend({
+    url: utils.apiPath(`/users/${encodeURIComponent(userId)}/usermeta`),
+  });
+
+  return new Metas();
+};
+
+var UserMeta = React.createBackboneClass({ 
+
+  onSave: function () {
+     
+  },
+
+  render: function Meta () {
+    var _meta = this.getModel();
+
+    return (
+      <div className="list-item">
+        <div className="item-id">{_meta.get('id')}</div>
+        <div className="item-costs">
+          <div className="item-cost">
+            <select value={_meta.get('currency')} disabled>
+              <option value={_meta.get('currency')}>{_meta.get('currency')}</option>
+            </select>
+
+            <input
+              type='text'
+              size='5'
+              ref='amountInput'
+              defaultValue={_meta.get('amount')}
+            />
+          </div>
+        </div>
+                  <button className="btn btn-xs btn-default" onClick={this.onSave}>
+            Save
+          </button>
+      </div>
+    );
+  }
+});
+
+function UserMetaLists (props) {
+  var usermetas = props.collection.map(function (m) {
+    return (
+      <div className="list-item-container" key={m.id}>
+        <UserMeta model={m} />
+      </div>
+    );
+  });
+
+  return (<div>{usermetas}</div>);
+}
+
+
 function ProfilePiece (props) {
   return (
     <div>
@@ -337,6 +394,17 @@ function Profile (props) {
           }</ul>
         </div>
       </div>
+      <div className='row'>
+      <div className='col-md-4'>
+
+          <CollectionLoader
+          collection={usermetas(props.username)}
+          component={UserMetaLists}
+        />
+        </div>
+      </div>
+
+
     </div>
   );
 }

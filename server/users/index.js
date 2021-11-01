@@ -43,6 +43,20 @@ router.get('/:userId', async (req, res, next) => {
   }
 });
 
+router.get('/:username/usermeta', async (req, res, next) => {
+  try {
+    helpers.dynamicMetadata(req.params.username, process.env.USER_METADATA_LIST, (err, metaInfos) => {
+      if (err)
+        return next(err);
+  
+      res.json(metaInfos);
+    });
+  }
+  catch (ex) {
+    next(ex);
+  }
+});
+
 //
 // Awarding Currency
 //
