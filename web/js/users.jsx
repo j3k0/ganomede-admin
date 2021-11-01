@@ -220,7 +220,13 @@ var usermetas = function (userId) {
 var UserMeta = React.createBackboneClass({ 
 
   onSave: function () {
-     
+    utils.saveModel(
+      this.getModel(),
+      {value:  this.refs.valueInput.value},
+      {},
+      { success: 'Usermeta Saved',
+        error: 'Failed to update meta' }
+    );
   },
 
   render: function Meta () {
@@ -231,15 +237,11 @@ var UserMeta = React.createBackboneClass({
         <div className="item-id">{_meta.get('id')}</div>
         <div className="item-costs">
           <div className="item-cost">
-            <select value={_meta.get('currency')} disabled>
-              <option value={_meta.get('currency')}>{_meta.get('currency')}</option>
-            </select>
-
+             
             <input
-              type='text'
-              size='5'
-              ref='amountInput'
-              defaultValue={_meta.get('amount')}
+              type='text' 
+              ref='valueInput'
+              defaultValue={_meta.get('value')}
             />
           </div>
         </div>

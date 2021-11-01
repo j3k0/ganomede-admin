@@ -48,8 +48,30 @@ router.get('/:username/usermeta', async (req, res, next) => {
     helpers.dynamicMetadata(req.params.username, process.env.USER_METADATA_LIST, (err, metaInfos) => {
       if (err)
         return next(err);
+
+        let result = [];
+        for (var k in metaInfos){
+          if (metaInfos.hasOwnProperty(k)) {
+            result.push({id: k, value: metaInfos[k]}); 
+          }
+      }
   
-      res.json(metaInfos);
+      res.json(result);
+    });
+  }
+  catch (ex) {
+    next(ex);
+  }
+});
+
+
+router.put('/:username/usermeta/:key', async (req, res, next) => {
+  try {
+    helpers.updateDynamicUserMeta(req.params.username, req.body.id, req.body.value, (err, result) => {
+      if (err)
+        return next(err); 
+  
+      res.json(result);
     });
   }
   catch (ex) {

@@ -46,13 +46,23 @@ const metadata = function (username, callback) {
 
 
 const dynamicMetadata = function (username, metalist, callback) {
+  
   upstreams.usermeta.request({
     url: `/${username}/${metalist}`
   }, (err, json) => {
+    
     if (err)
       return callback(err);
     callback(null, json[username]);
   });
+};
+
+// ban user
+const updateDynamicUserMeta = function (username, metaKey, metaValue, callback) {
+  const method = 'post';
+  const url    = `/auth/${apiSecret}.${username}/${metaKey}`;
+  const body   = { value: metaValue };
+  upstreams.usermeta.request({ method, url, body }, callback);
 };
 
 const reward = function (username, amount, currency, callback) {
@@ -109,6 +119,7 @@ module.exports = {
   avatar,
   metadata,
   dynamicMetadata,
+  updateDynamicUserMeta,
   reward,
   banInfo,
   banSetTrue,
