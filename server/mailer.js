@@ -38,8 +38,8 @@ const createTransport = function(arg) {
   options.secure = secure;
   if (auth && auth.user && auth.pass) {
     options.auth = {
-      user: user,
-      pass: pass
+      user: auth.user,
+      pass: auth.pass
     };
   }
   if (ignoreTLS) {
@@ -89,7 +89,8 @@ const createTransport = function(arg) {
         req_id: req_id
       }, "mailer.sendMail");
       const mailCallback = function(err, info) {
-        var messageId, response;
+        let messageId;
+        let response;
         if (err) {
           log.error(err, "failed to send email");
         } else if (info) {
