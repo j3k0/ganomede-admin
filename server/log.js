@@ -1,14 +1,18 @@
 'use strict';
 
-/* eslint-disable no-console */
+const config = require('../config');
+let bunyan = require('bunyan');
+let log = bunyan.createLogger({name: config.branding.title}); 
+ 
+const logger = function(){
+    let a = arguments;
+    log.debug.apply(log, a);
+};
 
-const logger = console.log.bind(console);
-
-logger.debug = console.debug;
-logger.info = console.info;
-logger.warn = console.warn;
-logger.error = console.error;
-
-/* eslint-enable no-console */
+logger.debug = log.debug.bind(log);
+logger.info = log.info.bind(log);
+logger.warn = log.warn.bind(log);
+logger.error = log.error.bind(log);
+ 
 
 module.exports = logger;

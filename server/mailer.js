@@ -1,6 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
+const _ = require('lodash'); 
+
 const env = function(x) {
   return process.env["MAILER_" + (x.toUpperCase())];
 };
@@ -100,7 +101,7 @@ const createTransport = function(arg) {
             response: response
           }, "message sent");
         } else {
-          console.error("no error and no info?");
+          log("no error and no info?");
         }
         return cb && cb(err, info);
       };
