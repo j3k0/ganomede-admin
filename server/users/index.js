@@ -50,7 +50,7 @@ router.get('/:username/usermeta', async (req, res, next) => {
         return next(err);
 
         let result = [];
-        for (var k in metaInfos){
+        for (let k in metaInfos){
           if (metaInfos.hasOwnProperty(k)) {
             result.push({id: k, value: metaInfos[k]}); 
           }
