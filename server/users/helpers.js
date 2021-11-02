@@ -48,7 +48,7 @@ const metadata = function (username, callback) {
 const dynamicMetadata = function (username, metalist, callback) {
   
   upstreams.usermeta.request({
-    url: `/${username}/${metalist}`
+    url: `/${username}/${metalist}?secret=${apiSecret}`
   }, (err, json) => {
     
     if (err)

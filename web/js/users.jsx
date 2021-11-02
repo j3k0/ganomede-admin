@@ -237,7 +237,6 @@ var UserMeta = React.createBackboneClass({
         <div className="item-id">{_meta.get('id')}</div>
         <div className="item-costs">
           <div className="item-cost">
-             
             <input
               type='text' 
               ref='valueInput'
@@ -245,9 +244,7 @@ var UserMeta = React.createBackboneClass({
             />
           </div>
         </div>
-                  <button className="btn btn-xs btn-default" onClick={this.onSave}>
-            Save
-          </button>
+        <button className="btn btn-xs btn-default" onClick={this.onSave}>Save</button>
       </div>
     );
   }
@@ -381,32 +378,34 @@ function Profile (props) {
           }</ul>
 
           <AwardForm onAward={props.onAward}/>
+
+          <br/>
+          <div>
+            <b>Usermetas:</b>
+            <CollectionLoader
+              collection={usermetas(props.username)}
+              component={UserMetaLists}
+            />
+          </div>
+          
         </div>
 
         <div className='col-md-4'>
           <b>Transactions</b>
-          <ul className='list-unstyled'>{
-            props.transactions.map(transaction => {
-              return (
-                <li key={transaction.id}>
-                  <Transaction {...transaction} />
-                </li>
-              );
-            })
-          }</ul>
+          <div className='transaction-section'>
+            <ul className='list-unstyled transactions-list'>{
+              props.transactions.map(transaction => {
+                return (
+                  <li key={transaction.id}>
+                    <Transaction {...transaction} />
+                  </li>
+                );
+              })
+            }</ul>
+          </div>
         </div>
       </div>
-      <div className='row'>
-      <div className='col-md-4'>
-
-          <CollectionLoader
-          collection={usermetas(props.username)}
-          component={UserMetaLists}
-        />
-        </div>
-      </div>
-
-
+      
     </div>
   );
 }

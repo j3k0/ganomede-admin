@@ -108,3 +108,12 @@ button.btn-add-item {
   width: 900px !important;
   margin-left: -450px !important;
 }
+
+.transaction-section{
+    display: flex;
+    max-height: 30rem;
+}
+
+.transactions-list{
+    overflow-x: scroll;
+}

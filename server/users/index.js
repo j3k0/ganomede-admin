@@ -44,24 +44,35 @@ router.get('/:userId', async (req, res, next) => {
 });
 
 router.get('/:username/usermeta', async (req, res, next) => {
-  try {
-    helpers.dynamicMetadata(req.params.username, process.env.USER_METADATA_LIST, (err, metaInfos) => {
-      if (err)
-        return next(err);
+	try {
+		helpers.dynamicMetadata(req.params.username, process.env.USER_METADATA_LIST, (err, metaInfos) => {
+			if (err)
+				return next(err);
 
-        let result = [];
-        for (let k in metaInfos){
-          if (metaInfos.hasOwnProperty(k)) {
-            result.push({id: k, value: metaInfos[k]}); 
-          }
-      }
-  
-      res.json(result);
-    });
-  }
-  catch (ex) {
-    next(ex);
-  }
+			let result = [];
+      let allkeys = process.env.USER_METADATA_LIST.split(',');
+
+			for (let i =0, len = allkeys.length; i < len; i++) {
+        let k = allkeys[i];
+
+				if (metaInfos.hasOwnProperty(k)) {
+					result.push({
+						id: k,
+						value: metaInfos[k]
+					});
+				}else{
+          result.push({
+						id: k,
+						value: ''
+					});
+        }
+			}
+
+			res.json(result);
+		});
+	} catch (ex) {
+		next(ex);
+	}
 });
 
 
