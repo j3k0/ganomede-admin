@@ -109,11 +109,11 @@ button.btn-add-item {
   margin-left: -450px !important;
 }
 
-.transaction-section{
-    display: flex;
-    max-height: 30rem;
+.my-custom-scrollbar {
+    position: relative;
+    height: 200px;
+    overflow: auto;
 }
-
-.transactions-list{
-    overflow-x: scroll;
+.table-wrapper-scroll-y {
+    display: block;
 }

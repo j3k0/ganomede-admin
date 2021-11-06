@@ -68,6 +68,57 @@ function Label (props) {
   );
 }
 
+function TransactionsGrouped(props){
+  var transactionsArray = props.transactions;
+  var groups = utils.groupBy(transactionsArray, 'currency', function(val){return val.replace(/^[a-z]+-/, '');});
+  var keys = [];
+  for (var key in groups) { 
+
+    if (groups.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+
+  return (<div className='col-md-8'>
+    <b>Transactions</b>
+    <div className='transaction-section'>
+      {
+        keys.map(k => {
+          return (
+            <div>
+              <h3>{k}</h3>
+              <div className='table-wrapper-scroll-y my-custom-scrollbar'>
+                <table className='table table-bordered table-striped mb-0'>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Item</th>
+                      <th>Amount</th>
+                      <th>Balance</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    groups[k].sort((a, b) => {
+                      return a.timestamp - b.timestamp;
+                    }).map(transaction => {
+                      return ( 
+                          <Transaction {...transaction} />
+                      );
+                    })
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+  </div>);
+}
+
 function Transaction (props) {
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
   var what = (
@@ -97,10 +148,13 @@ function Transaction (props) {
   if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
 
   return (
-    <ClickForDetails title={title} details={props}>
-     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}: </span>
-     <span>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</span>
-    </ClickForDetails>
+    <tr key={props.id}>
+      <td>{utils.formatDate(props.timestamp, 'YYYY-MM-DD')}</td>
+      <td>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>}</td>
+      <td>{amount}</td>
+      <td></td>
+      <td><ClickForDetails title={title} details={props}>details</ClickForDetails></td>
+    </tr>
   );
 }
 
@@ -390,20 +444,7 @@ function Profile (props) {
           
         </div>
 
-        <div className='col-md-4'>
-          <b>Transactions</b>
-          <div className='transaction-section'>
-            <ul className='list-unstyled transactions-list'>{
-              props.transactions.map(transaction => {
-                return (
-                  <li key={transaction.id}>
-                    <Transaction {...transaction} />
-                  </li>
-                );
-              })
-            }</ul>
-          </div>
-        </div>
+        <TransactionsGrouped transactions={props.transactions}/>
       </div>
       
     </div>
