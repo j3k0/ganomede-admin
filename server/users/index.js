@@ -43,14 +43,14 @@ router.get('/:userId', async (req, res, next) => {
   }
 });
 
-router.get('/:username/usermeta', async (req, res, next) => {
+router.getUsermetaMiddleware = (helperP = helpers, metaList = process.env.USER_METADATA_LIST) => async (req, res, next) => {
 	try {
-		helpers.dynamicMetadata(req.params.username, process.env.USER_METADATA_LIST, (err, metaInfos) => {
+		helperP.dynamicMetadata(req.params.username, metaList, (err, metaInfos) => {
 			if (err)
 				return next(err);
 
 			let result = [];
-      let allkeys = process.env.USER_METADATA_LIST.split(',');
+      let allkeys = metaList.split(',');
 
 			for (let i =0, len = allkeys.length; i < len; i++) {
         let k = allkeys[i];
@@ -69,26 +69,32 @@ router.get('/:username/usermeta', async (req, res, next) => {
 			}
 
 			res.json(result);
+      next();
 		});
 	} catch (ex) {
 		next(ex);
 	}
-});
+};
+
+router.get('/:username/usermeta', router.getUsermetaMiddleware());
 
 
-router.put('/:username/usermeta/:key', async (req, res, next) => {
+router.updateMetaDataMiddleWare = (helperP = helpers) => async (req, res, next) => {
   try {
-    helpers.updateDynamicUserMeta(req.params.username, req.body.id, req.body.value, (err, result) => {
+    helperP.updateDynamicUserMeta(req.params.username, req.body.id, req.body.value, (err, result) => {
       if (err)
-        return next(err); 
+        return next(err);
   
       res.json(result);
+      next();
     });
   }
   catch (ex) {
     next(ex);
   }
-});
+};
+
+router.put('/:username/usermeta/:key', router.updateMetaDataMiddleWare());
 
 //
 // Awarding Currency
