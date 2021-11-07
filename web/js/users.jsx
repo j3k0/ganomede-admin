@@ -79,13 +79,16 @@ function TransactionsGrouped(props){
     }
   }
 
+  const cumulativeSum = (sum => value => sum += value);
+ 
   return (<div className='col-md-8'>
     <b>Transactions</b>
     <div className='transaction-section'>
       {
         keys.map(k => {
+          var sumForThisKey = cumulativeSum(0);
           return (
-            <div>
+            <div key={k}>
               <h3>{k}</h3>
               <div className='table-wrapper-scroll-y my-custom-scrollbar'>
                 <table className='table table-bordered table-striped mb-0'>
@@ -95,7 +98,6 @@ function TransactionsGrouped(props){
                       <th>Item</th>
                       <th>Amount</th>
                       <th>Balance</th>
-                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -104,7 +106,7 @@ function TransactionsGrouped(props){
                       return a.timestamp - b.timestamp;
                     }).map(transaction => {
                       return ( 
-                          <Transaction {...transaction} />
+                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.data.amount)} />
                       );
                     })
                   }
@@ -119,7 +121,7 @@ function TransactionsGrouped(props){
   </div>);
 }
 
-function Transaction (props) {
+function Transaction (props) { 
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
   var what = (
     props.data.packId
@@ -146,14 +148,23 @@ function Transaction (props) {
 
   var from = props.data.from;
   if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
+ 
+  var details = props;
+
+  var onClick = swal.bind(swal, {
+    type: 'info',
+    html: true,
+    title: title,
+    text: utils.reactToStaticHtml(<Debug.pre data={details}/>),
+    allowOutsideClick: true
+  }, () => {});
 
   return (
-    <tr key={props.id}>
+    <tr key={props.id} className='clickable' onClick={onClick}> 
       <td>{utils.formatDate(props.timestamp, 'YYYY-MM-DD')}</td>
       <td>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>}</td>
       <td>{amount}</td>
-      <td></td>
-      <td><ClickForDetails title={title} details={props}>details</ClickForDetails></td>
+      <td>{props.balance}</td> 
     </tr>
   );
 }
