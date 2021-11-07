@@ -106,7 +106,7 @@ function TransactionsGrouped(props){
                       return a.timestamp - b.timestamp;
                     }).map(transaction => {
                       return ( 
-                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.data.amount)} />
+                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.amount)} />
                       );
                     })
                   }
@@ -130,7 +130,7 @@ function Transaction (props) {
     || '')
     .replace('com.triominos.', '').split('.');
   what = what[what.length - 1];
-  var amount = props.data.amount > 0 ? '+' + props.data.amount : props.data.amount;
+  var amount = props.amount > 0 ? '+' + props.amount : props.amount;
   var currency = props.data.currency.replace(/^[a-z]+-/, '');
   var extra;
   if (!what)
@@ -162,9 +162,9 @@ function Transaction (props) {
   return (
     <tr key={props.id} className='clickable' onClick={onClick}> 
       <td>{utils.formatDate(props.timestamp, 'YYYY-MM-DD')}</td>
-      <td>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>}</td>
-      <td>{amount}</td>
-      <td>{props.balance}</td> 
+      <td>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</td>
+      <td style={{textAlign: "right"}}>{amount}</td>
+      <td style={{textAlign: "right"}}>{props.balance}</td> 
     </tr>
   );
 }

@@ -22,7 +22,7 @@ const balance = function (username, callback) {
 const transactions = function (username, callback) {
   upstreams.virtualcurrency.request({
     url: authUrl(username, '/transactions'),
-    qs: {reasons: 'reward,purchase'}
+    qs: {reasons: 'reward,purchase', limit: 100000}
   }, callback);
 };
 
