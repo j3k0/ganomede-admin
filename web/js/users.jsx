@@ -7,6 +7,7 @@ var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
+var CollectionLoader = require('./components/CollectionLoader.jsx');
 
 const MailTemplates = {
   report: {
@@ -67,7 +68,60 @@ function Label (props) {
   );
 }
 
-function Transaction (props) {
+function TransactionsGrouped(props){
+  var transactionsArray = props.transactions;
+  var groups = utils.groupBy(transactionsArray, 'currency', function(val){return val.replace(/^[a-z]+-/, '');});
+  var keys = [];
+  for (var key in groups) { 
+
+    if (groups.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+
+  const cumulativeSum = (sum => value => sum += value);
+ 
+  return (<div className='col-md-8'>
+    <b>Transactions</b>
+    <div className='transaction-section'>
+      {
+        keys.map(k => {
+          var sumForThisKey = cumulativeSum(0);
+          return (
+            <div key={k}>
+              <h3>{k}</h3>
+              <div className='table-wrapper-scroll-y my-custom-scrollbar'>
+                <table className='table table-bordered table-striped mb-0'>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Item</th>
+                      <th>Amount</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    groups[k].sort((a, b) => {
+                      return a.timestamp - b.timestamp;
+                    }).map(transaction => {
+                      return ( 
+                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.data.amount)} />
+                      );
+                    })
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+  </div>);
+}
+
+function Transaction (props) { 
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
   var what = (
     props.data.packId
@@ -94,12 +148,24 @@ function Transaction (props) {
 
   var from = props.data.from;
   if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
+ 
+  var details = props;
+
+  var onClick = swal.bind(swal, {
+    type: 'info',
+    html: true,
+    title: title,
+    text: utils.reactToStaticHtml(<Debug.pre data={details}/>),
+    allowOutsideClick: true
+  }, () => {});
 
   return (
-    <ClickForDetails title={title} details={props}>
-     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}: </span>
-     <span>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</span>
-    </ClickForDetails>
+    <tr key={props.id} className='clickable' onClick={onClick}> 
+      <td>{utils.formatDate(props.timestamp, 'YYYY-MM-DD')}</td>
+      <td>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>}</td>
+      <td>{amount}</td>
+      <td>{props.balance}</td> 
+    </tr>
   );
 }
 
@@ -206,6 +272,61 @@ function BanInfo (props) {
     </Label>
   );
 }
+
+
+var usermetas = function (userId) {
+  var Metas = backbone.Collection.extend({
+    url: utils.apiPath(`/users/${encodeURIComponent(userId)}/usermeta`),
+  });
+
+  return new Metas();
+};
+
+var UserMeta = React.createBackboneClass({ 
+
+  onSave: function () {
+    utils.saveModel(
+      this.getModel(),
+      {value:  this.refs.valueInput.value},
+      {},
+      { success: 'Usermeta Saved',
+        error: 'Failed to update meta' }
+    );
+  },
+
+  render: function Meta () {
+    var _meta = this.getModel();
+
+    return (
+      <div className="list-item">
+        <div className="item-id">{_meta.get('id')}</div>
+        <div className="item-costs">
+          <div className="item-cost">
+            <input
+              type='text' 
+              ref='valueInput'
+              defaultValue={_meta.get('value')}
+            />
+          </div>
+        </div>
+        <button className="btn btn-xs btn-default" onClick={this.onSave}>Save</button>
+      </div>
+    );
+  }
+});
+
+function UserMetaLists (props) {
+  var usermetas = props.collection.map(function (m) {
+    return (
+      <div className="list-item-container" key={m.id}>
+        <UserMeta model={m} />
+      </div>
+    );
+  });
+
+  return (<div>{usermetas}</div>);
+}
+
 
 function ProfilePiece (props) {
   return (
@@ -322,21 +443,21 @@ function Profile (props) {
           }</ul>
 
           <AwardForm onAward={props.onAward}/>
+
+          <br/>
+          <div>
+            <b>Usermetas:</b>
+            <CollectionLoader
+              collection={usermetas(props.username)}
+              component={UserMetaLists}
+            />
+          </div>
+          
         </div>
 
-        <div className='col-md-4'>
-          <b>Transactions</b>
-          <ul className='list-unstyled'>{
-            props.transactions.map(transaction => {
-              return (
-                <li key={transaction.id}>
-                  <Transaction {...transaction} />
-                </li>
-              );
-            })
-          }</ul>
-        </div>
+        <TransactionsGrouped transactions={props.transactions}/>
       </div>
+      
     </div>
   );
 }

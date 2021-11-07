@@ -23,6 +23,13 @@ var utils = {
     return this.prefixPath('api', path);
   },
 
+  groupBy: function(xs, key, changeVal) {
+    return xs.reduce(function(rv, x) {
+      (rv[ changeVal? changeVal(x[key]): x[key]] = rv[changeVal? changeVal(x[key]): x[key]] || []).push(x);
+      return rv;
+    }, {});
+  },
+
   // Returns Promise in case callback is not provided (resolves to `[res, body]`).
   // Otherwise this is just a wrapper for `request` module.
   xhr: function (options, callback) {
@@ -135,8 +142,8 @@ var utils = {
     };
   },
 
-  formatDate: function (date) {
-    return moment(date).format('lll');
+  formatDate: function (date, format) {
+    return moment(date).format(format?format:'lll');
   },
 
   formatDateFromNow: function (date) {
