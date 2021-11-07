@@ -11,15 +11,15 @@ const router = new express.Router();
 //
 
 const aboutData = {
-    type: pkg.name,
-    version: pkg.version,
-    description: pkg.description,
-    hostname: os.hostname(),
-    startDate: new Date().toISOString()
+  type: pkg.name,
+  version: pkg.version,
+  description: pkg.description,
+  hostname: os.hostname(),
+  startDate: new Date().toISOString()
 };
 
 const about = function(req, res) {
-    res.send(aboutData);
+  res.send(aboutData);
 };
 
 router.get('/', about);

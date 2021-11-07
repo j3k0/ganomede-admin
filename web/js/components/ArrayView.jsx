@@ -37,14 +37,14 @@ var ArrayView = React.createClass({
     return (
       <this.props.Container>
         { this.state.items.map(function (item, idx) {
-            return (
-              <this.props.Component key={idx}
-                {...item}
-                onChange={this.onChange.bind(this, idx)}
-                onRemove={this.onRemove.bind(this, idx)}
-              />
-            );
-          }, this)
+          return (
+            <this.props.Component key={idx}
+              {...item}
+              onChange={this.onChange.bind(this, idx)}
+              onRemove={this.onRemove.bind(this, idx)}
+            />
+          );
+        }, this)
         }
       </this.props.Container>
     );

@@ -31,8 +31,8 @@ const main = () => {
 };
 
 if (!module.parent) {
- process.on('uncaughtException', die('uncaughtException'));
- process.on('unhandledRejection', die('unhandledRejection'));
+  process.on('uncaughtException', die('uncaughtException'));
+  process.on('unhandledRejection', die('unhandledRejection'));
 
- main();
+  main();
 }

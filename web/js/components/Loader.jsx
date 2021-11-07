@@ -9,13 +9,13 @@ function Loader (props) {
   var content = error
     ? ( <div>
           Error occured. Please refresh a page and try again.
-          <pre className="well">{
-            [ error.message || '<no error message || not an Error instance >',
-              prettyPrintError(error)
-            ].join('\n\n')
-          }</pre>
-        </div>
-      )
+      <pre className="well">{
+        [ error.message || '<no error message || not an Error instance >',
+          prettyPrintError(error)
+        ].join('\n\n')
+      }</pre>
+    </div>
+    )
     : children;
 
   return (

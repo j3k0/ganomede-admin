@@ -44,36 +44,36 @@ router.get('/:userId', async (req, res, next) => {
 });
 
 router.getUsermetaMiddleware = (helperP = helpers, metaList = process.env.USER_METADATA_LIST) => async (req, res, next) => {
-	try {
-		helperP.dynamicMetadata(req.params.username, metaList, (err, metaInfos) => {
-			if (err)
-				return next(err);
+  try {
+    helperP.dynamicMetadata(req.params.username, metaList, (err, metaInfos) => {
+      if (err)
+        return next(err);
 
-			let result = [];
+      let result = [];
       let allkeys = metaList.split(',');
 
-			for (let i =0, len = allkeys.length; i < len; i++) {
+      for (let i =0, len = allkeys.length; i < len; i++) {
         let k = allkeys[i];
 
-				if (metaInfos.hasOwnProperty(k)) {
-					result.push({
-						id: k,
-						value: metaInfos[k]
-					});
-				}else{
+        if (metaInfos.hasOwnProperty(k)) {
           result.push({
-						id: k,
-						value: ''
-					});
+            id: k,
+            value: metaInfos[k]
+          });
+        }else{
+          result.push({
+            id: k,
+            value: ''
+          });
         }
-			}
+      }
 
-			res.json(result);
+      res.json(result);
       next();
-		});
-	} catch (ex) {
-		next(ex);
-	}
+    });
+  } catch (ex) {
+    next(ex);
+  }
 };
 
 router.get('/:username/usermeta', router.getUsermetaMiddleware());

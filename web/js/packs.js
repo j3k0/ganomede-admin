@@ -47,9 +47,9 @@ var Pack = React.createBackboneClass({
             />
           </div>
         </div>
-                  <button className="btn btn-xs btn-default" onClick={this.onSave}>
+        <button className="btn btn-xs btn-default" onClick={this.onSave}>
             Update Amount
-          </button>
+        </button>
       </div>
     );
   }

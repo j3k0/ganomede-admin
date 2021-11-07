@@ -60,8 +60,8 @@ function Label (props) {
 
   return (
     <small
-    className={`label label-${level}`}
-    style={{marginRight: '.5em'}}
+      className={`label label-${level}`}
+      style={{marginRight: '.5em'}}
     >
       {children}
     </small>
@@ -101,15 +101,15 @@ function TransactionsGrouped(props){
                     </tr>
                   </thead>
                   <tbody>
-                  {
-                    groups[k].sort((a, b) => {
-                      return a.timestamp - b.timestamp;
-                    }).map(transaction => {
-                      return ( 
+                    {
+                      groups[k].sort((a, b) => {
+                        return a.timestamp - b.timestamp;
+                      }).map(transaction => {
+                        return ( 
                           <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.amount)} />
-                      );
-                    })
-                  }
+                        );
+                      })
+                    }
                   </tbody>
                 </table>
               </div>
@@ -141,10 +141,10 @@ function Transaction (props) {
   var p = props.data.packPurchase || {};
   var reason =
     props.data.from === 'admin' ? 'award'
-    : p.type === 'claim' ? ''
-    : p.type ? p.type
-    : p.packId ? 'purchase'
-    : props.reason;
+      : p.type === 'claim' ? ''
+        : p.type ? p.type
+          : p.packId ? 'purchase'
+            : props.reason;
 
   var from = props.data.from;
   if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
@@ -262,8 +262,8 @@ function BanInfo (props) {
   const status = ban.exists
     ? (<ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
           Banned {utils.formatDateFromNow(ban.createdAt)}
-        </ClickForDetails>
-      )
+    </ClickForDetails>
+    )
     : 'In Good Standing';
 
   return (

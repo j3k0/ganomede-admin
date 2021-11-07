@@ -35,17 +35,17 @@ function Header ({loggedIn, onLogout}) {
           </ul>
 
           { (function () {
-              if (!loggedIn)
-                return;
+            if (!loggedIn)
+              return;
 
-              return (
-                <ul id="logout-ul" className="nav navbar-nav navbar-right">
-                  <li>
-                    <a onClick={onLogout} className="logout-button">Logout</a>
-                  </li>
-                </ul>
-              );
-            }())
+            return (
+              <ul id="logout-ul" className="nav navbar-nav navbar-right">
+                <li>
+                  <a onClick={onLogout} className="logout-button">Logout</a>
+                </li>
+              </ul>
+            );
+          }())
           }
         </div>
       </div>
@@ -121,7 +121,7 @@ var App = React.createClass({
       <div className="App">
         <div className="Header header">
           <Header loggedIn={this.state.loggedIn}
-                  onLogout={this.onLogout}
+            onLogout={this.onLogout}
           />
         </div>
 
