@@ -79,7 +79,7 @@ describe('usermetas', async () => {
       const helper = td.object(Helper);
       const response = {};
 
-      td.when(helper.updateDynamicUserMeta(userId, metaKey, metaVal, td.callback))
+      td.when(helper.updateDynamicUserMeta(td.matchers.anything(), td.matchers.anything(), td.matchers.anything(), td.callback))
         .thenCallback(null, response);
 
       const res = td.object(['json']);
@@ -95,7 +95,7 @@ describe('usermetas', async () => {
       const next = function(err) {
         try {
           assert(err == undefined, 'there should not be an error');
-          td.verify(res.json(response));
+          td.verify(helper.updateDynamicUserMeta(userId, metaKey, metaVal, td.callback));
           done();
         } catch (e) {
           done(e);

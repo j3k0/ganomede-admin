@@ -43,7 +43,7 @@ router.get('/:userId', async (req, res, next) => {
   }
 });
 
-router.getUsermetaMiddleware = (helperP = helpers, metaList = process.env.USER_METADATA_LIST) => async (req, res, next) => {
+router.getUsermetaMiddleware = (helperP = helpers, metaList = process.env.USER_METADATA_LIST) => (req, res, next) => {
   try {
     helperP.dynamicMetadata(req.params.username, metaList, (err, metaInfos) => {
       if (err)
@@ -79,7 +79,7 @@ router.getUsermetaMiddleware = (helperP = helpers, metaList = process.env.USER_M
 router.get('/:username/usermeta', router.getUsermetaMiddleware());
 
 
-router.updateMetaDataMiddleWare = (helperP = helpers) => async (req, res, next) => {
+router.updateMetaDataMiddleWare = (helperP = helpers) => (req, res, next) => {
   try {
     helperP.updateDynamicUserMeta(req.params.username, req.body.id, req.body.value, (err, result) => {
       if (err)
@@ -151,5 +151,24 @@ router.post('/:userId/password-reset', async (req, res, next) => {
     next(ex);
   }
 });
+
+//chat rooms
+
+router.listChatHistory = (helperP = helpers, gameId = process.env.CHAT_ROOM_GAME_ID) => (req, res, next) => {
+  try {
+    helperP.chatRooms(req.params.username1, req.params.username2, gameId, (err, result) => {
+      if (err)
+        return next(err);
+  
+      res.json(result);
+      next();
+    });
+  }
+  catch (ex) {
+    next(ex);
+  }
+};
+
+router.get('/chat/:username1/:username2', router.listChatHistory());
 
 module.exports = router;
