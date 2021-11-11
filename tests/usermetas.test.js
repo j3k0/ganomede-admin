@@ -95,6 +95,7 @@ describe('usermetas', async () => {
       const next = function(err) {
         try {
           assert(err == undefined, 'there should not be an error');
+          td.verify(res.json(response));
           td.verify(helper.updateDynamicUserMeta(userId, metaKey, metaVal, td.callback));
           done();
         } catch (e) {
