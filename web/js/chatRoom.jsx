@@ -25,8 +25,8 @@ function ChatRoomResults (props) {
 
   const user1 = results.users[0];
   const user2 = results.users[1];
-  const imgeurl = 'images/user-profile.png';
-  const imgeurl2 = 'images/user-profile.png';
+  const imgeurl = '../images/user-profile.png';
+  const imgeurl2 = '../images/user-profile.png';
 
   const rightOrLeft = (msg) => {return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
   const image1_Or2 = (msg) => {return  msg.from == user1 ? imgeurl : imgeurl2; };
@@ -57,14 +57,14 @@ function ChatRoomResults (props) {
                       <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg"/>
                     </div>
                     <div className="msg_cotainer">{msg.message}
-                      <span className="msg_time">{utils.formatDate(msg.timestamp, 'h:mm a, YYYY-MM-DD')}</span>
+                      <span className="msg_time">{utils.formatDate(msg.timestamp, 'h:mm a, YYYY-MM-DD')} ({msg.from})</span>
                     </div>
                   </div>
                 ) : 
                   (
                     <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                       <div className="msg_cotainer">{msg.message}
-                        <span className="msg_time">{utils.formatDate(msg.timestamp, 'h:mm a, YYYY-MM-DD')}</span>
+                        <span className="msg_time">{utils.formatDate(msg.timestamp, 'h:mm a, YYYY-MM-DD')} ({msg.from})</span>
                       </div>
                       <div className="img_cont_msg">
                         <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg"/>
