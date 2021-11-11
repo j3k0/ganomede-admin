@@ -39,7 +39,9 @@ function GanomedeRouter () {
             </Route>
           )
         }
-        <Route path={utils.webPath('/chat')} component={ChatRoom} />
+        <Route path={utils.webPath('/chat')} component={ChatRoom}>
+          <Route path={utils.webPath('/chat/:username1,:username2')} component={ChatRoom} />
+        </Route>
       </Route>
 
       <Route path="*" component={(props) => (

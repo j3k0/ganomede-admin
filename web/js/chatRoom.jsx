@@ -12,10 +12,12 @@ function ChatRoomResults (props) {
     
   const results = props.results;
 
-  //   results.messages.push({from: "test1", timestamp: 1429084016331, type: "text", message: "Hey bob! How are you today?"});
-  //   results.messages.push({from: "test2", timestamp: 1429084013933, type: "text", message: "Hey bob! How are you today?"});
-  //   results.messages.push({from: "test1", timestamp: 1429084016934, type: "text", message: "Hey bob! How are you today?"});
-  //   results.messages.push({from: "test2", timestamp: 1429084016926, type: "text", message: "Hey bob! How are you today?"});
+  // results.messages.push({from: "test1", timestamp: 1429084016331, type: "text", message: "Hey bob! How are you today?"});
+  // results.messages.push({from: "test2", timestamp: 1429084013933, type: "text", message: "Hey bob! How are you today?"});
+  // results.messages.push({from: "test1", timestamp: 1429084016934, type: "text", message: "Hey bob! How are you today?"});
+  // results.messages.push({from: "test2", timestamp: 1429084016926, type: "text", message: "Hey bob! How are you today?"});
+  // results.messages.push({from: "test2", timestamp: 1423084016926, type: "text", message: "Hey bob! How are you today?"});
+  // results.messages.push({from: "test2", timestamp: 1423084016316, type: "text", message: "Hey bob! How are you today?"});
 
   const messages = results.messages.sort((a, b) => {
     return a.timestamp - b.timestamp;
@@ -106,15 +108,25 @@ var ChatRoom = React.createClass({
     router: React.PropTypes.object
   },
   
-  getInitialState: function () { 
+  getInitialState: function () {
+
+    var hasUser1 = this.props.params.hasOwnProperty('username1');
+    var hasUser2 = this.props.params.hasOwnProperty('username2');
   
     return {  
-      searchQuery: '',
-      results: null,
-      searchError: null, 
+      searchQueryForUser1: hasUser1 ? this.props.params.username1 : '',
+      searchQueryForUser2: hasUser2 ? this.props.params.username2 : '',
+      doFetch: hasUser1 && hasUser2,
+      results: null, 
       loading: false,
       error: null
     };
+  },
+
+  componentWillMount: function () {
+    // fetch user profile, if we have one
+    if (this.state.doFetch)
+      this.fetchChat(this.state.searchQueryForUser1, this.state.searchQueryForUser2);
   },
 
   fetchChat: function(user1, user2) {
@@ -123,9 +135,11 @@ var ChatRoom = React.createClass({
       loading: true
     });
 
+    this.context.router.push(utils.webPath('/chat/' + user1 +',' + user2));
+
     utils.xhr({
       method: 'get',
-      url: utils.apiPath('/users/chat/' + user1 + '/' +user2),
+      url: utils.apiPath('/users/chat/' + encodeURIComponent(user1) + '/' +encodeURIComponent(user2)),
     }, (err, res, data) => {
       const error = err || (res.statusCode === 200 ? null : data);
       this.setState({
@@ -133,7 +147,7 @@ var ChatRoom = React.createClass({
         error: error || null,
         results: error ? null : data
       }, () => {
-        if (this.state.searchError)
+        if (this.state.error)
           return; 
       });
     });
@@ -153,19 +167,19 @@ var ChatRoom = React.createClass({
             ref='usernameInput1'
             className='form-control'
             placeholder='username 1'
-            defaultValue={this.state.searchQuery}
+            defaultValue={this.state.searchQueryForUser1}
           />
 
           <input type='text'
             ref='usernameInput2'
             className='form-control'
             placeholder='username 2'
-            defaultValue={this.state.searchQuery}
+            defaultValue={this.state.searchQueryForUser2}
           />
           <input type='submit' className='btn btn-primary' value='Get Chat' />
         </form>
   
-        <Loader error={this.state.searchError} loading={this.state.loading}> 
+        <Loader error={this.state.error} loading={this.state.loading}> 
           <div className='container-fluid h-100'>
             <ChatRoomResults results={this.state.results}/>
           </div>
