@@ -60,7 +60,7 @@ const config = {
     usermeta: optionalService('USERMETA'),
     data: optionalService('DATA'),
     directory: optionalService('DIRECTORY', 8000),
-    chat: optionalService('CHAT_ROOM')
+    chat: optionalService('CHAT')
   }
 };
 

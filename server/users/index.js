@@ -154,9 +154,9 @@ router.post('/:userId/password-reset', async (req, res, next) => {
 
 //chat rooms
 
-router.listChatHistory = (helperP = helpers, gameId = process.env.CHAT_ROOM_GAME_ID) => (req, res, next) => {
+router.listChatHistory = (helperP = helpers, chatRoomIdPrefix = process.env.CHAT_ROOM_PREFIX) => (req, res, next) => {
   try {
-    helperP.chatRooms(req.params.username1, req.params.username2, gameId, (err, result) => {
+    helperP.chatRooms(req.params.username1, req.params.username2, chatRoomIdPrefix, (err, result) => {
       if (err)
         return next(err);
   
