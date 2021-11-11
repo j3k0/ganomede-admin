@@ -90,8 +90,8 @@ function TransactionsGrouped(props){
           return (
             <div key={k}>
               <h3>{k}</h3>
-              <div className='table-wrapper-scroll-y my-custom-scrollbar'>
-                <table className='table table-bordered table-striped mb-0'>
+              <div>
+                <table className='table table-bordered table-striped table-condensed mb-0'>
                   <thead>
                     <tr>
                       <th>Date</th>
