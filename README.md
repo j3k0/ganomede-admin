@@ -78,6 +78,12 @@ microservices. Provide links to them with env vars (otherwise, related functiona
    - `DIRECTORY_PORT_8000_TCP_ADDR` directory host;
    - `DIRECTORY_PORT_8000_TCP_PORT` directory port;
 
+- [chat module](https://github.com/j3k0/ganomede-chat)
+   - `CHAT_PORT_8080_TCP_PROTOCOL` chat protocol (`http` or `https`, defaults to `http`);
+   - `CHAT_PORT_8080_TCP_ADDR` chat host;
+   - `CHAT_PORT_8080_TCP_PORT` chat port;
+   - `CHAT_ROOM_PREFIX` chat room prefix (like `triominos/v1`)
+
 # Running unit tests
 
 Test can be run using `npm test`. Notice that test coverage is minimal at that point.
