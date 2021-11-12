@@ -112,3 +112,13 @@ button.btn-add-item {
 .table-condensed > tbody > tr > td {
     padding: 1px 8px;
 }
+
+.my-custom-scrollbar {
+    position: relative;
+    height: 200px;
+    overflow: auto;
+}
+.table-wrapper-scroll-y {
+    display: block;
+}
+

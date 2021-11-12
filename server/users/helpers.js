@@ -113,6 +113,23 @@ const directory = async (userId, callback) => {
   upstreams.directory.request({method, url, qs}, callback);
 };
 
+
+const chatRooms = function (user1, user2, gameId, callback) {
+
+  const arr = [user1, user2];
+  const sorted = arr.sort((a, b) => a.localeCompare(b));
+  const roomId = encodeURIComponent(gameId+'/'+sorted[0]+'/'+sorted[1]);
+
+  upstreams.chat.request({
+    url: `/auth/${apiSecret}/rooms/${roomId}`
+  }, (err, json) => {
+    
+    if (err)
+      return callback(err);
+    callback(null, json);
+  });
+};
+
 module.exports = {
   balance,
   transactions,
@@ -124,6 +141,7 @@ module.exports = {
   banInfo,
   banSetTrue,
   banSetFalse,
+  chatRooms,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);
