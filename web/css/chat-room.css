@@ -67,17 +67,16 @@
 
 .chat-room .user_info span {
     font-size: 20px;
-    color: white;
+    /* color: white; */
 }
 
 .chat-room .user_info p {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
 }
 
 .chat-room .justify-content-middle .msg_cotainer {
-    background-color: gray;
-    color: white;
+    color: #6ac;
+    font-size: 11px;
 }
 
 .chat-room .justify-content-middle .img_cont_msg {
@@ -88,10 +87,10 @@
     margin-top: auto;
     margin-bottom: auto;
     margin-left: 10px;
-    border-radius: 25px;
-    background-color: #82ccdd;
-    padding: 10px;
-    position: relative;
+    /* border-radius: 25px;
+    background-color: #82ccdd; */
+    padding: 0 10px;
+    /* position: relative; */
 }
 
 .chat-room .justify-content-end .msg_cotainer {
@@ -110,12 +109,12 @@
 }
 
 .chat-room .msg_time {
-    position: absolute;
-    left: 0;
-    bottom: -15px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 10px;
+    color: #bbb;
+    font-size: 9px;
     white-space: nowrap;
+    display: block;
+    font-style: italic;
+    text-align: right;
 }
 
 .chat-room .msg_time_send {
@@ -132,7 +131,7 @@
 
 
 .chat-room .mb-4, .chat-room .my-4 {
-    margin-bottom: 1.9rem;
+    margin-bottom: 5px;
 }
 
 .chat-room .justify-content-start {
@@ -166,7 +165,7 @@
 }
 
 .chat-room .card {
-    position: relative;
+    /* position: relative; */
     display: -ms-flexbox;
     display: flex;
     -ms-flex-direction: column;
@@ -176,13 +175,15 @@
     background-color: #fff;
     background-clip: border-box;
     border: 1px solid rgba(0, 0, 0, .125);
-    border-radius: .25rem;
+    /* border-radius: .25rem; */
 }
 
 .chat-room .card {
+    /*
     height: 500px;
     border-radius: 15px;
     background-color: rgba(0, 0, 0, 0.4);
+    */
 }
 
 
@@ -200,3 +201,10 @@
     margin-left: -15px;
     margin-top: 15px;
 }
+
+.img_cont_msg > div {
+  text-align: center;
+  font-size: 9px;
+  overflow: visible;
+}
+

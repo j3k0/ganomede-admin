@@ -55,19 +55,21 @@ function ChatRoomResults (props) {
                   <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                     <div className="img_cont_msg">
                       <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg"/>
+                      <div>{msg.from}</div>
                     </div>
                     <div className="msg_cotainer">{msg.message}
-                      <span className="msg_time">{utils.formatDate(msg.timestamp, 'h:mm a, YYYY-MM-DD')} ({msg.from})</span>
+                      <span className="msg_time">{utils.formatDate(+msg.timestamp, 'hh:mm')}</span>
                     </div>
                   </div>
                 ) : 
                   (
                     <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                       <div className="msg_cotainer">{msg.message}
-                        <span className="msg_time">{utils.formatDate(msg.timestamp, 'h:mm a, YYYY-MM-DD')} ({msg.from})</span>
+                        <span className="msg_time">{utils.formatDate(+msg.timestamp, msg.from == '$$' ? 'YYYY-MM-DD' : 'hh:mm')}</span>
                       </div>
                       <div className="img_cont_msg">
                         <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg"/>
+                        {msg.from != '$$' ? (<div>{msg.from}</div>) : null}
                       </div>
                     </div>
                   )
