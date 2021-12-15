@@ -301,7 +301,7 @@ function RenderReportsAndBlocks(props) {
         </a>
        );
       })
-      .reduce((prev, curr) => [prev, ", ", curr])}{" "}
+      .reduce((prev, curr) => prev.concat(", ", curr), []).slice(1)}{" "}
     </div>
    );
   };
