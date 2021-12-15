@@ -122,3 +122,10 @@ button.btn-add-item {
     display: block;
 }
 
+.reports-blocks{
+    margin: 10px 0;
+}
+
+.reports-blocks .block-report-item:hover{
+    cursor: pointer;
+}

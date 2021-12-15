@@ -130,6 +130,15 @@ const chatRooms = function (user1, user2, gameId, callback) {
   });
 };
 
+const reportsAndBlocks = function (username, callback) {
+  const qs = { secret: apiSecret };
+  upstreams.users.request({
+    method: 'get',
+    url: `/admin/blocks/${username}`,
+    qs
+  }, callback);
+};
+
 module.exports = {
   balance,
   transactions,
@@ -142,6 +151,7 @@ module.exports = {
   banSetTrue,
   banSetFalse,
   chatRooms,
+  reportsAndBlocks,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);

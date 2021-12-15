@@ -273,6 +273,110 @@ function BanInfo (props) {
   );
 }
 
+function RenderReportsAndBlocks(props) {
+  var blockedBy = props.results.blockedBy;
+  var reportedBy = props.results.reportedBy;
+  var reports = props.results.reports;
+  var blocks = props.results.blocks;
+ 
+  var renderOneType = (items, title) => {
+   return (
+    <div>
+     <span>{title}:</span>{" "}
+     {items
+      .map((rep) => {
+       return (
+        <a
+         key={rep.on}
+         href={
+          "../chat/" +
+          encodeURIComponent(props.username) +
+          "," +
+          encodeURIComponent(rep.username)
+         }
+         className="block-report-item"
+         title={utils.formatDate(+rep.on, "YYYY-MM-DD hh:mm")}
+        >
+         {rep.username}
+        </a>
+       );
+      })
+      .reduce((prev, curr) => [prev, ", ", curr])}{" "}
+    </div>
+   );
+  };
+ 
+  return (
+   <div>
+    {renderOneType(reportedBy, "Reported By")}
+    {renderOneType(blockedBy, "Blocked By")}
+    {renderOneType(reports, "Reports")}
+    {renderOneType(blocks, "Blocks")}
+   </div>
+  );
+ }
+ 
+ var ReportsAndBlocks = React.createClass({
+  contextTypes: {},
+ 
+  getInitialState: function () {
+   var hasUser = this.props.hasOwnProperty("username");
+ 
+   return {
+    username: hasUser ? this.props.username : "",
+    doFetch: hasUser,
+    results: null,
+    loading: false,
+    error: null,
+   };
+  },
+ 
+  componentWillMount: function () {
+   // fetch user profile, if we have one
+   if (this.state.doFetch) this.fetchReportsBlocks(this.state.username);
+  },
+ 
+  fetchReportsBlocks: function (user) {
+   this.setState({
+    loading: true,
+   });
+ 
+   utils.xhr(
+    {
+     method: "get",
+     url: utils.apiPath("/users/reports-blocks/" + encodeURIComponent(user)),
+    },
+    (err, res, data) => {
+     const error = err || (res.statusCode === 200 ? null : data);
+     this.setState(
+      {
+       loading: false,
+       error: error || null,
+       results: error ? null : data,
+      },
+      () => {
+       if (this.state.error) return;
+      }
+     );
+    }
+   );
+  },
+ 
+  render: function () {
+   return (
+    <div>
+     <Loader error={this.state.error} loading={this.state.loading}>
+      <div className="h-100 reports-blocks">
+       <RenderReportsAndBlocks
+        results={this.state.results}
+        username={this.state.username}
+       />
+      </div>
+     </Loader>
+    </div>
+   );
+  },
+ });
 
 var usermetas = function (userId) {
   var Metas = backbone.Collection.extend({
@@ -431,6 +535,10 @@ function Profile (props) {
             />
           </div>
         </div>
+      </div>
+
+      <div className='row reports-blocks'>
+        <ReportsAndBlocks username={props.username} />
       </div>
 
       <div className='row'>
