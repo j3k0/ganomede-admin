@@ -11,6 +11,7 @@ var DataLayout = require('./data.jsx');
 var utils = require('./utils');
 var {Link} = require('./components/Links.jsx');
 var Debug = require('./components/Debug.jsx');
+var { ChatRoom } = require('./chatRoom.jsx');
 var { ReportedUsers } = require('./reportedUsers.jsx');
 
 var Router = ReactRouter.Router;
