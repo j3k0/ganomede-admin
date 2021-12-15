@@ -11,7 +11,7 @@ var DataLayout = require('./data.jsx');
 var utils = require('./utils');
 var {Link} = require('./components/Links.jsx');
 var Debug = require('./components/Debug.jsx');
-var {ChatRoom} = require('./chatRoom.jsx');
+var { ReportedUsers } = require('./reportedUsers.jsx');
 
 var Router = ReactRouter.Router;
 var Route = ReactRouter.Route;
@@ -39,6 +39,7 @@ function GanomedeRouter () {
             </Route>
           )
         }
+        <Route path={utils.webPath('/reported')} component={ReportedUsers} />
         <Route path={utils.webPath('/chat')} component={ChatRoom}>
           <Route path={utils.webPath('/chat/:username1,:username2')} component={ChatRoom} />
         </Route>
