@@ -171,4 +171,21 @@ router.listChatHistory = (helperP = helpers, chatRoomIdPrefix = process.env.CHAT
 
 router.get('/chat/:username1/:username2', router.listChatHistory());
 
+router.listReportsAndBlocks = (helperP = helpers) => (req, res, next) => {
+  try {
+    helperP.reportsAndBlocks(req.params.username, (err, result) => {
+      if (err)
+        return next(err);
+
+      res.json(result);
+      next();
+    });
+  }
+  catch (ex) {
+    next(ex);
+  }
+};
+
+router.get('/reports-blocks/:username', router.listReportsAndBlocks());
+
 module.exports = router;
