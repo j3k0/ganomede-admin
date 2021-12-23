@@ -139,6 +139,16 @@ const reportsAndBlocks = function (username, callback) {
   }, callback);
 };
 
+
+const highlyReportedUsers = function (callback) {
+  const qs = { secret: apiSecret };
+  upstreams.users.request({
+    method: 'get',
+    url: `/admin/reported-users`,
+    qs
+  }, callback);
+};
+
 module.exports = {
   balance,
   transactions,
@@ -152,6 +162,7 @@ module.exports = {
   banSetFalse,
   chatRooms,
   reportsAndBlocks,
+  highlyReportedUsers,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);

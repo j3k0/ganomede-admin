@@ -188,4 +188,21 @@ router.listReportsAndBlocks = (helperP = helpers) => (req, res, next) => {
 
 router.get('/reports-blocks/:username', router.listReportsAndBlocks());
 
+router.listHighlyReportedUsers = (helperP = helpers) => (req, res, next) => {
+  try {
+    helperP.highlyReportedUsers((err, result) => {
+      if (err)
+        return next(err);
+
+      res.json(result);
+      next();
+    });
+  }
+  catch (ex) {
+    next(ex);
+  }
+};
+
+router.get('/highly/reported', router.listHighlyReportedUsers());
+
 module.exports = router;

@@ -14,6 +14,7 @@ function Header ({loggedIn, onLogout}) {
     <NavLink key={1} to='/packs'>Packs</NavLink>,
     <NavLink key={2} to='/users'>Users</NavLink>,
     <NavLink key={3} to='/chat'>Chat</NavLink>,
+    <NavLink key={5} to='/reported'>Reported Users</NavLink>,
     services.includes('data') && <NavLink key={4} to='/data'>Data</NavLink>
   ];
 
