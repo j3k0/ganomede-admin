@@ -50,7 +50,7 @@ router.getUsermetaMiddleware = (helperP = helpers, metaList = process.env.USER_M
         return next(err);
 
       let result = [];
-      let allkeys = metaList.split(',');
+      let allkeys = (metaList || '').split(',');
 
       for (let i =0, len = allkeys.length; i < len; i++) {
         let k = allkeys[i];
