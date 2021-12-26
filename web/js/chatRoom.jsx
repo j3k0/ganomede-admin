@@ -31,6 +31,7 @@ function ChatRoomResults (props) {
   const rightOrLeft = (msg) => {return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
   const image1_Or2 = (msg) => {return  msg.from == user1 ? imgeurl : imgeurl2; };
    
+  const getUserRef = (user) => { return <a href={`../users/${encodeURIComponent(user)}`}>`{user}`</a>; };
   
   return (
     <div className='row justify-content-center h-100'>
@@ -43,7 +44,7 @@ function ChatRoomResults (props) {
                 <span className="online_icon"></span>
               </div>
               <div className="user_info">
-                <span>Chat between `{user1}` and `{user2}`</span>
+                <span>Chat between {getUserRef(user1)} and {getUserRef(user2)}</span>
                 <p>{messages.length} Messages</p>
               </div>
             </div> 
