@@ -32,10 +32,10 @@ function ChatRoomResults(props) {
   const imgeurl = '../images/user-profile.png';
   const imgeurl2 = '../images/user-profile.png';
 
-  const rightOrLeft = (msg) => {return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
-  const image1_Or2 = (msg) => {return  msg.from == user1 ? imgeurl : imgeurl2; };
-   
-  
+  const rightOrLeft = (msg) => { return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
+  const image1_Or2 = (msg) => { return msg.from == user1 ? imgeurl : imgeurl2; };
+
+
   return (
     <div className='row justify-content-center h-100'>
       <div className='col-md-8 col-xl-6 chat'>
@@ -43,14 +43,14 @@ function ChatRoomResults(props) {
           <div className="card-header msg_head">
             <div className="d-flex bd-highlight">
               <div className="img_cont">
-                <img src={`${imgeurl}`} className="rounded-circle user_img"/>
+                <img src={`${imgeurl}`} className="rounded-circle user_img" />
                 <span className="online_icon"></span>
               </div>
               <div className="user_info">
                 <span>Chat between `{user1}` and `{user2}`</span>
                 <p>{messages.length} Messages</p>
               </div>
-            </div> 
+            </div>
           </div>
           <div className="card-body msg_card_body">
             {
@@ -58,21 +58,21 @@ function ChatRoomResults(props) {
                 return msg.from == user1 ? (
                   <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                     <div className="img_cont_msg">
-                      <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg"/>
+                      <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg" />
                       <div>{msg.from}</div>
                     </div>
                     <div className="msg_cotainer">{msg.message}
                       <span className="msg_time">{utils.formatDate(+msg.timestamp, 'hh:mm')}</span>
                     </div>
                   </div>
-                ) : 
+                ) :
                   (
                     <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                       <div className="msg_cotainer">{msg.message}
                         <span className="msg_time">{utils.formatDate(+msg.timestamp, msg.from == '$$' ? 'YYYY-MM-DD' : 'hh:mm')}</span>
                       </div>
                       <div className="img_cont_msg">
-                        <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg"/>
+                        <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg" />
                         {msg.from != '$$' ? (<div>{msg.from}</div>) : null}
                       </div>
                     </div>
@@ -101,7 +101,7 @@ function ChatRoomResults(props) {
               </div>
             </div> */}
           </div>
-          <div className="card-footer"> 
+          <div className="card-footer">
           </div>
         </div>
       </div>
@@ -113,17 +113,17 @@ var ChatRoom = React.createClass({
   contextTypes: {
     router: React.PropTypes.object
   },
-  
+
   getInitialState: function () {
 
     var hasUser1 = this.props.params.hasOwnProperty('username1');
     var hasUser2 = this.props.params.hasOwnProperty('username2');
-  
-    return {  
+
+    return {
       searchQueryForUser1: hasUser1 ? this.props.params.username1 : '',
       searchQueryForUser2: hasUser2 ? this.props.params.username2 : '',
       doFetch: hasUser1 && hasUser2,
-      results: null, 
+      results: null,
       loading: false,
       error: null
     };
@@ -135,17 +135,17 @@ var ChatRoom = React.createClass({
       this.fetchChat(this.state.searchQueryForUser1, this.state.searchQueryForUser2);
   },
 
-  fetchChat: function(user1, user2) {
+  fetchChat: function (user1, user2) {
 
-    this.setState({ 
+    this.setState({
       loading: true
     });
 
-    this.context.router.push(utils.webPath('/chat/' + user1 +',' + user2));
+    this.context.router.push(utils.webPath('/chat/' + user1 + ',' + user2));
 
     utils.xhr({
       method: 'get',
-      url: utils.apiPath('/users/chat/' + encodeURIComponent(user1) + '/' +encodeURIComponent(user2)),
+      url: utils.apiPath('/users/chat/' + encodeURIComponent(user1) + '/' + encodeURIComponent(user2)),
     }, (err, res, data) => {
       const error = err || (res.statusCode === 200 ? null : data);
       this.setState({
@@ -154,12 +154,12 @@ var ChatRoom = React.createClass({
         results: error ? null : data
       }, () => {
         if (this.state.error)
-          return; 
+          return;
       });
     });
   },
-   
-  
+
+
   renderForm: function () {
     return (
       <div className='chat-room'>
@@ -193,12 +193,12 @@ var ChatRoom = React.createClass({
       </div>
     );
   },
-     
+
   render: function () {
     return this.renderForm();
   }
 });
 
 module.exports = {
-  ChatRoom: ChatRoom  
+  ChatRoom: ChatRoom
 };
