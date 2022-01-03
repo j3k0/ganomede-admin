@@ -5,11 +5,15 @@ var utils = require('./utils');
 var Loader = require('./components/Loader.jsx');
 require('react.backbone');
 
-function ChatRoomResults (props) {
+function ChatRoomResults(props) {
   // No need to render anything, no lookups were performed.
+
+  if (props.error && props.error.reason.code === "NotFound")
+    return (<div className='empty-chat-room'><h3>No chatroom available</h3></div>);
+
   if (props.results === null)
     return null;
-    
+
   const results = props.results;
 
   // results.messages.push({from: "test1", timestamp: 1429084016331, type: "text", message: "Hey bob! How are you today?"});
@@ -180,10 +184,10 @@ var ChatRoom = React.createClass({
           />
           <input type='submit' className='btn btn-primary' value='Get Chat' />
         </form>
-  
-        <Loader error={this.state.error} loading={this.state.loading}> 
+
+        <Loader loading={this.state.loading}>
           <div className='container-fluid h-100'>
-            <ChatRoomResults results={this.state.results}/>
+            <ChatRoomResults results={this.state.results} error={this.state.error} />
           </div>
         </Loader>
       </div>
