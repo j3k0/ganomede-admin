@@ -105,8 +105,13 @@ function TransactionsGrouped(props){
                       groups[k].sort((a, b) => {
                         return a.timestamp - b.timestamp;
                       }).map(transaction => {
-                        return ( 
-                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.amount)} />
+                        transaction.balance = sumForThisKey(transaction.amount);
+                        return transaction;
+                      }).sort((a, b) => {
+                        return b.timestamp - a.timestamp;
+                      }).map(transaction => {
+                        return (
+                          <Transaction key={transaction.id} {...transaction} balance={transaction.balance} />
                         );
                       })
                     }
