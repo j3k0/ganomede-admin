@@ -6,7 +6,10 @@ function exportEnv {
     API_SECRET="1"
   fi
   export API_SECRET
-  export PORT="1337"
+  if [ "x$PORT" = "x" ]; then
+	  PORT=1337
+  fi
+  export PORT
   export ADMIN_USERNAME="1"
   export ADMIN_PASSWORD="1"
 
@@ -46,6 +49,12 @@ function exportEnv {
   export DIRECTORY_PORT_8000_TCP_PROTOCOL='https'
   export DIRECTORY_PORT_8000_TCP_ADDR='account.ggs.ovh'
   export DIRECTORY_PORT_8000_TCP_PORT='443'
+
+  # chat
+  export CHAT_PORT_8080_TCP_PROTOCOL='https'
+  export CHAT_PORT_8080_TCP_ADDR='prod.ggs.ovh'
+  export CHAT_PORT_8080_TCP_PORT='443'
+  export CHAT_ROOM_PREFIX='triominos/v1'
 }
 
 function main {
@@ -56,7 +65,7 @@ function main {
     npm run test
   else
     echo "Running server…"
-    ./node_modules/.bin/nodemon --inspect -w config.js -w index.js -w server/ -w config.js index.js
+    ./node_modules/.bin/nodemon -w config.js -w index.js -w server/ -w config.js index.js
   fi
 }
 

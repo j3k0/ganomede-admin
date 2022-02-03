@@ -22,7 +22,7 @@ const balance = function (username, callback) {
 const transactions = function (username, callback) {
   upstreams.virtualcurrency.request({
     url: authUrl(username, '/transactions'),
-    qs: {reasons: 'reward,purchase'}
+    qs: {reasons: 'reward,purchase', limit: 100000}
   }, callback);
 };
 
@@ -40,13 +40,29 @@ const avatar = function (username, callback) {
 };
 
 const metadata = function (username, callback) {
+
+  dynamicMetadata(username, 'location,locale,auth', callback);
+};
+
+
+const dynamicMetadata = function (username, metalist, callback) {
+  
   upstreams.usermeta.request({
-    url: `/${username}/location,locale,auth`
+    url: `/${username}/${metalist}?secret=${apiSecret}`
   }, (err, json) => {
+    
     if (err)
       return callback(err);
     callback(null, json[username]);
   });
+};
+
+// ban user
+const updateDynamicUserMeta = function (username, metaKey, metaValue, callback) {
+  const method = 'post';
+  const url    = `/auth/${apiSecret}.${username}/${metaKey}`;
+  const body   = { value: metaValue };
+  upstreams.usermeta.request({ method, url, body }, callback);
 };
 
 const reward = function (username, amount, currency, callback) {
@@ -97,15 +113,56 @@ const directory = async (userId, callback) => {
   upstreams.directory.request({method, url, qs}, callback);
 };
 
+
+const chatRooms = function (user1, user2, gameId, callback) {
+
+  const arr = [user1, user2];
+  const sorted = arr.sort((a, b) => a.localeCompare(b));
+  const roomId = encodeURIComponent(gameId+'/'+sorted[0]+'/'+sorted[1]);
+
+  upstreams.chat.request({
+    url: `/auth/${apiSecret}/rooms/${roomId}`
+  }, (err, json) => {
+    
+    if (err)
+      return callback(err);
+    callback(null, json);
+  });
+};
+
+const reportsAndBlocks = function (username, callback) {
+  const qs = { secret: apiSecret };
+  upstreams.users.request({
+    method: 'get',
+    url: `/admin/blocks/${username}`,
+    qs
+  }, callback);
+};
+
+
+const highlyReportedUsers = function (callback) {
+  const qs = { secret: apiSecret };
+  upstreams.users.request({
+    method: 'get',
+    url: `/admin/reported-users`,
+    qs
+  }, callback);
+};
+
 module.exports = {
   balance,
   transactions,
   avatar,
   metadata,
+  dynamicMetadata,
+  updateDynamicUserMeta,
   reward,
   banInfo,
   banSetTrue,
   banSetFalse,
+  chatRooms,
+  reportsAndBlocks,
+  highlyReportedUsers,
 
   profile: (username, callback) => {
     const bind = fn => fn.bind(null, username);

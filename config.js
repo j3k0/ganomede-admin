@@ -59,7 +59,8 @@ const config = {
     users: optionalService('USERS'),
     usermeta: optionalService('USERMETA'),
     data: optionalService('DATA'),
-    directory: optionalService('DIRECTORY', 8000)
+    directory: optionalService('DIRECTORY', 8000),
+    chat: optionalService('CHAT')
   }
 };
 

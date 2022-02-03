@@ -7,6 +7,7 @@ var lodash = require('lodash');
 var Debug = require('./components/Debug.jsx');
 var Loader = require('./components/Loader.jsx');
 var utils = require('./utils');
+var CollectionLoader = require('./components/CollectionLoader.jsx');
 
 const MailTemplates = {
   report: {
@@ -59,15 +60,68 @@ function Label (props) {
 
   return (
     <small
-    className={`label label-${level}`}
-    style={{marginRight: '.5em'}}
+      className={`label label-${level}`}
+      style={{marginRight: '.5em'}}
     >
       {children}
     </small>
   );
 }
 
-function Transaction (props) {
+function TransactionsGrouped(props){
+  var transactionsArray = props.transactions;
+  var groups = utils.groupBy(transactionsArray, 'currency', function(val){return val.replace(/^[a-z]+-/, '');});
+  var keys = [];
+  for (var key in groups) { 
+
+    if (groups.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+
+  const cumulativeSum = (sum => value => sum += value);
+ 
+  return (<div className='col-md-8'>
+    <b>Transactions</b>
+    <div className='transaction-section'>
+      {
+        keys.map(k => {
+          var sumForThisKey = cumulativeSum(0);
+          return (
+            <div key={k}>
+              <h3>{k}</h3>
+              <div>
+                <table className='table table-bordered table-striped table-condensed mb-0'>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Item</th>
+                      <th>Amount</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      groups[k].sort((a, b) => {
+                        return a.timestamp - b.timestamp;
+                      }).map(transaction => {
+                        return ( 
+                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.amount)} />
+                        );
+                      })
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+  </div>);
+}
+
+function Transaction (props) { 
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
   var what = (
     props.data.packId
@@ -76,8 +130,8 @@ function Transaction (props) {
     || '')
     .replace('com.triominos.', '').split('.');
   what = what[what.length - 1];
-  var amount = props.data.amount > 0 ? '+' + props.data.amount : props.data.amount;
-  var currency = props.data.currency.replace(/^[a-z]+-/, '')
+  var amount = props.amount > 0 ? '+' + props.amount : props.amount;
+  var currency = props.data.currency.replace(/^[a-z]+-/, '');
   var extra;
   if (!what)
     what = amount + ' ' + currency;
@@ -87,19 +141,31 @@ function Transaction (props) {
   var p = props.data.packPurchase || {};
   var reason =
     props.data.from === 'admin' ? 'award'
-    : p.type === 'claim' ? ''
-    : p.type ? p.type
-    : p.packId ? 'purchase'
-    : props.reason;
+      : p.type === 'claim' ? ''
+        : p.type ? p.type
+          : p.packId ? 'purchase'
+            : props.reason;
 
   var from = props.data.from;
   if (from === 'pack' || from === 'virtualcurrency/v1') from = '';
+ 
+  var details = props;
+
+  var onClick = swal.bind(swal, {
+    type: 'info',
+    html: true,
+    title: title,
+    text: utils.reactToStaticHtml(<Debug.pre data={details}/>),
+    allowOutsideClick: true
+  }, () => {});
 
   return (
-    <ClickForDetails title={title} details={props}>
-     <span className='unobtrusive'>{utils.formatDateFromNow(props.timestamp)}: </span>
-     <span>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</span>
-    </ClickForDetails>
+    <tr key={props.id} className='clickable' onClick={onClick}> 
+      <td>{utils.formatDate(props.timestamp, 'YYYY-MM-DD')}</td>
+      <td>{reason ? (reason + ' ') : ''}{what}{extra && <span className='unobtrusive'> {extra}</span>} {from && <span className='unobtrusive'>({from})</span>}</td>
+      <td style={{textAlign: "right"}}>{amount}</td>
+      <td style={{textAlign: "right"}}>{props.balance}</td> 
+    </tr>
   );
 }
 
@@ -128,7 +194,7 @@ function SearchResults (props) {
   const {
     query,
     results,
-    matchingIds,
+    //not used matchingIds,
     hasMatches,
     singleMatch
   } = props.results;
@@ -196,8 +262,8 @@ function BanInfo (props) {
   const status = ban.exists
     ? (<ClickForDetails title={utils.formatDate(ban.createdAt)} details={ban}>
           Banned {utils.formatDateFromNow(ban.createdAt)}
-        </ClickForDetails>
-      )
+    </ClickForDetails>
+    )
     : 'In Good Standing';
 
   return (
@@ -206,6 +272,165 @@ function BanInfo (props) {
     </Label>
   );
 }
+
+function RenderReportsAndBlocks(props) {
+  var blockedBy = props.results.blockedBy;
+  var reportedBy = props.results.reportedBy;
+  var reports = props.results.reports;
+  var blocks = props.results.blocks;
+ 
+  var renderOneType = (items, title) => {
+    return (
+      <div>
+        <span>{title}:</span>{" "}
+        {items
+          .map((rep) => {
+            return (
+              <a
+                key={rep.on}
+                href={
+                  "../chat/" +
+          encodeURIComponent(props.username) +
+          "," +
+          encodeURIComponent(rep.username)
+                }
+                className="block-report-item"
+                title={utils.formatDate(+rep.on, "YYYY-MM-DD hh:mm")}
+              >
+                {rep.username}
+              </a>
+            );
+          })
+          .reduce((prev, curr) => prev.concat(", ", curr), []).slice(1)}{" "}
+      </div>
+    );
+  };
+ 
+  return (
+    <div>
+      {renderOneType(reportedBy, "Reported By")}
+      {renderOneType(blockedBy, "Blocked By")}
+      {renderOneType(reports, "Reports")}
+      {renderOneType(blocks, "Blocks")}
+    </div>
+  );
+}
+ 
+var ReportsAndBlocks = React.createClass({
+  contextTypes: {},
+ 
+  getInitialState: function () {
+    var hasUser = this.props.hasOwnProperty("username");
+ 
+    return {
+      username: hasUser ? this.props.username : "",
+      doFetch: hasUser,
+      results: null,
+      loading: false,
+      error: null,
+    };
+  },
+ 
+  componentWillMount: function () {
+    // fetch user profile, if we have one
+    if (this.state.doFetch) this.fetchReportsBlocks(this.state.username);
+  },
+ 
+  fetchReportsBlocks: function (user) {
+    this.setState({
+      loading: true,
+    });
+ 
+    utils.xhr(
+      {
+        method: "get",
+        url: utils.apiPath("/users/reports-blocks/" + encodeURIComponent(user)),
+      },
+      (err, res, data) => {
+        const error = err || (res.statusCode === 200 ? null : data);
+        this.setState(
+          {
+            loading: false,
+            error: error || null,
+            results: error ? null : data,
+          },
+          () => {
+            if (this.state.error) return;
+          }
+        );
+      }
+    );
+  },
+ 
+  render: function () {
+    return (
+      <div>
+        <Loader error={this.state.error} loading={this.state.loading}>
+          <div className="h-100 reports-blocks">
+            <RenderReportsAndBlocks
+              results={this.state.results}
+              username={this.state.username}
+            />
+          </div>
+        </Loader>
+      </div>
+    );
+  },
+});
+
+var usermetas = function (userId) {
+  var Metas = backbone.Collection.extend({
+    url: utils.apiPath(`/users/${encodeURIComponent(userId)}/usermeta`),
+  });
+
+  return new Metas();
+};
+
+var UserMeta = React.createBackboneClass({ 
+
+  onSave: function () {
+    utils.saveModel(
+      this.getModel(),
+      {value:  this.refs.valueInput.value},
+      {},
+      { success: 'Usermeta Saved',
+        error: 'Failed to update meta' }
+    );
+  },
+
+  render: function Meta () {
+    var _meta = this.getModel();
+
+    return (
+      <div className="list-item">
+        <div className="item-id">{_meta.get('id')}</div>
+        <div className="item-costs">
+          <div className="item-cost">
+            <input
+              type='text' 
+              ref='valueInput'
+              defaultValue={_meta.get('value')}
+            />
+          </div>
+        </div>
+        <button className="btn btn-xs btn-default" onClick={this.onSave}>Save</button>
+      </div>
+    );
+  }
+});
+
+function UserMetaLists (props) {
+  var usermetas = props.collection.map(function (m) {
+    return (
+      <div className="list-item-container" key={m.id}>
+        <UserMeta model={m} />
+      </div>
+    );
+  });
+
+  return (<div>{usermetas}</div>);
+}
+
 
 function ProfilePiece (props) {
   return (
@@ -312,6 +537,10 @@ function Profile (props) {
         </div>
       </div>
 
+      <div className='row reports-blocks'>
+        <ReportsAndBlocks username={props.username} />
+      </div>
+
       <div className='row'>
         <div className='col-md-4'>
           <b>Balance</b>
@@ -322,21 +551,21 @@ function Profile (props) {
           }</ul>
 
           <AwardForm onAward={props.onAward}/>
+
+          <br/>
+          <div>
+            <b>Usermetas:</b>
+            <CollectionLoader
+              collection={usermetas(props.username)}
+              component={UserMetaLists}
+            />
+          </div>
+          
         </div>
 
-        <div className='col-md-4'>
-          <b>Transactions</b>
-          <ul className='list-unstyled'>{
-            props.transactions.map(transaction => {
-              return (
-                <li key={transaction.id}>
-                  <Transaction {...transaction} />
-                </li>
-              );
-            })
-          }</ul>
-        </div>
+        <TransactionsGrouped transactions={props.transactions}/>
       </div>
+      
     </div>
   );
 }

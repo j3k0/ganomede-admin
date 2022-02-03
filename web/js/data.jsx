@@ -213,19 +213,19 @@ class Document extends React.Component {
         <h3>{docId}</h3>
 
         <button className="btn" role="button"
-                onClick={() => this.context.router.push(utils.webPath('/data'))}
+          onClick={() => this.context.router.push(utils.webPath('/data'))}
         >
           Back
         </button>
 
         <button className="btn btn-primary" role="button"
-                onClick={() => this.onReplace(docId, this.refs.editor.val())}
+          onClick={() => this.onReplace(docId, this.refs.editor.val())}
         >
           Replace
         </button>
 
         <button className="btn btn-danger" role="button"
-                onClick={() => this.onDelete(docId)}
+          onClick={() => this.onDelete(docId)}
         >
           Delete
         </button>
@@ -353,15 +353,15 @@ class DocsSearch extends React.Component {
     return (
       <div>
         <span className="clickable"
-            onClick={() => this.toggleResultsVisibility()}
+          onClick={() => this.toggleResultsVisibility()}
         >
          Found {results.length} documents
-         {' '}
-         <small>(click to {verb})</small>
+          {' '}
+          <small>(click to {verb})</small>
          :
         </span>
-       </div>
-     );
+      </div>
+    );
   }
 
   render () {
@@ -377,10 +377,10 @@ class DocsSearch extends React.Component {
 
             <div className="col-sm-6">
               <input type="text"
-                     className="form-control"
-                     placeholder="Type in document ID or its part…"
-                     value={term}
-                     onChange={this.onSearchInputChanged.bind(this)}
+                className="form-control"
+                placeholder="Type in document ID or its part…"
+                value={term}
+                onChange={this.onSearchInputChanged.bind(this)}
               />
             </div>
 
@@ -591,69 +591,69 @@ class DataCreation extends React.Component {
 
   renderTab (activeTab) {
     switch (activeTab) {
-      case this.TABS.newDoc: {
-        const {newDocId, newDocJson} = this.state;
+    case this.TABS.newDoc: {
+      const {newDocId, newDocJson} = this.state;
 
-        return (
-          <div>
-            <h3>Insert New Document</h3>
-            <input
-              type="text"
-              placeholder="Custom ID"
-              value={newDocId}
-              onChange={e => this.setState({newDocId: e.target.value})}
-            />
-            <button className="btn btn-primary" role="button"
-                    onClick={() => this.onInsert()}
-            >
-              Insert
-            </button>
-            <JsonEditor
-              json={newDocJson}
-              onChange={json => this.setState({newDocJson: json})}
-            />
-          </div>
-        );
-      }
-
-      case this.TABS.csvImport: {
-        const {csvError, csvResult, csvErrors, csvWarnings} = this.state;
-
-        const errorMessage = csvError && (<Debug.pre data={csvError} />);
-        const importPreview = csvResult && (<ImportPreview documents={csvResult} />);
-        const saveButton = csvResult && (csvErrors.length === 0) && (
+      return (
+        <div>
+          <h3>Insert New Document</h3>
+          <input
+            type="text"
+            placeholder="Custom ID"
+            value={newDocId}
+            onChange={e => this.setState({newDocId: e.target.value})}
+          />
           <button className="btn btn-primary" role="button"
-                  onClick={() => this.onImport()}
+            onClick={() => this.onInsert()}
           >
-            Save
+              Insert
           </button>
-        );
+          <JsonEditor
+            json={newDocJson}
+            onChange={json => this.setState({newDocJson: json})}
+          />
+        </div>
+      );
+    }
 
-        const errors = (csvErrors.length > 0) && <Messages level="danger" messages={csvErrors} />;
+    case this.TABS.csvImport: {
+      const {csvError, csvResult, csvErrors, csvWarnings} = this.state;
 
-        return (
-          <div>
-            <input type="file"
-                   accept=".csv"
-                   ref="csv-file-input"
-                   onChange={event => {
-                    const file = event.target.files[0];
-                    if (file)
-                      this.readFile(file);
-                   }}
-            />
+      const errorMessage = csvError && (<Debug.pre data={csvError} />);
+      const importPreview = csvResult && (<ImportPreview documents={csvResult} />);
+      const saveButton = csvResult && (csvErrors.length === 0) && (
+        <button className="btn btn-primary" role="button"
+          onClick={() => this.onImport()}
+        >
+            Save
+        </button>
+      );
 
-            {saveButton}
-            {errorMessage}
-            {errors}
-            <RenderWarnings warnings={csvWarnings} />
-            {errorMessage ? null : importPreview}
-          </div>
-        );
-      }
+      const errors = (csvErrors.length > 0) && <Messages level="danger" messages={csvErrors} />;
 
-      default:
-        throw new Error('Invalid Tab');
+      return (
+        <div>
+          <input type="file"
+            accept=".csv"
+            ref="csv-file-input"
+            onChange={event => {
+              const file = event.target.files[0];
+              if (file)
+                this.readFile(file);
+            }}
+          />
+
+          {saveButton}
+          {errorMessage}
+          {errors}
+          <RenderWarnings warnings={csvWarnings} />
+          {errorMessage ? null : importPreview}
+        </div>
+      );
+    }
+
+    default:
+      throw new Error('Invalid Tab');
     }
   }
 

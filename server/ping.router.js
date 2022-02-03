@@ -9,7 +9,7 @@ const router = new express.Router();
 //
 
 const ping = function (req, res) {
-    res.send("pong/" + req.params.token);
+  res.send("pong/" + req.params.token);
 };
 
 router.get("/:token", ping);

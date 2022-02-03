@@ -13,7 +13,9 @@ function Header ({loggedIn, onLogout}) {
     <NavLink key={0} to='/items'>Items</NavLink>,
     <NavLink key={1} to='/packs'>Packs</NavLink>,
     <NavLink key={2} to='/users'>Users</NavLink>,
-    services.includes('data') && <NavLink key={3} to='/data'>Data</NavLink>
+    <NavLink key={3} to='/chat'>Chat</NavLink>,
+    <NavLink key={5} to='/reported'>Reported Users</NavLink>,
+    services.includes('data') && <NavLink key={4} to='/data'>Data</NavLink>
   ];
 
   return (
@@ -35,17 +37,17 @@ function Header ({loggedIn, onLogout}) {
           </ul>
 
           { (function () {
-              if (!loggedIn)
-                return;
+            if (!loggedIn)
+              return;
 
-              return (
-                <ul id="logout-ul" className="nav navbar-nav navbar-right">
-                  <li>
-                    <a onClick={onLogout} className="logout-button">Logout</a>
-                  </li>
-                </ul>
-              );
-            }())
+            return (
+              <ul id="logout-ul" className="nav navbar-nav navbar-right">
+                <li>
+                  <a onClick={onLogout} className="logout-button">Logout</a>
+                </li>
+              </ul>
+            );
+          }())
           }
         </div>
       </div>
@@ -121,7 +123,7 @@ var App = React.createClass({
       <div className="App">
         <div className="Header header">
           <Header loggedIn={this.state.loggedIn}
-                  onLogout={this.onLogout}
+            onLogout={this.onLogout}
           />
         </div>
 

@@ -38,7 +38,7 @@ var Form = React.createClass({
       <div className="row">
         <div className="col-md-6">
           <form className="pull-right"
-                onSubmit={this.onSubmit}
+            onSubmit={this.onSubmit}
           >
             <h3>Login to {branding.title}</h3>
             <br/>
@@ -46,8 +46,8 @@ var Form = React.createClass({
             <div className="input-group">
               <span className="input-group-addon" id="username-span">Username</span>
               <input type="text" id="username-input" className="form-control username-input"
-                     placeholder="Username" aria-describedby="username-span" required
-                     ref='username'
+                placeholder="Username" aria-describedby="username-span" required
+                ref='username'
               />
             </div>
             <br/>
@@ -55,24 +55,24 @@ var Form = React.createClass({
             <div className="input-group">
               <span className="input-group-addon" id="password-span">Password</span>
               <input id="password-input" type="password" className="form-control password-input"
-                     placeholder="Password" aria-describedby="password-span" required
-                     ref='password'
+                placeholder="Password" aria-describedby="password-span" required
+                ref='password'
               />
             </div>
             <br/>
 
             { this.state.error
-                ? <div>{this.state.error}</div>
-                : undefined
+              ? <div>{this.state.error}</div>
+              : undefined
             }
             <br/>
 
             <input className="btn btn-primary btn-large login-button"
-                   type="submit"
-                   value="Login &raquo;"
+              type="submit"
+              value="Login &raquo;"
             />
           </form>
-          </div>
+        </div>
       </div>
     );
   }
@@ -118,8 +118,8 @@ var LoginForm = React.createClass({
         <div className="container">
           <Loader loading={this.state.loading} error={this.state.error}>
             { this.state.loggedIn
-                ? <Welcome />
-                : <Form onSuccess={this.setState.bind(this, {loggedIn: true})}/>
+              ? <Welcome />
+              : <Form onSuccess={this.setState.bind(this, {loggedIn: true})}/>
             }
           </Loader>
         </div>

@@ -62,6 +62,7 @@ microservices. Provide links to them with env vars (otherwise, related functiona
    - `USERS_PORT_8080_TCP_PROTOCOL` users protocol (`http` or `https`, defaults to `http`);
    - `USERS_PORT_8080_TCP_ADDR` users host;
    - `USERS_PORT_8080_TCP_PORT` users port;
+   - `USER_METADATA_LIST` list of user metadata to show on the users page;
 
 - [avatars module](https://github.com/j3k0/ganomede-avatars)
    - `AVATARS_PORT_8080_TCP_PROTOCOL` avatars protocol (`http` or `https`, defaults to `http`);
@@ -77,6 +78,12 @@ microservices. Provide links to them with env vars (otherwise, related functiona
    - `DIRECTORY_PORT_8000_TCP_PROTOCOL` directory protocol (`http` or `https`, defaults to `http`);
    - `DIRECTORY_PORT_8000_TCP_ADDR` directory host;
    - `DIRECTORY_PORT_8000_TCP_PORT` directory port;
+
+- [chat module](https://github.com/j3k0/ganomede-chat)
+   - `CHAT_PORT_8080_TCP_PROTOCOL` chat protocol (`http` or `https`, defaults to `http`);
+   - `CHAT_PORT_8080_TCP_ADDR` chat host;
+   - `CHAT_PORT_8080_TCP_PORT` chat port;
+   - `CHAT_ROOM_PREFIX` chat room prefix (like `triominos/v1`)
 
 # Running unit tests
 
