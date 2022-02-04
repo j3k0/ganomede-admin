@@ -8,11 +8,8 @@ require('react.backbone');
 function ChatRoomResults(props) {
   // No need to render anything, no lookups were performed.
 
-  if (props.error && props.error.reason.code === "NotFound")
+  if (!props.results || !props.results.messages)
     return (<div className='empty-chat-room'><h3>No chatroom available</h3></div>);
-
-  if (props.results === null)
-    return null;
 
   const results = props.results;
 
@@ -185,9 +182,9 @@ var ChatRoom = React.createClass({
           <input type='submit' className='btn btn-primary' value='Get Chat' />
         </form>
 
-        <Loader loading={this.state.loading}>
+        <Loader error={this.state.error} loading={this.state.loading}>
           <div className='container-fluid h-100'>
-            <ChatRoomResults results={this.state.results} error={this.state.error} />
+            <ChatRoomResults results={this.state.results} />
           </div>
         </Loader>
       </div>
