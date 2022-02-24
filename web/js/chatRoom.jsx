@@ -2,6 +2,7 @@
 
 var React = require('react');
 var utils = require('./utils');
+var lodash = require('lodash');
 var Loader = require('./components/Loader.jsx');
 require('react.backbone');
 
@@ -29,10 +30,23 @@ function ChatRoomResults(props) {
   const imgeurl = '../images/user-profile.png';
   const imgeurl2 = '../images/user-profile.png';
 
+<<<<<<< HEAD
   const rightOrLeft = (msg) => { return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
   const image1_Or2 = (msg) => { return msg.from == user1 ? imgeurl : imgeurl2; };
 
 
+||||||| 43c7090
+  const rightOrLeft = (msg) => {return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
+  const image1_Or2 = (msg) => {return  msg.from == user1 ? imgeurl : imgeurl2; };
+   
+  
+=======
+  const rightOrLeft = (msg) => { return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
+  const image1_Or2 = (msg) => { return msg.from == user1 ? imgeurl : imgeurl2; };
+
+  const getUserRef = (user) => { return <a href={`../users/${encodeURIComponent(user)}`}>`{user}`</a>; };
+
+>>>>>>> origin/develop
   return (
     <div className='row justify-content-center h-100'>
       <div className='col-md-8 col-xl-6 chat'>
@@ -44,16 +58,16 @@ function ChatRoomResults(props) {
                 <span className="online_icon"></span>
               </div>
               <div className="user_info">
-                <span>Chat between `{user1}` and `{user2}`</span>
+                <span>Chat between {getUserRef(user1)} and {getUserRef(user2)}</span>
                 <p>{messages.length} Messages</p>
               </div>
             </div>
           </div>
           <div className="card-body msg_card_body">
             {
-              messages.map(msg => {
+              messages.map((msg, index) => {
                 return msg.from == user1 ? (
-                  <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
+                  <div key={index + '-' + msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                     <div className="img_cont_msg">
                       <img src={`${image1_Or2(msg)}`} className="rounded-circle user_img_msg" />
                       <div>{msg.from}</div>
@@ -64,7 +78,7 @@ function ChatRoomResults(props) {
                   </div>
                 ) :
                   (
-                    <div key={msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
+                    <div key={index + '-' + msg.timestamp} className={`d-flex ${rightOrLeft(msg)} mb-4`}>
                       <div className="msg_cotainer">{msg.message}
                         <span className="msg_time">{utils.formatDate(+msg.timestamp, msg.from == '$$' ? 'YYYY-MM-DD' : 'hh:mm')}</span>
                       </div>
@@ -132,9 +146,89 @@ var ChatRoom = React.createClass({
       this.fetchChat(this.state.searchQueryForUser1, this.state.searchQueryForUser2);
   },
 
+<<<<<<< HEAD
+  fetchChat: function (user1, user2) {
+||||||| 43c7090
+  fetchChat: function(user1, user2) {
+=======
+  processSearchResults(rawData) {
+    if (rawData === null)
+      return null;
+>>>>>>> origin/develop
+
+<<<<<<< HEAD
+    this.setState({
+||||||| 43c7090
+    this.setState({ 
+=======
+    const { query, results, matchingIds } = rawData;
+    const hasMatches = matchingIds.length > 0;
+    const singleMatch = matchingIds.length === 1 || lodash.uniq(matchingIds).length === 1;
+
+    return {
+      query,
+      results,
+      matchingIds,
+      hasMatches,
+      singleMatch
+    };
+  },
+
+  resolveUserIds: function (user1, user2) {
+    //this.setSearchState({ loading: true });
+
+    if (user1 === null || user1 === undefined || user1 === '' ||
+      user2 === null || user2 === undefined || user2 === '') {
+      return this.setState({
+        loading: false,
+        error: new Error('please enter username or userIds'),
+        results: null
+      }, () => {
+        if (this.state.error)
+          return;
+      });
+    }
+
+    const getUserId1 = utils.xhr({
+      method: 'get',
+      url: utils.apiPath('/users/search/' + encodeURIComponent(user1)),
+    });
+
+    const getUserId2 = utils.xhr({
+      method: 'get',
+      url: utils.apiPath('/users/search/' + encodeURIComponent(user2)),
+    });
+
+    Promise.all([getUserId1, getUserId2]).then((values) => {
+      let resulstForUser1 = this.processSearchResults(values[0][1]);
+      let resulstForUser2 = this.processSearchResults(values[1][1]);
+
+      let userId1 = user1;
+      let userId2 = user2;
+      if (resulstForUser1.singleMatch)
+        userId1 = resulstForUser1.matchingIds[0];
+
+      if (resulstForUser2.singleMatch)
+        userId2 = resulstForUser2.matchingIds[0];
+
+      this.fetchChat(userId1, userId2);
+
+    }).catch(error => {
+      this.setState({
+        loading: false,
+        error: error,
+        results: null
+      }, () => {
+        if (this.state.error)
+          return;
+      });
+    });
+  },
+
   fetchChat: function (user1, user2) {
 
     this.setState({
+>>>>>>> origin/develop
       loading: true
     });
 
@@ -163,7 +257,8 @@ var ChatRoom = React.createClass({
         <form className='form-inline' onSubmit={
           event => {
             event.preventDefault();
-            this.fetchChat(this.refs.usernameInput1.value, this.refs.usernameInput2.value);
+            this.resolveUserIds(this.refs.usernameInput1.value, this.refs.usernameInput2.value);
+            //this.fetchChat(this.refs.usernameInput1.value, this.refs.usernameInput2.value);
           }
         }>
           <input type='text'
