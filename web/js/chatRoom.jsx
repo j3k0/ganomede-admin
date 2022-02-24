@@ -30,23 +30,11 @@ function ChatRoomResults(props) {
   const imgeurl = '../images/user-profile.png';
   const imgeurl2 = '../images/user-profile.png';
 
-<<<<<<< HEAD
-  const rightOrLeft = (msg) => { return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
-  const image1_Or2 = (msg) => { return msg.from == user1 ? imgeurl : imgeurl2; };
-
-
-||||||| 43c7090
-  const rightOrLeft = (msg) => {return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
-  const image1_Or2 = (msg) => {return  msg.from == user1 ? imgeurl : imgeurl2; };
-   
-  
-=======
   const rightOrLeft = (msg) => { return msg.from == '$$' ? 'justify-content-middle' : msg.from == user1 ? 'justify-content-start' : 'justify-content-end'; };
   const image1_Or2 = (msg) => { return msg.from == user1 ? imgeurl : imgeurl2; };
 
   const getUserRef = (user) => { return <a href={`../users/${encodeURIComponent(user)}`}>`{user}`</a>; };
 
->>>>>>> origin/develop
   return (
     <div className='row justify-content-center h-100'>
       <div className='col-md-8 col-xl-6 chat'>
@@ -146,21 +134,10 @@ var ChatRoom = React.createClass({
       this.fetchChat(this.state.searchQueryForUser1, this.state.searchQueryForUser2);
   },
 
-<<<<<<< HEAD
-  fetchChat: function (user1, user2) {
-||||||| 43c7090
-  fetchChat: function(user1, user2) {
-=======
   processSearchResults(rawData) {
     if (rawData === null)
       return null;
->>>>>>> origin/develop
 
-<<<<<<< HEAD
-    this.setState({
-||||||| 43c7090
-    this.setState({ 
-=======
     const { query, results, matchingIds } = rawData;
     const hasMatches = matchingIds.length > 0;
     const singleMatch = matchingIds.length === 1 || lodash.uniq(matchingIds).length === 1;
@@ -228,7 +205,6 @@ var ChatRoom = React.createClass({
   fetchChat: function (user1, user2) {
 
     this.setState({
->>>>>>> origin/develop
       loading: true
     });
 
