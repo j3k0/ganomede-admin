@@ -8,8 +8,9 @@ require('react.backbone');
 
 function ChatRoomResults(props) {
   // No need to render anything, no lookups were performed.
-  if (props.results === null)
-    return null;
+
+  if (!props.results || !props.results.messages)
+    return (<div className='empty-chat-room'><h3>No chatroom available</h3></div>);
 
   const results = props.results;
 

@@ -285,25 +285,46 @@ function RenderReportsAndBlocks(props) {
   var blocks = props.results.blocks;
  
   var renderOneType = (items, title) => {
+    //calculating counts per user reports to show only distincts
+    const distinctUsers = items.reduce((m, d) => {
+      if (!m[d.username]) {
+        m[d.username] = { count: 1, fromTimeStamp: d.on };
+        return m;
+      }
+      m[d.username].tillTimeStamp = d.on;
+      m[d.username].count += 1;
+      return m;
+    }, {});
+    //format the distinct users to be an array for easy mapping.
+    const distinctItems = Object.keys(distinctUsers).map((key) => {
+      return {
+        username: key,
+        count: distinctUsers[key].count,
+        fromTimeStamp: distinctUsers[key].fromTimeStamp,
+        tillTimeStamp: distinctUsers[key].tillTimeStamp
+      };
+    });
+    const formatDate = (timestamp) => utils.formatDate(+timestamp, "YYYY-MM-DD hh:mm");
     return (
       <div>
         <span>{title}:</span>{" "}
-        {items
+        {distinctItems
           .map((rep) => {
             return (
-              <a
-                key={rep.on}
-                href={
+              <span key={rep.username}>
+                <a href={
                   "../chat/" +
-          encodeURIComponent(props.username) +
-          "," +
-          encodeURIComponent(rep.username)
+                  encodeURIComponent(props.username) +
+                  "," +
+                  encodeURIComponent(rep.username)
                 }
                 className="block-report-item"
-                title={utils.formatDate(+rep.on, "YYYY-MM-DD hh:mm")}
-              >
-                {rep.username}
-              </a>
+                title={!rep.tillTimeStamp ? formatDate(+rep.fromTimeStamp) :
+                  ("from " + formatDate(+rep.fromTimeStamp) + " to " + formatDate(+rep.tillTimeStamp))}>
+                  {rep.username}
+                </a>
+                {rep.count > 1 ? ` (${rep.count}x)` : ''}
+              </span>
             );
           })
           .reduce((prev, curr) => prev.concat(", ", curr), []).slice(1)}{" "}

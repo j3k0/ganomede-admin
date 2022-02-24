@@ -123,7 +123,8 @@ const chatRooms = function (user1, user2, gameId, callback) {
   upstreams.chat.request({
     url: `/auth/${apiSecret}/rooms/${roomId}`
   }, (err, json) => {
-    
+    if (err && err.message && err.message.includes('Not Found'))
+      return callback(null, {});
     if (err)
       return callback(err);
     callback(null, json);
