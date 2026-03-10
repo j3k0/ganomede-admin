@@ -1,3 +1,4 @@
 node_modules/
 /web/bundle.js
 tests-headless/screenshots/
+run-server.triominos.sh
