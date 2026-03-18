@@ -5,6 +5,8 @@ import { Layout } from "./components/Layout.js";
 import { Login } from "./pages/Login.js";
 import { NotFound } from "./pages/NotFound.js";
 import { Placeholder } from "./pages/Placeholder.js";
+import { Reports } from "./pages/Reports.js";
+import { Chat } from "./pages/Chat.js";
 import { UserSearch } from "./pages/users/UserSearch.js";
 import { UserProfile } from "./pages/users/UserProfile.js";
 
@@ -30,9 +32,9 @@ export const router = createBrowserRouter([
               { path: "packs", element: <Placeholder title="Packs" /> },
               { path: "data", element: <Placeholder title="Data" /> },
               { path: "data/:docId", element: <Placeholder title="Data Document" /> },
-              { path: "reported", element: <Placeholder title="Reported Users" /> },
-              { path: "chat", element: <Placeholder title="Chat" /> },
-              { path: "chat/:username1,:username2", element: <Placeholder title="Chat Room" /> },
+              { path: "reported", element: <Reports /> },
+              { path: "chat", element: <Chat /> },
+              { path: "chat/:username1,:username2", element: <Chat /> },
             ],
           },
         ],
