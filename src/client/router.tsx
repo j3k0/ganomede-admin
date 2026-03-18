@@ -6,6 +6,7 @@ import { Login } from "./pages/Login.js";
 import { NotFound } from "./pages/NotFound.js";
 import { Placeholder } from "./pages/Placeholder.js";
 import { Items } from "./pages/Items.js";
+import { Packs } from "./pages/Packs.js";
 import { Reports } from "./pages/Reports.js";
 import { Chat } from "./pages/Chat.js";
 import { UserSearch } from "./pages/users/UserSearch.js";
@@ -30,7 +31,7 @@ export const router = createBrowserRouter([
                 { path: ":username", element: <UserProfile /> },
               ] },
               { path: "items", element: <Items /> },
-              { path: "packs", element: <Placeholder title="Packs" /> },
+              { path: "packs", element: <Packs /> },
               { path: "data", element: <Placeholder title="Data" /> },
               { path: "data/:docId", element: <Placeholder title="Data Document" /> },
               { path: "reported", element: <Reports /> },
