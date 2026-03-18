@@ -6,6 +6,7 @@ run-server.wordsearch.*.sh
 triominos-production.sh
 test-run.sh
 run-server.dev.sh
+dist/
 .claude/
 .vscode/
 CLAUDE.md
