@@ -10,6 +10,7 @@ import { createAuthModule } from "./auth.js";
 import { createMailer } from "./mailer.js";
 import { createHealthRouter } from "./routes/health.js";
 import { createMailRouter } from "./routes/mail.js";
+import { createUsersRouter } from "./routes/users.js";
 import { errorHandler } from "./errors.js";
 import { logger } from "./logger.js";
 
@@ -116,6 +117,9 @@ export function createApp({ config, pkg }: AppDeps) {
   // --- Mailer ---
   const mailer = createMailer(config);
   app.use(apiRoot, createMailRouter(mailer, config.MAILER_SEND_FROM));
+
+  // --- Users ---
+  app.use(`${apiRoot}/users`, createUsersRouter({ config }));
 
   // --- Error handler (must be last) ---
   app.use(errorHandler);
