@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { Router, type Request, type Response, type NextFunction } from "express";
 
 interface AuthOptions {
@@ -10,6 +10,17 @@ interface AuthOptions {
 
 interface Session {
   createdAt: number;
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    // Compare against self to maintain constant time, then return false
+    timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
 }
 
 export function createAuthModule(options: AuthOptions) {
@@ -34,7 +45,7 @@ export function createAuthModule(options: AuthOptions) {
 
   router.post("/login", (req: Request, res: Response) => {
     const { username, password } = req.body ?? {};
-    if (username !== options.username || password !== options.password) {
+    if (!safeEqual(username ?? "", options.username) || !safeEqual(password ?? "", options.password)) {
       res.status(401).json({
         success: false,
         error: "Invalid username or password.",
@@ -73,5 +84,16 @@ export function createAuthModule(options: AuthOptions) {
     });
   }
 
-  return { router, validate, sessions };
+  // Sweep expired sessions every 10 minutes
+  const sweepInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [token, session] of sessions) {
+      if (now - session.createdAt > options.sessionTtlMs) {
+        sessions.delete(token);
+      }
+    }
+  }, 600_000);
+  sweepInterval.unref(); // Don't prevent process exit
+
+  return { router, validate, sessions, sweepInterval };
 }

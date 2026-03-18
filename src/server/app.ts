@@ -63,13 +63,15 @@ export function createApp({ config, pkg }: AppDeps) {
       ? ["users", "usermeta", "avatars", "virtualcurrency", "data", "directory", "chat"]
       : [];
 
-    const configScript = `<script>window.__ADMIN_CONFIG__=${JSON.stringify({
+    const configJson = JSON.stringify({
       brandingTitle: config.BRANDING_TITLE,
       services,
       currencies: config.CURRENCY_CODES,
       chatRoomPrefix: config.CHAT_ROOM_PREFIX,
       userMetadataList: config.USER_METADATA_LIST,
-    })};</script>`;
+    }).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+
+    const configScript = `<script>window.__ADMIN_CONFIG__=${configJson};</script>`;
 
     return fs
       .readFileSync(htmlPath, "utf-8")

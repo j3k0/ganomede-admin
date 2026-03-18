@@ -32,7 +32,7 @@ describe("proxyToUpstream", () => {
     mswServer.use(
       http.post(`${UPSTREAM}/users/v1/ban`, async ({ request }) => {
         const body = await request.json();
-        return HttpResponse.json({ banned: true, user: (body as any).userId });
+        return HttpResponse.json({ banned: true, user: (body as Record<string, unknown>).userId });
       }),
     );
 

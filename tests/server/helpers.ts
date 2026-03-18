@@ -1,5 +1,3 @@
-import { type Express } from "express";
-
 /**
  * Minimal env vars for config to parse without errors.
  * Tests can override individual vars before importing config.
