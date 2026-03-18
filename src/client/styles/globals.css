@@ -1,0 +1,6 @@
+/* Tailwind directives will be added in Phase 2 */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
