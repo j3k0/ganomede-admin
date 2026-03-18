@@ -21,31 +21,11 @@ docker rm -f ganomede-admin 2>/dev/null
 
 docker run $DOCKER_RUN_OPTS --name ganomede-admin \
   -p ${PORT:-1337}:8000 \
+  -e UPSTREAM_URL=http://host.docker.internal:38917 \
   -e API_SECRET=local-dev-secret \
   -e ADMIN_USERNAME=admin \
   -e ADMIN_PASSWORD=admin \
-  -e PORT=8000 \
-  -e VIRTUAL_CURRENCY_CURRENCY_CODES="triominos-gold,triominos-silver,triominos-bitmask" \
+  -e CURRENCY_CODES="triominos-gold,triominos-silver,triominos-bitmask" \
   -e CHAT_ROOM_PREFIX="triominos/v1" \
-  -e USERS_PORT_8080_TCP_PROTOCOL=http \
-  -e USERS_PORT_8080_TCP_ADDR=host.docker.internal \
-  -e USERS_PORT_8080_TCP_PORT=38917 \
-  -e USERMETA_PORT_8080_TCP_PROTOCOL=http \
-  -e USERMETA_PORT_8080_TCP_ADDR=host.docker.internal \
-  -e USERMETA_PORT_8080_TCP_PORT=38917 \
-  -e AVATARS_PORT_8080_TCP_PROTOCOL=http \
-  -e AVATARS_PORT_8080_TCP_ADDR=host.docker.internal \
-  -e AVATARS_PORT_8080_TCP_PORT=38917 \
-  -e VIRTUAL_CURRENCY_PORT_8080_TCP_PROTOCOL=http \
-  -e VIRTUAL_CURRENCY_PORT_8080_TCP_ADDR=host.docker.internal \
-  -e VIRTUAL_CURRENCY_PORT_8080_TCP_PORT=38917 \
-  -e DATA_PORT_8080_TCP_PROTOCOL=http \
-  -e DATA_PORT_8080_TCP_ADDR=host.docker.internal \
-  -e DATA_PORT_8080_TCP_PORT=38917 \
-  -e DIRECTORY_PORT_8000_TCP_PROTOCOL=http \
-  -e DIRECTORY_PORT_8000_TCP_ADDR=host.docker.internal \
-  -e DIRECTORY_PORT_8000_TCP_PORT=38917 \
-  -e CHAT_PORT_8080_TCP_PROTOCOL=http \
-  -e CHAT_PORT_8080_TCP_ADDR=host.docker.internal \
-  -e CHAT_PORT_8080_TCP_PORT=38917 \
+  -e BRANDING_TITLE="Triominos" \
   ganomede/admin:latest
