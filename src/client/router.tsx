@@ -6,6 +6,7 @@ import { Login } from "./pages/Login.js";
 import { NotFound } from "./pages/NotFound.js";
 import { Placeholder } from "./pages/Placeholder.js";
 import { UserSearch } from "./pages/users/UserSearch.js";
+import { UserProfile } from "./pages/users/UserProfile.js";
 
 const BASE = "/admin/v1/web";
 
@@ -23,7 +24,7 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <Navigate to="users" replace /> },
               { path: "users", element: <UserSearch />, children: [
-                { path: ":username", element: <Placeholder title="User Profile" /> },
+                { path: ":username", element: <UserProfile /> },
               ] },
               { path: "items", element: <Placeholder title="Items" /> },
               { path: "packs", element: <Placeholder title="Packs" /> },
