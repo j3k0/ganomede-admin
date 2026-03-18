@@ -5,11 +5,15 @@ import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset } 
 import { formatDateRelative, passwordSuggestion, stripPrefix } from "../../lib/utils.js";
 import { getConfig } from "../../lib/config.js";
 import { Transactions } from "./Transactions.js";
+import { ReportsBlocks } from "./ReportsBlocks.js";
+import { MetadataEditor } from "./MetadataEditor.js";
+import { EmailDialog } from "./EmailDialog.js";
 
 export function UserProfile() {
   const { username } = useParams<{ username: string }>();
   const { data: profile, isLoading, error } = useUserProfile(username ?? "");
   const config = getConfig();
+  const [showEmail, setShowEmail] = useState(false);
 
   if (isLoading) return <p className="text-gray-500">Loading profile...</p>;
   if (error) return <p className="text-red-600">Error loading profile: {error.message}</p>;
@@ -47,6 +51,14 @@ export function UserProfile() {
         <BanButton userId={profile.userId} banned={profile.banInfo.exists} />
         <PasswordResetButton userId={profile.userId} />
         <AwardButton userId={profile.userId} currencies={config.currencies} />
+        {profile.directory?.aliases?.email && (
+          <button
+            onClick={() => setShowEmail(true)}
+            className="rounded bg-purple-600 px-3 py-1.5 text-sm text-white hover:bg-purple-700"
+          >
+            Send Email
+          </button>
+        )}
       </div>
 
       {/* Balance */}
@@ -69,6 +81,26 @@ export function UserProfile() {
         <h3 className="mb-2 text-lg font-semibold">Transactions</h3>
         <Transactions transactions={profile.transactions} />
       </div>
+
+      {/* Reports & Blocks */}
+      <div>
+        <h3 className="mb-2 text-lg font-semibold">Reports & Blocks</h3>
+        <ReportsBlocks userId={profile.userId} />
+      </div>
+
+      {/* Metadata */}
+      <div>
+        <h3 className="mb-2 text-lg font-semibold">Metadata</h3>
+        <MetadataEditor userId={profile.userId} />
+      </div>
+
+      {showEmail && profile.directory?.aliases?.email && (
+        <EmailDialog
+          email={profile.directory.aliases.email}
+          username={profile.userId}
+          onClose={() => setShowEmail(false)}
+        />
+      )}
     </div>
   );
 }
