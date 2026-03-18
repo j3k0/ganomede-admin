@@ -5,6 +5,7 @@ import { Layout } from "./components/Layout.js";
 import { Login } from "./pages/Login.js";
 import { NotFound } from "./pages/NotFound.js";
 import { Placeholder } from "./pages/Placeholder.js";
+import { Items } from "./pages/Items.js";
 import { Reports } from "./pages/Reports.js";
 import { Chat } from "./pages/Chat.js";
 import { UserSearch } from "./pages/users/UserSearch.js";
@@ -28,7 +29,7 @@ export const router = createBrowserRouter([
               { path: "users", element: <UserSearch />, children: [
                 { path: ":username", element: <UserProfile /> },
               ] },
-              { path: "items", element: <Placeholder title="Items" /> },
+              { path: "items", element: <Items /> },
               { path: "packs", element: <Placeholder title="Packs" /> },
               { path: "data", element: <Placeholder title="Data" /> },
               { path: "data/:docId", element: <Placeholder title="Data Document" /> },
