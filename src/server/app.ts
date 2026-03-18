@@ -11,6 +11,7 @@ import { createMailer } from "./mailer.js";
 import { createHealthRouter } from "./routes/health.js";
 import { createMailRouter } from "./routes/mail.js";
 import { createUsersRouter } from "./routes/users.js";
+import { createVCurrencyRouter } from "./routes/vcurrency.js";
 import { errorHandler } from "./errors.js";
 import { logger } from "./logger.js";
 
@@ -120,6 +121,9 @@ export function createApp({ config, pkg }: AppDeps) {
 
   // --- Users ---
   app.use(`${apiRoot}/users`, createUsersRouter({ config }));
+
+  // --- Virtual Currency (Items + Packs) ---
+  app.use(apiRoot, createVCurrencyRouter({ config }));
 
   // --- Error handler (must be last) ---
   app.use(errorHandler);
