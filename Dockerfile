@@ -1,6 +1,6 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package*.json ./
+COPY package*.json .npmrc ./
 RUN npm ci
 COPY . .
 RUN npm run build:new
@@ -9,7 +9,7 @@ FROM node:22-alpine
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src/server/package.json ./dist/server/package.json
-COPY --from=build /app/package*.json ./
+COPY --from=build /app/package*.json /app/.npmrc ./
 RUN npm ci --omit=dev
 USER node
 EXPOSE 8000
