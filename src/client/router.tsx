@@ -5,6 +5,7 @@ import { Layout } from "./components/Layout.js";
 import { Login } from "./pages/Login.js";
 import { NotFound } from "./pages/NotFound.js";
 import { Placeholder } from "./pages/Placeholder.js";
+import { Data } from "./pages/Data.js";
 import { Items } from "./pages/Items.js";
 import { Packs } from "./pages/Packs.js";
 import { Reports } from "./pages/Reports.js";
@@ -32,8 +33,8 @@ export const router = createBrowserRouter([
               ] },
               { path: "items", element: <Items /> },
               { path: "packs", element: <Packs /> },
-              { path: "data", element: <Placeholder title="Data" /> },
-              { path: "data/:docId", element: <Placeholder title="Data Document" /> },
+              { path: "data", element: <Data /> },
+              { path: "data/:docId", element: <Data /> },
               { path: "reported", element: <Reports /> },
               { path: "chat", element: <Chat /> },
               { path: "chat/:username1,:username2", element: <Chat /> },
