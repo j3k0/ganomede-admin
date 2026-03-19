@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset } from "../../lib/queries/users.js";
@@ -20,33 +20,45 @@ export function UserProfile() {
   if (!profile) return <p className="text-gray-500">No profile data</p>;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
+      {/* Header: avatar + info + ban badge */}
       <div className="flex items-start gap-4">
-        {profile.avatar && (
+        {profile.avatar ? (
           <img src={profile.avatar} alt="avatar" className="h-16 w-16 rounded" />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-200 text-xs text-gray-400">
+            No avatar
+          </div>
         )}
-        <div>
-          <h2 className="text-xl font-bold">{profile.userId}</h2>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold">{profile.userId}</h2>
+            <BanBadge banned={profile.banInfo.exists} since={profile.banInfo.createdAt} />
+          </div>
           {profile.directory?.aliases && (
             <p className="text-sm text-gray-500">
-              {Object.entries(profile.directory.aliases)
-                .map(([k, v]) => `${k}: ${v}`)
-                .join(" | ")}
+              {profile.directory.aliases.name && (
+                <span className="font-medium">{profile.directory.aliases.name}</span>
+              )}
+              {profile.directory.aliases.email && (
+                <> &middot; <a href={`mailto:${profile.directory.aliases.email}`} className="text-blue-600 hover:underline">{profile.directory.aliases.email}</a></>
+              )}
             </p>
           )}
-          {profile.metadata && !!(profile.metadata as Record<string, unknown>).auth && (
-            <p className="text-sm text-gray-400">
-              Last seen {formatDateRelative(String((profile.metadata as Record<string, unknown>).auth))}
-            </p>
-          )}
-        </div>
-        <div className="ml-auto">
-          <BanBadge banned={profile.banInfo.exists} since={profile.banInfo.createdAt} />
+          {profile.metadata && !!(profile.metadata as Record<string, string>).auth && (() => {
+            const meta = profile.metadata as Record<string, string>;
+            return (
+              <p className="text-xs text-gray-400">
+                Seen {formatDateRelative(meta.auth)}
+                {meta.locale ? ` · ${meta.locale}` : ""}
+                {meta.location ? ` · ${meta.location}` : ""}
+              </p>
+            );
+          })()}
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Actions row */}
       <div className="flex flex-wrap gap-2">
         <BanButton userId={profile.userId} banned={profile.banInfo.exists} />
         <PasswordResetButton userId={profile.userId} />
@@ -61,37 +73,47 @@ export function UserProfile() {
         )}
       </div>
 
-      {/* Balance */}
-      {Array.isArray(profile.balance) && profile.balance.length > 0 && (
-        <div>
-          <h3 className="mb-2 text-lg font-semibold">Balance</h3>
-          <div className="flex gap-4">
-            {profile.balance.map((b: { currency: string; count: number }) => (
-              <div key={b.currency} className="rounded bg-gray-100 px-4 py-2">
-                <span className="font-mono text-lg font-bold">{b.count}</span>
-                <span className="ml-2 text-sm text-gray-500">{stripPrefix(b.currency)}</span>
+      {/* Two-column layout: sidebar (balance, award, metadata, reports) + main (transactions) */}
+      <div className="flex gap-6">
+        {/* Left sidebar */}
+        <div className="w-80 shrink-0 space-y-4">
+          {/* Balance */}
+          {Array.isArray(profile.balance) && profile.balance.length > 0 && (
+            <div>
+              <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">Balance</h3>
+              <div className="space-y-1">
+                {profile.balance.map((b: { currency: string; count: number }) => (
+                  <div key={b.currency} className="flex items-center justify-between rounded bg-gray-50 px-3 py-1.5">
+                    <span className="text-sm text-gray-600">{stripPrefix(b.currency)}</span>
+                    <span className="font-mono font-bold">{b.count}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+
+          {/* Reports & Blocks */}
+          <div>
+            <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">Reports & Blocks</h3>
+            <ReportsBlocks userId={profile.userId} />
+          </div>
+
+          {/* Metadata */}
+          <div>
+            <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">Metadata</h3>
+            <MetadataEditor userId={profile.userId} />
           </div>
         </div>
-      )}
 
-      {/* Transactions */}
-      <div>
-        <h3 className="mb-2 text-lg font-semibold">Transactions</h3>
-        <Transactions transactions={profile.transactions} />
-      </div>
-
-      {/* Reports & Blocks */}
-      <div>
-        <h3 className="mb-2 text-lg font-semibold">Reports & Blocks</h3>
-        <ReportsBlocks userId={profile.userId} />
-      </div>
-
-      {/* Metadata */}
-      <div>
-        <h3 className="mb-2 text-lg font-semibold">Metadata</h3>
-        <MetadataEditor userId={profile.userId} />
+        {/* Right main area: transactions */}
+        <div className="min-w-0 flex-1">
+          <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">
+            Transactions ({profile.transactions.length})
+          </h3>
+          <div className="max-h-[70vh] overflow-y-auto rounded border">
+            <Transactions transactions={profile.transactions} />
+          </div>
+        </div>
       </div>
 
       {showEmail && profile.directory?.aliases?.email && (
@@ -110,13 +132,13 @@ export function UserProfile() {
 function BanBadge({ banned, since }: { banned: boolean; since?: string }) {
   if (banned) {
     return (
-      <span className="rounded bg-red-100 px-3 py-1 text-sm font-medium text-red-800">
+      <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
         Banned {since ? formatDateRelative(since) : ""}
       </span>
     );
   }
   return (
-    <span className="rounded bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+    <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
       In Good Standing
     </span>
   );
