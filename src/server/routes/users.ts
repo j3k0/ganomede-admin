@@ -85,10 +85,9 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const base = upstreamUrl();
     const result = await proxyToUpstream(
       base,
-      `/users/v1/admin/blocks/${encodeURIComponent(userId)}`,
+      `/users/v1/admin/blocks/${encodeURIComponent(userId)}?secret=${config.API_SECRET}`,
       {
         method: "GET",
-        headers: secretHeader(),
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
       },
     );
@@ -98,9 +97,8 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
   // --- Highly Reported (must be BEFORE /:userId to avoid matching "highly" as userId) ---
   router.get("/highly/reported", async (_req: Request, res: Response) => {
     const base = upstreamUrl();
-    const result = await proxyToUpstream(base, `/users/v1/admin/reported-users`, {
+    const result = await proxyToUpstream(base, `/users/v1/admin/reported-users?secret=${config.API_SECRET}`, {
       method: "GET",
-      headers: secretHeader(),
       timeoutMs: config.UPSTREAM_TIMEOUT_MS,
     });
     res.status(result.status).json(result.data);

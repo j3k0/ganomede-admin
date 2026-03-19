@@ -15,7 +15,7 @@ export function MetadataEditor({ userId }: { userId: string }) {
         <MetadataField
           key={field.id}
           fieldId={field.id}
-          initialValue={String(field.value ?? "")}
+          initialValue={typeof field.value === "object" ? JSON.stringify(field.value) : String(field.value ?? "")}
           onSave={(value) =>
             update.mutate(
               { key: field.id, value },
