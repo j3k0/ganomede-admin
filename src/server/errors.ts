@@ -54,7 +54,10 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     return;
   }
 
-  if ((err as NodeJS.ErrnoException).code === "ECONNREFUSED") {
+  // Network errors: check both the error itself and its cause (fetch wraps errors)
+  const networkCode = (err as NodeJS.ErrnoException).code
+    ?? (err.cause as NodeJS.ErrnoException | undefined)?.code;
+  if (networkCode === "ECONNREFUSED" || networkCode === "ENOTFOUND") {
     res.status(503).json({ error: "Upstream service unavailable" });
     return;
   }
