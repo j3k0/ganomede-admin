@@ -21,6 +21,11 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     return config.UPSTREAM_URL;
   }
 
+  /** Directory service may live on a different host (e.g. account.ggs.ovh). */
+  function directoryUrl(): string {
+    return config.DIRECTORY_URL ?? upstreamUrl();
+  }
+
   function secretHeader(): Record<string, string> {
     return { "X-API-Secret": config.API_SECRET };
   }
@@ -28,22 +33,22 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
   // --- Search ---
   router.get("/search/:query", async (req: Request, res: Response) => {
     const query = param(req, "query");
-    const base = upstreamUrl();
+    const dirBase = directoryUrl();
     const secret = config.API_SECRET;
 
     // Try all three resolution methods in parallel
     const [byId, byEmail, byTag] = await Promise.allSettled([
-      proxyToUpstream(base, `/directory/v1/users/id/${encodeURIComponent(query)}`, {
+      proxyToUpstream(dirBase, `/directory/v1/users/id/${encodeURIComponent(query)}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
       }),
-      proxyToUpstream(base, `/directory/v1/users/alias/email/${encodeURIComponent(query)}`, {
+      proxyToUpstream(dirBase, `/directory/v1/users/alias/email/${encodeURIComponent(query)}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
       }),
-      proxyToUpstream(base, `/directory/v1/users/alias/tag/${encodeURIComponent(query.toLowerCase().replace(/[^a-z0-9]/g, ""))}`, {
+      proxyToUpstream(dirBase, `/directory/v1/users/alias/tag/${encodeURIComponent(query.toLowerCase().replace(/[^a-z0-9]/g, ""))}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
@@ -164,7 +169,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
             )
           : Promise.resolve({ status: 200, data: {} }),
         // Directory info
-        proxyToUpstream(base, `/directory/v1/users/id/${encodeURIComponent(userId)}?secret=${secret}`, {
+        proxyToUpstream(directoryUrl(), `/directory/v1/users/id/${encodeURIComponent(userId)}?secret=${secret}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${secret}` },
           timeoutMs: config.UPSTREAM_TIMEOUT_MS,
@@ -291,9 +296,8 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       res.status(400).json({ error: "Validation error", details: parsed.error.issues });
       return;
     }
-    const base = upstreamUrl();
     const result = await proxyToUpstream(
-      base,
+      directoryUrl(),
       `/directory/v1/users/id/${encodeURIComponent(userId)}`,
       {
         method: "POST",

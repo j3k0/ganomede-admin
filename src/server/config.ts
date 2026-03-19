@@ -15,6 +15,15 @@ const envSchema = z.object({
       "UPSTREAM_URL must be an HTTP(S) URL",
     )
     .optional(),
+  // Override UPSTREAM_URL for directory service only (e.g. https://account.ggs.ovh)
+  DIRECTORY_URL: z
+    .string()
+    .url()
+    .refine(
+      (s) => s.startsWith("http://") || s.startsWith("https://"),
+      "DIRECTORY_URL must be an HTTP(S) URL",
+    )
+    .optional(),
   BRANDING_TITLE: z.string().default("Ganomede"),
   CURRENCY_CODES: z
     .string({ error: "CURRENCY_CODES env var is required (comma-separated)" })
