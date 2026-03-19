@@ -212,9 +212,11 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       `/usermeta/v1/${encodeURIComponent(userId)}/${fields.join(",")}?secret=${config.API_SECRET}`,
       { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
     );
-    // Transform object to array: [{id: 'key', value: 'val'}, ...]
-    const data = result.data as Record<string, unknown>;
-    const entries = Object.entries(data).map(([id, value]) => ({ id, value }));
+    // Upstream returns {username: {field1: val1, field2: val2, ...}}
+    // Unwrap the username key, then transform to [{id, value}, ...]
+    const raw = result.data as Record<string, unknown>;
+    const inner = (raw[userId] ?? raw) as Record<string, unknown>;
+    const entries = Object.entries(inner).map(([id, value]) => ({ id, value }));
     res.json(entries);
   });
 
