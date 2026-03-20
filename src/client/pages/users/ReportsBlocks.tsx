@@ -63,6 +63,8 @@ export function ReportsBlocks({ userId }: { userId: string }) {
   );
 }
 
+const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
 function Section({
   label,
   color,
@@ -76,28 +78,57 @@ function Section({
   entries: Array<{ username: string; count: number; lastOn: string }>;
   userId: string;
 }) {
+  const now = Date.now();
+  const recent = entries.filter((e) => now - new Date(e.lastOn).getTime() < SIX_MONTHS_MS);
+  const old = entries.filter((e) => now - new Date(e.lastOn).getTime() >= SIX_MONTHS_MS);
+
   return (
     <div>
       <h4 className={`text-xs font-semibold ${color}`}>
         {label} ({total})
       </h4>
-      <div className="mt-1 flex flex-wrap gap-x-1.5 gap-y-1">
-        {entries.map((e) => (
-          <Link
-            key={e.username}
-            to={`/admin/v1/web/chat/${userId},${e.username}`}
-            className="inline-flex items-baseline gap-1 text-xs text-blue-600 hover:underline"
-            title={`Last: ${formatDateRelative(e.lastOn)}`}
-          >
-            <span>{e.username}</span>
-            {e.count > 1 && (
-              <span className="text-gray-400">x{e.count}</span>
-            )}
-            <span className="text-gray-400">{formatDateRelative(e.lastOn)}</span>
-            {entries.indexOf(e) < entries.length - 1 && <span className="text-gray-300">,</span>}
-          </Link>
-        ))}
-      </div>
+      {recent.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-x-1.5 gap-y-1">
+          {recent.map((e, i) => (
+            <EntryLink key={e.username} entry={e} userId={userId} showDate last={i === recent.length - 1 && old.length === 0} />
+          ))}
+        </div>
+      )}
+      {old.length > 0 && (
+        <div className="mt-1">
+          <span className="text-xs text-gray-400">More than 6 months ago: </span>
+          <span className="flex-wrap inline">
+            {old.map((e, i) => (
+              <EntryLink key={e.username} entry={e} userId={userId} showDate={false} last={i === old.length - 1} />
+            ))}
+          </span>
+        </div>
+      )}
     </div>
+  );
+}
+
+function EntryLink({
+  entry: e,
+  userId,
+  showDate,
+  last,
+}: {
+  entry: { username: string; count: number; lastOn: string };
+  userId: string;
+  showDate: boolean;
+  last: boolean;
+}) {
+  return (
+    <Link
+      to={`/admin/v1/web/chat/${userId},${e.username}`}
+      className="inline-flex items-baseline gap-1 text-xs text-blue-600 hover:underline"
+      title={`Last: ${formatDateRelative(e.lastOn)}`}
+    >
+      <span>{e.username}</span>
+      {e.count > 1 && <span className="text-gray-400">x{e.count}</span>}
+      {showDate && <span className="text-gray-400">{formatDateRelative(e.lastOn)}</span>}
+      {!last && <span className="text-gray-300">,</span>}
+    </Link>
   );
 }
