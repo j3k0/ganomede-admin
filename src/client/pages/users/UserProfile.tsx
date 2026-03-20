@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset } from "../../lib/queries/users.js";
-import { formatDateRelative, passwordSuggestion, stripPrefix } from "../../lib/utils.js";
+import { formatDate, formatDateRelative, passwordSuggestion, stripPrefix } from "../../lib/utils.js";
 import { getConfig } from "../../lib/config.js";
 import { Transactions } from "./Transactions.js";
 import { ReportsBlocks } from "./ReportsBlocks.js";
@@ -19,20 +19,23 @@ export function UserProfile() {
   if (error) return <p className="text-red-600">Error loading profile: {error.message}</p>;
   if (!profile) return <p className="text-gray-500">No profile data</p>;
 
+  // Extract header metadata from profile.metadata (fetched inline with profile)
+  const meta = (profile.metadata ?? {}) as Record<string, string>;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header: avatar + info + ban badge */}
       <div className="flex items-start gap-4">
         {profile.avatar ? (
-          <img src={profile.avatar} alt="avatar" className="h-16 w-16 rounded" />
+          <img src={profile.avatar} alt="avatar" className="h-14 w-14 rounded" />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-200 text-xs text-gray-400">
+          <div className="flex h-14 w-14 items-center justify-center rounded bg-gray-200 text-[10px] text-gray-400">
             No avatar
           </div>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold">{profile.userId}</h2>
+            <h2 className="text-lg font-bold">{profile.userId}</h2>
             <BanBadge banned={profile.banInfo.exists} since={profile.banInfo.createdAt} />
           </div>
           {profile.directory?.aliases && (
@@ -45,21 +48,17 @@ export function UserProfile() {
               )}
             </p>
           )}
-          {profile.metadata && !!(profile.metadata as Record<string, string>).auth && (() => {
-            const meta = profile.metadata as Record<string, string>;
-            return (
-              <p className="text-xs text-gray-400">
-                Seen {formatDateRelative(meta.auth)}
-                {meta.locale ? ` · ${meta.locale}` : ""}
-                {meta.location ? ` · ${meta.location}` : ""}
-              </p>
-            );
-          })()}
+          <p className="text-xs text-gray-400">
+            {meta.auth && <>Seen {formatDateRelative(meta.auth)} ({formatDate(parseInt(meta.auth, 10))})</>}
+            {meta.locale ? ` · ${meta.locale}` : ""}
+            {meta.country ? ` · ${meta.country}` : ""}
+            {meta.location ? ` · ${meta.location}` : ""}
+          </p>
         </div>
       </div>
 
-      {/* Actions row */}
-      <div className="flex flex-wrap gap-2">
+      {/* Actions row — compact */}
+      <div className="flex flex-wrap items-center gap-2">
         <BanButton userId={profile.userId} banned={profile.banInfo.exists} />
         <PasswordResetButton userId={profile.userId} />
         <AwardButton userId={profile.userId} currencies={config.currencies} />
@@ -73,19 +72,19 @@ export function UserProfile() {
         )}
       </div>
 
-      {/* Two-column layout: sidebar (balance, award, metadata, reports) + main (transactions) */}
-      <div className="flex gap-6">
-        {/* Left sidebar */}
-        <div className="w-80 shrink-0 space-y-4">
+      {/* Two-column layout */}
+      <div className="flex gap-4">
+        {/* Left column: balance, reports, metadata */}
+        <div className="w-72 shrink-0 space-y-3">
           {/* Balance */}
           {Array.isArray(profile.balance) && profile.balance.length > 0 && (
             <div>
-              <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">Balance</h3>
-              <div className="space-y-1">
+              <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Balance</h3>
+              <div className="space-y-0.5">
                 {profile.balance.map((b: { currency: string; count: number }) => (
-                  <div key={b.currency} className="flex items-center justify-between rounded bg-gray-50 px-3 py-1.5">
-                    <span className="text-sm text-gray-600">{stripPrefix(b.currency)}</span>
-                    <span className="font-mono font-bold">{b.count}</span>
+                  <div key={b.currency} className="flex items-center justify-between rounded bg-gray-50 px-2 py-1">
+                    <span className="text-xs text-gray-500">{stripPrefix(b.currency)}</span>
+                    <span className="font-mono text-sm font-bold">{b.count}</span>
                   </div>
                 ))}
               </div>
@@ -94,24 +93,26 @@ export function UserProfile() {
 
           {/* Reports & Blocks */}
           <div>
-            <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">Reports & Blocks</h3>
+            <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Reports & Blocks</h3>
             <ReportsBlocks userId={profile.userId} />
           </div>
 
           {/* Metadata */}
           <div>
-            <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">Metadata</h3>
-            <MetadataEditor userId={profile.userId} />
+            <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Metadata</h3>
+            <MetadataEditor userId={profile.userId} hideHeaderFields />
           </div>
         </div>
 
-        {/* Right main area: transactions */}
+        {/* Right column: transactions — narrower, scrollable */}
         <div className="min-w-0 flex-1">
-          <h3 className="mb-1 text-sm font-semibold uppercase text-gray-500">
+          <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">
             Transactions ({profile.transactions.length})
           </h3>
-          <div className="max-h-[70vh] overflow-y-auto rounded border">
-            <Transactions transactions={profile.transactions} />
+          <div className="max-h-[65vh] overflow-y-auto rounded border">
+            <div className="px-3 py-2">
+              <Transactions transactions={profile.transactions} />
+            </div>
           </div>
         </div>
       </div>
