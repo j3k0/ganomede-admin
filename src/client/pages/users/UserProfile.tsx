@@ -80,23 +80,18 @@ export function UserProfile() {
           {Array.isArray(profile.balance) && profile.balance.length > 0 && (
             <div>
               <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Balance</h3>
-              <div className="space-y-0.5">
-                {profile.balance.map((b: { currency: string; count: number }) => {
+              <div className="flex items-center gap-3 rounded bg-gray-50 px-3 py-2">
+                {profile.balance.map((b: { currency: string; count: number }, i: number) => {
                   const name = stripPrefix(b.currency);
-                  const coin = name.includes("gold") ? "\u{1FA99}" // 🪙
-                    : name.includes("silver") ? "\u25CF"           // ● grey circle
-                    : "\u25C6";                                    // ◆ diamond fallback
-                  const coinColor = name.includes("gold") ? "text-yellow-500"
+                  const coinColor = name.includes("gold") ? "text-yellow-400"
                     : name.includes("silver") ? "text-gray-400"
                     : "text-blue-400";
                   return (
-                    <div key={b.currency} className="flex items-center justify-between rounded bg-gray-50 px-2 py-1">
-                      <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span className={coinColor}>{coin}</span>
-                        {name}
-                      </span>
+                    <span key={b.currency} className="flex items-center gap-1" title={name}>
+                      {i > 0 && <span className="mr-2 text-gray-300">|</span>}
+                      <span className={`text-xl leading-none ${coinColor}`}>{"\u25CF"}</span>
                       <span className="font-mono text-sm font-bold">{b.count}</span>
-                    </div>
+                    </span>
                   );
                 })}
               </div>
