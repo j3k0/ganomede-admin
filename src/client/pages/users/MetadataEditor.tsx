@@ -4,8 +4,7 @@ import { toast } from "sonner";
 import { useUserMetadata, useUpdateMetadata } from "../../lib/queries/users.js";
 import { formatDate, formatDateRelative } from "../../lib/utils.js";
 
-// Fields whose display values are extracted into the profile header
-const HEADER_FIELDS = new Set(["auth", "location", "locale", "country"]);
+// Fields whose display values also appear in the profile header (but still editable here)
 
 // Known metadata types for smart rendering
 type FieldType = "friends" | "date" | "banned" | "boolean" | "json" | "text";
@@ -21,18 +20,16 @@ function detectFieldType(id: string, value: string): FieldType {
 
 interface MetadataEditorProps {
   userId: string;
-  /** Hide fields that are shown in the profile header */
-  hideHeaderFields?: boolean;
 }
 
-export function MetadataEditor({ userId, hideHeaderFields = true }: MetadataEditorProps) {
+export function MetadataEditor({ userId }: MetadataEditorProps) {
   const { data, isLoading } = useUserMetadata(userId);
   const update = useUpdateMetadata(userId);
 
   if (isLoading) return <p className="text-sm text-gray-500">Loading metadata...</p>;
   if (!data || data.length === 0) return <p className="text-sm text-gray-500">No metadata fields configured</p>;
 
-  const fields = hideHeaderFields ? data.filter((f) => !HEADER_FIELDS.has(f.id)) : data;
+  const fields = data;
 
   return (
     <div className="space-y-1.5">

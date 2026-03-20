@@ -100,7 +100,7 @@ export function UserProfile() {
           {/* Metadata */}
           <div>
             <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Metadata</h3>
-            <MetadataEditor userId={profile.userId} hideHeaderFields />
+            <MetadataEditor userId={profile.userId} />
           </div>
         </div>
 

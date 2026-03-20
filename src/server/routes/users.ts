@@ -193,7 +193,11 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       transactions: extract(transactionsRes, []),
       banInfo: extract(banRes, { exists: false }),
       avatar,
-      metadata: extract(metadataRes, {}),
+      metadata: (() => {
+        const raw = extract<Record<string, unknown>>(metadataRes, {});
+        // Upstream returns {username: {field: value}} — unwrap
+        return (raw[userId] ?? raw) as Record<string, unknown>;
+      })(),
       directory: extract(directoryRes, null),
     });
   });
