@@ -61,6 +61,11 @@ export function BackupRestore<T>({
     reader.readAsText(file);
   }
 
+  function handleCancel() {
+    setRestoreData(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
   async function handleRestore() {
     if (!restoreData) return;
     setRestoring(true);
@@ -99,15 +104,33 @@ export function BackupRestore<T>({
         Backup
       </button>
 
-      <input ref={fileRef} type="file" accept=".json" onChange={handleFileSelect} className="text-sm" />
+      {/* Hidden file input */}
+      <input ref={fileRef} type="file" accept=".json" onChange={handleFileSelect} className="hidden" />
+
+      {!restoreData && !restoring && !progress && (
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          Restore...
+        </button>
+      )}
 
       {restoreData && !restoring && (
-        <button
-          onClick={handleRestore}
-          className="rounded bg-orange-600 px-3 py-1.5 text-sm text-white hover:bg-orange-700"
-        >
-          Restore {restoreData.length} {itemLabel}
-        </button>
+        <div className="flex items-center gap-2 rounded border border-orange-200 bg-orange-50 px-3 py-1.5">
+          <span className="text-sm text-orange-800">
+            {restoreData.length} {itemLabel} ready
+          </span>
+          <button
+            onClick={handleRestore}
+            className="rounded bg-orange-600 px-3 py-1 text-sm text-white hover:bg-orange-700"
+          >
+            Restore
+          </button>
+          <button onClick={handleCancel} className="text-sm text-gray-500 hover:underline">
+            Cancel
+          </button>
+        </div>
       )}
 
       {progress && (
