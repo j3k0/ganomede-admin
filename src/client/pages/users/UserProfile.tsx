@@ -75,7 +75,7 @@ export function UserProfile() {
       {/* Two-column layout */}
       <div className="flex gap-4">
         {/* Left column: balance, reports, metadata */}
-        <div className="flex-1 min-w-0 space-y-3">
+        <div className="w-1/2 min-w-0 space-y-3">
           {/* Balance */}
           {Array.isArray(profile.balance) && profile.balance.length > 0 && (
             <div>
@@ -105,7 +105,7 @@ export function UserProfile() {
         </div>
 
         {/* Right column: transactions */}
-        <div className="w-96 shrink-0">
+        <div className="w-1/2 min-w-0">
           <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">
             Transactions ({profile.transactions.length})
           </h3>
