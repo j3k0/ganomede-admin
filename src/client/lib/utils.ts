@@ -1,11 +1,19 @@
 import { format, formatDistanceToNow } from "date-fns";
 
+function toDate(date: string | number | Date): Date {
+  if (date instanceof Date) return date;
+  // Numeric strings like "1674200356580" — parse as millisecond timestamp
+  const num = typeof date === "string" ? Number(date) : date;
+  if (!isNaN(num)) return new Date(num);
+  return new Date(date);
+}
+
 export function formatDate(date: string | number | Date): string {
-  return format(new Date(date), "yyyy-MM-dd HH:mm");
+  return format(toDate(date), "yyyy-MM-dd HH:mm");
 }
 
 export function formatDateRelative(date: string | number | Date): string {
-  return formatDistanceToNow(new Date(date), { addSuffix: true });
+  return formatDistanceToNow(toDate(date), { addSuffix: true });
 }
 
 export function passwordSuggestion(): string {

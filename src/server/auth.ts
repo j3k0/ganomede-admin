@@ -1,4 +1,4 @@
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { Router, type Request, type Response, type NextFunction } from "express";
 
 interface AuthOptions {
@@ -16,7 +16,6 @@ function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);
   if (bufA.length !== bufB.length) {
-    // Compare against self to maintain constant time, then return false
     timingSafeEqual(bufA, bufA);
     return false;
   }
@@ -27,6 +26,14 @@ export function createAuthModule(options: AuthOptions) {
   const sessions = new Map<string, Session>();
   const router = Router();
 
+  // Deterministic token derived from credentials — survives server restarts.
+  // Different per deployment (different credentials = different token).
+  const persistentToken = createHash("sha256")
+    .update(options.username)
+    .update(":")
+    .update(options.password)
+    .digest("hex");
+
   function createSession(): string {
     const token = randomUUID();
     sessions.set(token, { createdAt: Date.now() });
@@ -34,6 +41,10 @@ export function createAuthModule(options: AuthOptions) {
   }
 
   function isValidSession(token: string): boolean {
+    // Accept the persistent token (always valid, survives restarts)
+    if (token === persistentToken) return true;
+
+    // Check ephemeral session tokens
     const session = sessions.get(token);
     if (!session) return false;
     if (Date.now() - session.createdAt > options.sessionTtlMs) {
@@ -53,7 +64,8 @@ export function createAuthModule(options: AuthOptions) {
       return;
     }
 
-    const token = createSession();
+    // Use the persistent token so the session survives container restarts
+    const token = persistentToken;
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
@@ -93,7 +105,7 @@ export function createAuthModule(options: AuthOptions) {
       }
     }
   }, 600_000);
-  sweepInterval.unref(); // Don't prevent process exit
+  sweepInterval.unref();
 
   return { router, validate, sessions, sweepInterval };
 }

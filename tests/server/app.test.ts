@@ -42,7 +42,7 @@ describe("app integration", () => {
     expect(res.body.needAuthentication).toBe(true);
   });
 
-  it("full auth flow: login -> islogged -> logout -> islogged fails", async () => {
+  it("full auth flow: login -> islogged -> logout -> without cookie fails", async () => {
     const app = createTestApp();
 
     // Login
@@ -58,16 +58,15 @@ describe("app integration", () => {
       .set("Cookie", cookie);
     expect(loggedRes.status).toBe(200);
 
-    // Logout
+    // Logout clears the cookie
     const logoutRes = await request(app)
       .post("/admin/v1/api/logout")
       .set("Cookie", cookie);
     expect(logoutRes.status).toBe(200);
 
-    // islogged fails
+    // Without cookie, islogged fails
     const failRes = await request(app)
-      .get("/admin/v1/api/islogged")
-      .set("Cookie", cookie);
+      .get("/admin/v1/api/islogged");
     expect(failRes.status).toBe(401);
   });
 

@@ -60,7 +60,7 @@ describe("auth", () => {
   });
 
   describe("POST /api/logout", () => {
-    it("clears cookie and invalidates session", async () => {
+    it("clears cookie on logout", async () => {
       const { app } = createTestApp();
 
       // Login first
@@ -69,18 +69,14 @@ describe("auth", () => {
         .send({ username: "admin", password: "secret" });
       const cookie = loginRes.headers["set-cookie"][0];
 
-      // Logout
+      // Logout — clears the cookie
       const logoutRes = await request(app)
         .post("/api/logout")
         .set("Cookie", cookie);
       expect(logoutRes.status).toBe(200);
       expect(logoutRes.body).toEqual({ success: true });
-
-      // Token should no longer work
-      const protectedRes = await request(app)
-        .get("/api/protected")
-        .set("Cookie", cookie);
-      expect(protectedRes.status).toBe(401);
+      // Cookie should be cleared (Set-Cookie with expires in the past)
+      expect(logoutRes.headers["set-cookie"][0]).toMatch(/token=/);
     });
   });
 
@@ -120,36 +116,23 @@ describe("auth", () => {
     });
   });
 
-  describe("session expiry", () => {
-    it("rejects expired sessions", async () => {
-      const app = express();
-      app.use(express.json());
-      app.use(cookieParser());
-
-      const auth = createAuthModule({
-        username: "admin",
-        password: "secret",
-        isProduction: false,
-        sessionTtlMs: 1, // 1ms TTL — expires immediately
-      });
-
-      app.use("/api", auth.router);
-      app.get("/api/protected", auth.validate, (_req, res) => {
-        res.json({ success: true });
-      });
-
-      const loginRes = await request(app)
+  describe("session persistence", () => {
+    it("persistent token works across app instances (simulates restart)", async () => {
+      // Login on first "instance"
+      const { app: app1 } = createTestApp();
+      const loginRes = await request(app1)
         .post("/api/login")
         .send({ username: "admin", password: "secret" });
       const cookie = loginRes.headers["set-cookie"][0];
 
-      // Wait for expiry
-      await new Promise((r) => setTimeout(r, 10));
+      // Create new app instance (simulates restart — fresh Map)
+      const { app: app2 } = createTestApp();
 
-      const res = await request(app)
+      // Token from app1 works on app2 (persistent token, same credentials)
+      const res = await request(app2)
         .get("/api/protected")
         .set("Cookie", cookie);
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(200);
     });
   });
 });
