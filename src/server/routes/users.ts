@@ -13,6 +13,11 @@ function param(req: Request, name: string): string {
   return Array.isArray(v) ? v[0] : v;
 }
 
+/** Reproduce ganomede-tagizer's tag() — lowercase, 0→o, l/1→i */
+function toTag(s: string): string {
+  return s.toLowerCase().replace(/0/g, "o").replace(/[l1]/g, "i");
+}
+
 export function createUsersRouter({ config }: UsersRouterDeps): Router {
   const router = Router();
 
@@ -48,7 +53,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
         headers: { Authorization: `Bearer ${secret}` },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
       }),
-      proxyToUpstream(dirBase, `/directory/v1/users/alias/tag/${encodeURIComponent(query.toLowerCase().replace(/[^a-z0-9]/g, ""))}`, {
+      proxyToUpstream(dirBase, `/directory/v1/users/alias/tag/${encodeURIComponent(toTag(query))}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,

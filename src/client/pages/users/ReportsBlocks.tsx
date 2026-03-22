@@ -88,18 +88,24 @@ function Section({
         {label} ({total})
       </h4>
       {recent.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-x-1.5 gap-y-1">
+        <div className="mt-1 flex flex-wrap gap-x-0.5 gap-y-1">
           {recent.map((e, i) => (
-            <EntryLink key={e.username} entry={e} userId={userId} showDate last={i === recent.length - 1 && old.length === 0} />
+            <span key={e.username} className="inline-flex items-baseline">
+              <EntryLink entry={e} userId={userId} showDate />
+              {(i < recent.length - 1 || old.length > 0) && <span className="text-gray-300">,&nbsp;</span>}
+            </span>
           ))}
         </div>
       )}
       {old.length > 0 && (
         <div className="mt-1">
           <span className="text-xs text-gray-400">More than 6 months ago: </span>
-          <span className="flex-wrap inline">
+          <span className="inline">
             {old.map((e, i) => (
-              <EntryLink key={e.username} entry={e} userId={userId} showDate={false} last={i === old.length - 1} />
+              <span key={e.username} className="inline-flex items-baseline">
+                <EntryLink entry={e} userId={userId} showDate={false} />
+                {i < old.length - 1 && <span className="text-gray-300">,&nbsp;</span>}
+              </span>
             ))}
           </span>
         </div>
@@ -112,12 +118,10 @@ function EntryLink({
   entry: e,
   userId,
   showDate,
-  last,
 }: {
   entry: { username: string; count: number; lastOn: string };
   userId: string;
   showDate: boolean;
-  last: boolean;
 }) {
   return (
     <Link
@@ -128,7 +132,6 @@ function EntryLink({
       <span>{e.username}</span>
       {e.count > 1 && <span className="text-gray-400">x{e.count}</span>}
       {showDate && <span className="text-gray-400">{formatDateRelative(e.lastOn)}</span>}
-      {!last && <span className="text-gray-300">,</span>}
     </Link>
   );
 }
