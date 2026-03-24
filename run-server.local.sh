@@ -20,6 +20,7 @@ docker build -t ganomede/admin:latest . || exit 1
 docker rm -f ganomede-admin 2>/dev/null
 
 docker run $DOCKER_RUN_OPTS --name ganomede-admin \
+  --add-host=host.docker.internal:host-gateway \
   -p ${PORT:-1337}:8000 \
   -e UPSTREAM_URL=http://host.docker.internal:38917 \
   -e API_SECRET=local-dev-secret \
