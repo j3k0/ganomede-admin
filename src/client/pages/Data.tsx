@@ -104,7 +104,8 @@ function CreateDoc({ onCreated }: { onCreated: () => void }) {
     const jsonStr = editorRef.current?.getValue() ?? "{}";
     try {
       const content = JSON.parse(jsonStr);
-      const body = docId.trim() ? { id: docId.trim(), ...content } : content;
+      const body: Record<string, unknown> = { document: content };
+      if (docId.trim()) body.id = docId.trim();
       create.mutate(body, {
         onSuccess: () => {
           toast.success("Document created");
@@ -348,7 +349,7 @@ function DocEditor({ docId, onBack }: { docId: string; onBack: () => void }) {
     const jsonStr = editorRef.current?.getValue() ?? "{}";
     try {
       const content = JSON.parse(jsonStr);
-      update.mutate(content, {
+      update.mutate({ document: content }, {
         onSuccess: () => toast.success("Document saved"),
         onError: (err) => toast.error(err.message),
       });
