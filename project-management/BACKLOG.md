@@ -26,7 +26,7 @@ to surface those fields — currently it only returns `{ id, aliases }`.
 creation date from alias documents; consider surfacing display name from
 usermeta.
 
-### 2. Surface partial service failures in profile view `[M]` `admin`
+### 2. ~~Surface partial service failures in profile view~~ `[M]` `admin` ✓
 Profile assembly uses `Promise.allSettled` across 6 upstream services
 but silently falls back on failure. Agents can't tell whether data is
 missing because the user has none or because a service is down. The API
@@ -36,7 +36,7 @@ frontend should display a banner when data is incomplete.
 **Files:** `src/server/routes/users.ts` (lines 132-208),
 `web/js/users.jsx` (Profile component, lines 490-597)
 
-### 3. Paginate transaction history `[M]` `admin`
+### 3. ~~Paginate transaction history~~ `[M]` `admin` ✓
 Transactions are fetched with `limit: 100000` in a single payload. This
 causes slow loads and browser lag for active users. The virtualcurrency
 service already supports `limit` and `before` (cursor) query params —
@@ -103,7 +103,7 @@ separators are admin-only changes.
 endpoint. `triominos-server/src/chat/` — add room-listing-by-user
 endpoint + Redis index.
 
-### 9. Human-readable error messages `[S]` `admin`
+### 9. ~~Human-readable error messages~~ `[S]` `admin` ✓
 Errors are displayed as raw JSON or stack traces. Map common upstream
 failures to short, actionable messages (e.g. "User service unavailable
 -- try again in a moment") and keep the raw detail in a collapsible
