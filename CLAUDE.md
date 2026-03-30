@@ -41,24 +41,28 @@ npx vite --config vite.config.ts
 npx nodemon -w server/ index.js
 ```
 
-Node version: 8.8.1 (see `.nvmrc`). Use `nvm use` before running.
+Node version: 22 (TypeScript backend + Vite build require it). Ignore `.nvmrc` (refers to legacy code).
 
 ## Architecture
 
-### Backend (server/)
+### Backend (src/server/) — active
 
-Express app serving both the API and static frontend files. Entry point: `index.js` → `server/app.js`.
+TypeScript Express app. Entry point: `src/server/index.ts` → `src/server/app.ts`.
+Build: `tsc -p tsconfig.server.json` → `dist/server/`
 
 - **Base URL**: `/admin/v1` — API at `/admin/v1/api/*`, web UI at `/admin/v1/web/*`
-- **Auth**: Passport Local strategy with SHA256 password hashing, cookie-based token auth (7-day expiry). Credentials from `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars. All `/api/*` routes require auth via `auth.mwValidate`.
-- **Upstream proxy pattern**: Backend doesn't own data — it proxies requests to upstream microservices via the `Upstream` class (`server/utils.js`). Service URLs configured via Docker-style env vars (e.g., `USERS_PORT_8080_TCP_ADDR`). Pre-configured instances in `server/upstreams.js`.
-- **User ID resolution** (`server/users/UserIdResolver.js`): Resolves users by ID, email, or tag through the Directory service (tries all three methods).
+- **Auth**: Passport Local strategy with SHA256 password hashing, cookie-based token auth (7-day expiry). Credentials from `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars.
+- **Routes**: `src/server/routes/` — users, vcurrency, data, mail, health
+- **Proxy layer**: `src/server/proxy.ts` — `proxyToUpstream()` forwards requests to upstream services
+- **Config**: `src/server/config.ts` — Zod-validated env vars
+- **Errors**: `src/server/errors.ts` — typed error classes (ApiError, UpstreamError)
 
-Key server modules:
-- `server/users/` — User search, profile, ban/unban, rewards, password reset, chat, reports
-- `server/vcurrency/` — Virtual currency items and packs (proxy via `single-list-proxy.js`)
-- `server/data.router.js` — Generic data document storage
-- `server/mailer.js` — Email via Nodemailer
+### Backend (server/) — legacy, kept for reference
+
+Original Node.js backend. Kept alongside `src/server/` during migration.
+
+- **Upstream proxy pattern**: `Upstream` class (`server/utils.js`), instances in `server/upstreams.js`
+- **User ID resolution**: `server/users/UserIdResolver.js`
 
 ### Frontend (src/client/) — active
 
@@ -80,12 +84,12 @@ React 15 + Backbone single-page app. Kept as reference until all features are po
 
 ## Testing
 
-Mocha 5 with chai assertions and testdouble for mocking. Tests in `tests/`.
+Vitest with MSW for HTTP mocking. Tests in `tests/`.
 
 ```bash
-npm test                                              # all tests
-npx mocha tests/utils.test.js                         # single test file
-VIRTUAL_CURRENCY_CURRENCY_CODES="gold" npm test       # some tests need this env var
+npm test                                              # all tests (vitest)
+npx vitest run tests/server/routes/users.test.ts      # single test file
+npx vitest --watch                                    # watch mode
 ```
 
 ## Environment Variables
