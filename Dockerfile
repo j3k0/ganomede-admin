@@ -13,5 +13,5 @@ COPY --from=build /app/package*.json /app/.npmrc ./
 RUN npm ci --omit=dev
 USER node
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:8000/ping/healthcheck || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:8000/ping/healthcheck || exit 1
 CMD ["node", "dist/server/index.js"]
