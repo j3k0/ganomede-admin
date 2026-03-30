@@ -16,6 +16,13 @@ export interface UserProfile {
   avatar: string | null;
   metadata: Record<string, unknown>;
   directory: { id: string; aliases: Record<string, string> } | null;
+  _warnings: string[];
+  _transactionsHasMore: boolean;
+}
+
+export interface TransactionsPage {
+  transactions: Transaction[];
+  hasMore: boolean;
 }
 
 export interface Transaction {
@@ -141,6 +148,15 @@ export function usePasswordReset(userId: string) {
   return useMutation({
     mutationFn: (data: { newPassword: string }) =>
       api.post(`/users/${encodeURIComponent(userId)}/password-reset`, data),
+  });
+}
+
+export function useLoadMoreTransactions(userId: string) {
+  return useMutation({
+    mutationFn: (params: { limit?: number; before: number }) =>
+      api.get<TransactionsPage>(
+        `/users/${encodeURIComponent(userId)}/transactions?limit=${params.limit ?? 50}&before=${params.before}`,
+      ),
   });
 }
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
+import { ApiError } from "../../lib/api.js";
 import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset } from "../../lib/queries/users.js";
 import { formatDate, formatDateRelative, passwordSuggestion, stripPrefix } from "../../lib/utils.js";
 import { getConfig } from "../../lib/config.js";
@@ -16,14 +17,26 @@ export function UserProfile() {
   const [showEmail, setShowEmail] = useState(false);
 
   if (isLoading) return <p className="text-gray-500">Loading profile...</p>;
-  if (error) return <p className="text-red-600">Error loading profile: {error.message}</p>;
+  if (error) return <ErrorMessage error={error} />;
   if (!profile) return <p className="text-gray-500">No profile data</p>;
 
   // Extract header metadata from profile.metadata (fetched inline with profile)
   const meta = (profile.metadata ?? {}) as Record<string, string>;
 
+  const warningLabels: Record<string, string> = {
+    balance: "Balance", transactions: "Transactions", banInfo: "Ban status",
+    avatar: "Avatar", metadata: "User metadata", directory: "Directory",
+  };
+
   return (
     <div className="space-y-3">
+      {/* Warnings banner */}
+      {profile._warnings?.length > 0 && (
+        <div className="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+          <strong>Some data may be incomplete.</strong>{" "}
+          Could not load: {profile._warnings.map((w) => warningLabels[w] ?? w).join(", ")}.
+        </div>
+      )}
       {/* Header: avatar + info + ban badge */}
       <div className="flex items-start gap-4">
         {profile.avatar ? (
@@ -114,11 +127,11 @@ export function UserProfile() {
         {/* Right column: transactions */}
         <div className="w-1/2 min-w-0">
           <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">
-            Transactions ({profile.transactions.length})
+            Transactions ({profile.transactions.length}{profile._transactionsHasMore ? "+" : ""})
           </h3>
           <div className="max-h-[65vh] overflow-y-auto rounded border">
             <div className="px-3 py-2">
-              <Transactions transactions={profile.transactions} />
+              <Transactions transactions={profile.transactions} username={profile.userId} hasMore={profile._transactionsHasMore} />
             </div>
           </div>
         </div>
@@ -293,6 +306,41 @@ function AwardButton({ userId, currencies }: { userId: string; currencies: strin
       <button onClick={() => setOpen(false)} className="text-sm text-gray-500 hover:underline">
         Cancel
       </button>
+    </div>
+  );
+}
+
+const FRIENDLY_MESSAGES: Record<number, string> = {
+  401: "Unauthorized — please log in again.",
+  403: "Forbidden — you don't have permission for this action.",
+  404: "User not found.",
+  500: "Internal server error.",
+  502: "Bad response from an upstream service.",
+  503: "Service unavailable — try again in a moment.",
+  504: "Request timed out — the upstream service is slow or down.",
+};
+
+function ErrorMessage({ error }: { error: Error }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const status = error instanceof ApiError ? error.status : 0;
+  const friendly = FRIENDLY_MESSAGES[status] ?? "Something went wrong. Please try again.";
+
+  return (
+    <div className="rounded border border-red-300 bg-red-50 px-4 py-3 text-sm">
+      <p className="font-medium text-red-800">{friendly}</p>
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        className="mt-1 text-xs text-red-600 hover:underline"
+      >
+        {showDetails ? "Hide" : "Show"} technical details
+      </button>
+      {showDetails && (
+        <pre className="mt-2 max-h-40 overflow-auto rounded bg-red-100 p-2 text-xs text-red-900">
+          {error instanceof ApiError
+            ? JSON.stringify(error.data, null, 2)
+            : error.message}
+        </pre>
+      )}
     </div>
   );
 }

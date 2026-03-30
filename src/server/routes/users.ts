@@ -148,7 +148,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
         // Transactions
         proxyToUpstream(
           base,
-          `/virtualcurrency/v1/auth/${secret}.${encodeURIComponent(userId)}/transactions?reasons=reward,purchase&limit=100000`,
+          `/virtualcurrency/v1/auth/${secret}.${encodeURIComponent(userId)}/transactions?reasons=reward,purchase&limit=51`,
           { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
         ),
         // Ban info
@@ -179,31 +179,45 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
         }),
       ]);
 
-    function extract<T>(result: PromiseSettledResult<{ status: number; data: unknown }>, fallback: T): T {
+    const _warnings: string[] = [];
+    function extract<T>(result: PromiseSettledResult<{ status: number; data: unknown }>, service: string, fallback: T): T {
       if (result.status === "fulfilled" && result.value.status >= 200 && result.value.status < 300) {
         return result.value.data as T;
       }
+      _warnings.push(service);
       return fallback;
     }
 
-    // Avatar: convert buffer to data URI
+    // Avatar: convert buffer to data URI (404 = no avatar, not a failure)
     let avatar: string | null = null;
     if (avatarRes.status === "fulfilled" && avatarRes.value.status === 200 && Buffer.isBuffer(avatarRes.value.data)) {
       avatar = `data:image/png;base64,${(avatarRes.value.data as Buffer).toString("base64")}`;
+    } else if (avatarRes.status === "rejected" || (avatarRes.status === "fulfilled" && avatarRes.value.status >= 500)) {
+      _warnings.push("avatar");
+    }
+
+    // Transactions: trim to page size, detect if more exist
+    let transactions = extract(transactionsRes, "transactions", [] as unknown[]);
+    let _transactionsHasMore = false;
+    if (Array.isArray(transactions) && transactions.length > 50) {
+      _transactionsHasMore = true;
+      transactions = transactions.slice(0, 50);
     }
 
     res.json({
       userId,
-      balance: extract(balanceRes, []),
-      transactions: extract(transactionsRes, []),
-      banInfo: extract(banRes, { exists: false }),
+      balance: extract(balanceRes, "balance", []),
+      transactions,
+      banInfo: extract(banRes, "banInfo", { exists: false }),
       avatar,
       metadata: (() => {
-        const raw = extract<Record<string, unknown>>(metadataRes, {});
+        const raw = extract<Record<string, unknown>>(metadataRes, "metadata", {});
         // Upstream returns {username: {field: value}} — unwrap
         return (raw[userId] ?? raw) as Record<string, unknown>;
       })(),
-      directory: extract(directoryRes, null),
+      directory: extract(directoryRes, "directory", null),
+      _warnings,
+      _transactionsHasMore,
     });
   });
 
@@ -240,6 +254,34 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       { method: "POST", body: { value }, timeoutMs: config.UPSTREAM_TIMEOUT_MS },
     );
     res.status(result.status).json(result.data);
+  });
+
+  // --- Transactions (paginated) ---
+  router.get("/:userId/transactions", async (req: Request, res: Response) => {
+    const userId = param(req, "userId");
+    const limit = Math.min(parseInt(req.query.limit as string, 10) || 50, 500);
+    const before = req.query.before as string | undefined;
+
+    const qs = new URLSearchParams({
+      reasons: "reward,purchase",
+      limit: String(limit + 1),
+    });
+    if (before) qs.set("before", before);
+
+    const result = await proxyToUpstream(
+      upstreamUrl(),
+      `/virtualcurrency/v1/auth/${config.API_SECRET}.${encodeURIComponent(userId)}/transactions?${qs}`,
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+    );
+
+    let transactions = ((result.status >= 200 && result.status < 300 ? result.data : []) ?? []) as unknown[];
+    let hasMore = false;
+    if (Array.isArray(transactions) && transactions.length > limit) {
+      hasMore = true;
+      transactions = transactions.slice(0, limit);
+    }
+
+    res.json({ transactions, hasMore });
   });
 
   // --- Ban/Unban ---

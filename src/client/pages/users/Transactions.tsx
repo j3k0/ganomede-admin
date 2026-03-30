@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { groupBy, stripPrefix, formatDate } from "../../lib/utils.js";
 import type { Transaction } from "../../lib/queries/users.js";
+import { useLoadMoreTransactions } from "../../lib/queries/users.js";
 
 interface TransactionsProps {
   transactions: Transaction[];
+  username: string;
+  hasMore: boolean;
 }
 
 function getItemName(tx: Transaction): string {
@@ -17,14 +20,35 @@ function getReason(tx: Transaction): string {
   return tx.reason ?? "unknown";
 }
 
-export function Transactions({ transactions }: TransactionsProps) {
+export function Transactions({ transactions, username, hasMore: initialHasMore }: TransactionsProps) {
   const [expandedTx, setExpandedTx] = useState<string | null>(null);
+  const [extraTransactions, setExtraTransactions] = useState<Transaction[]>([]);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const loadMore = useLoadMoreTransactions(username);
 
-  if (transactions.length === 0) {
+  const allTransactions = [...transactions, ...extraTransactions];
+
+  function handleLoadMore() {
+    const oldest = allTransactions.reduce(
+      (min, t) => Math.min(min, new Date(t.timestamp).getTime()),
+      Infinity,
+    );
+    loadMore.mutate(
+      { before: oldest },
+      {
+        onSuccess: (page) => {
+          setExtraTransactions((prev) => [...prev, ...page.transactions]);
+          setHasMore(page.hasMore);
+        },
+      },
+    );
+  }
+
+  if (allTransactions.length === 0) {
     return <p className="text-sm text-gray-500">No transactions</p>;
   }
 
-  const grouped = groupBy(transactions, (tx) => tx.currency);
+  const grouped = groupBy(allTransactions, (tx) => tx.currency);
 
   return (
     <div className="space-y-6">
@@ -79,12 +103,22 @@ export function Transactions({ transactions }: TransactionsProps) {
         );
       })}
 
+      {hasMore && (
+        <button
+          onClick={handleLoadMore}
+          disabled={loadMore.isPending}
+          className="w-full rounded border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+        >
+          {loadMore.isPending ? "Loading..." : "Load older transactions"}
+        </button>
+      )}
+
       {expandedTx && (
         <div className="mt-2 rounded bg-gray-100 p-3">
           <h5 className="mb-1 text-xs font-semibold uppercase text-gray-500">Transaction Detail</h5>
           <pre className="overflow-auto text-xs">
             {JSON.stringify(
-              transactions.find((tx) => tx.id === expandedTx),
+              allTransactions.find((tx) => tx.id === expandedTx),
               null,
               2,
             )}
