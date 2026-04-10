@@ -1,0 +1,8 @@
+*
+!package.json
+!package-lock.json
+!.npmrc
+!tsconfig.json
+!tsconfig.server.json
+!vite.config.ts
+!src/

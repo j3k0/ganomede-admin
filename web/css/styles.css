@@ -129,3 +129,17 @@ button.btn-add-item {
 .reports-blocks .block-report-item:hover, .report-item:hover{
     cursor: pointer;
 }
+
+.error-details {
+    margin-top: .5em;
+}
+
+.error-details summary {
+    cursor: pointer;
+    color: #666;
+    font-size: smaller;
+}
+
+.error-details pre {
+    margin-top: .5em;
+}

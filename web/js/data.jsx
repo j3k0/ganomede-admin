@@ -11,6 +11,19 @@ const {Link} = require('./components/Links.jsx');
 const utils = require('./utils');
 const csvImport = require('./data-csv-import');
 
+const downloadJson = (data, filename) => {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
 const docs = {
   url (id) {
     const docIdParam = (arguments.length === 1)
@@ -115,6 +128,46 @@ const docs = {
       method: 'delete',
       url: this.url(id)
     }, this.wrapCb(callback));
+  },
+
+  bulkFetch (ids, onProgress, callback) {
+    const results = {};
+    let completed = 0;
+    const errors = [];
+    const BATCH_SIZE = 5;
+
+    const fetchOne = (id, cb) => {
+      this.fetch(id, (err, res, body) => {
+        completed++;
+        if (err) {
+          errors.push({id, error: err});
+        } else {
+          results[id] = body;
+        }
+        onProgress({completed, total: ids.length, failed: errors.length});
+        cb();
+      });
+    };
+
+    const processBatch = (startIndex) => {
+      if (startIndex >= ids.length) {
+        return callback(null, results, errors);
+      }
+
+      const batch = ids.slice(startIndex, startIndex + BATCH_SIZE);
+      let batchDone = 0;
+
+      batch.forEach(id => {
+        fetchOne(id, () => {
+          batchDone++;
+          if (batchDone === batch.length) {
+            processBatch(startIndex + BATCH_SIZE);
+          }
+        });
+      });
+    };
+
+    processBatch(0);
   }
 };
 
@@ -287,7 +340,9 @@ class DocsSearch extends React.Component {
       showResults: props.showResults,
       showResultsChangedByUser: false,
       loading: false,
-      error: null
+      error: null,
+      backupInProgress: false,
+      backupProgress: null
     };
   }
 
@@ -346,8 +401,40 @@ class DocsSearch extends React.Component {
     });
   }
 
+  startBackup () {
+    const {results, term} = this.state;
+    if (results.length === 0) return;
+
+    this.setState({
+      backupInProgress: true,
+      backupProgress: {completed: 0, total: results.length, failed: 0}
+    });
+
+    docs.bulkFetch(
+      results,
+      (progress) => this.setState({backupProgress: progress}),
+      (err, data, fetchErrors) => {
+        this.setState({backupInProgress: false, backupProgress: null});
+
+        if (fetchErrors.length > 0) {
+          swal({
+            title: 'Backup Complete with Warnings',
+            text: `${fetchErrors.length} document(s) could not be fetched.`,
+            type: 'warning'
+          });
+        }
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = term
+          ? `backup-${term}-${timestamp}.json`
+          : `backup-all-${timestamp}.json`;
+        downloadJson(data, filename);
+      }
+    );
+  }
+
   renderShowToggler () {
-    const {showResults, results} = this.state;
+    const {showResults, results, backupInProgress, backupProgress} = this.state;
     const verb = showResults ? 'hide' : 'show';
 
     return (
@@ -360,6 +447,24 @@ class DocsSearch extends React.Component {
           <small>(click to {verb})</small>
          :
         </span>
+        {' '}
+        {!backupInProgress && results.length > 0 && (
+          <button className="btn btn-default btn-xs"
+            onClick={() => this.startBackup()}
+          >
+            <span className="glyphicon glyphicon-download-alt"></span>
+            {' '}Backup {results.length} docs
+          </button>
+        )}
+        {backupInProgress && backupProgress && (
+          <div className="progress" style={{marginTop: '0.5em', marginBottom: '0.5em'}}>
+            <div className="progress-bar progress-bar-striped active"
+              style={{width: `${Math.round(100 * backupProgress.completed / backupProgress.total)}%`}}
+            >
+              {backupProgress.completed}/{backupProgress.total}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -503,12 +608,14 @@ class DataCreation extends React.Component {
 
     this.TABS = {
       'newDoc': 0,
-      'csvImport': 1
+      'csvImport': 1,
+      'restore': 2
     };
 
     this.TAB_LABELS = [
       'Create New Document',
-      'Import CSV File'
+      'Import CSV File',
+      'Restore Backup'
     ];
 
     this.state = {
@@ -518,7 +625,10 @@ class DataCreation extends React.Component {
       csvError: null,
       csvResult: null,
       csvErrors: [],
-      csvWarnings: defaultWarnings()
+      csvWarnings: defaultWarnings(),
+      restoreData: null,
+      restoreError: null,
+      restoreSkipExisting: true
     };
 
     this.tabHeaders = this.TAB_LABELS.map((label, index) => (
@@ -573,6 +683,69 @@ class DataCreation extends React.Component {
         csvWarnings: defaultWarnings()
       }, onCreate);
     });
+  }
+
+  readRestoreFile (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (reader.error) {
+        this.setState({restoreError: reader.error, restoreData: null});
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          throw new Error('Backup file must contain a JSON object with document IDs as keys');
+        }
+        this.setState({restoreError: null, restoreData: parsed});
+      } catch (e) {
+        this.setState({restoreError: e, restoreData: null});
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  onRestore () {
+    const {onCreate} = this.props;
+    const {restoreData, restoreSkipExisting} = this.state;
+    const {error, success} = utils.xhrMessages({
+      errorTitle: 'Failed to Restore',
+      successTitle: 'Restore Succeeded'
+    });
+
+    const doRestore = (documentsToRestore) => {
+      const count = Object.keys(documentsToRestore).length;
+      if (count === 0) {
+        swal('Nothing to Restore', 'All documents in the backup already exist.', 'info');
+        return;
+      }
+
+      docs.batchInsert(documentsToRestore, (err) => {
+        if (err) return error(err);
+        success(`${count} document(s) restored`);
+        this.refs['restore-file-input'].value = null;
+        this.setState({restoreData: null, restoreError: null}, onCreate);
+      });
+    };
+
+    if (restoreSkipExisting) {
+      docs.list((listErr, res, existingIds) => {
+        if (listErr) return error(listErr);
+
+        const existingSet = {};
+        existingIds.forEach(id => { existingSet[id] = true; });
+        const filtered = {};
+        Object.keys(restoreData).forEach(id => {
+          if (!existingSet[id]) {
+            filtered[id] = restoreData[id];
+          }
+        });
+        doRestore(filtered);
+      });
+    } else {
+      doRestore(restoreData);
+    }
   }
 
   handleTabChange (newIndex) {
@@ -648,6 +821,64 @@ class DataCreation extends React.Component {
           {errors}
           <RenderWarnings warnings={csvWarnings} />
           {errorMessage ? null : importPreview}
+        </div>
+      );
+    }
+
+    case this.TABS.restore: {
+      const {restoreError, restoreData, restoreSkipExisting} = this.state;
+
+      const errorMessage = restoreError && (
+        <Debug.pre data={restoreError.message || restoreError} />
+      );
+
+      const preview = restoreData && (() => {
+        const ids = Object.keys(restoreData);
+        return (
+          <div style={{marginTop: '1em'}}>
+            <p>
+              Backup contains <strong>{ids.length} document(s)</strong>:
+            </p>
+            <div style={{maxHeight: '10em', overflow: 'auto', border: '1px solid #e7e7e7', padding: '.3em .5em'}}>
+              {ids.sort().map(id => <div key={id}>{id}</div>)}
+            </div>
+          </div>
+        );
+      })();
+
+      const controls = restoreData && (
+        <div style={{marginTop: '1em'}}>
+          <label>
+            <input type="checkbox"
+              checked={restoreSkipExisting}
+              onChange={e => this.setState({restoreSkipExisting: e.target.checked})}
+            />
+            {' '}Skip existing documents (do not overwrite)
+          </label>
+          <br />
+          <button className="btn btn-primary" role="button"
+            style={{marginTop: '0.5em'}}
+            onClick={() => this.onRestore()}
+          >
+            Restore
+          </button>
+        </div>
+      );
+
+      return (
+        <div>
+          <h3>Restore from Backup</h3>
+          <input type="file"
+            accept=".json"
+            ref="restore-file-input"
+            onChange={event => {
+              const file = event.target.files[0];
+              if (file) this.readRestoreFile(file);
+            }}
+          />
+          {errorMessage}
+          {preview}
+          {controls}
         </div>
       );
     }

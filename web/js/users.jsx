@@ -68,58 +68,117 @@ function Label (props) {
   );
 }
 
-function TransactionsGrouped(props){
-  var transactionsArray = props.transactions;
-  var groups = utils.groupBy(transactionsArray, 'currency', function(val){return val.replace(/^[a-z]+-/, '');});
-  var keys = [];
-  for (var key in groups) { 
+var TransactionsGrouped = React.createClass({
+  getInitialState: function () {
+    return {
+      extraTransactions: [],
+      hasMore: this.props.hasMore || false,
+      loadingMore: false
+    };
+  },
 
-    if (groups.hasOwnProperty(key)) {
-      keys.push(key);
+  componentWillReceiveProps: function (nextProps) {
+    if (nextProps.username !== this.props.username) {
+      this.setState({
+        extraTransactions: [],
+        hasMore: nextProps.hasMore || false,
+        loadingMore: false
+      });
     }
-  }
+  },
 
-  const cumulativeSum = (sum => value => sum += value);
- 
-  return (<div className='col-md-8'>
-    <b>Transactions</b>
-    <div className='transaction-section'>
-      {
-        keys.map(k => {
-          var sumForThisKey = cumulativeSum(0);
-          return (
-            <div key={k}>
-              <h3>{k}</h3>
-              <div>
-                <table className='table table-bordered table-striped table-condensed mb-0'>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Item</th>
-                      <th>Amount</th>
-                      <th>Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      groups[k].sort((a, b) => {
-                        return a.timestamp - b.timestamp;
-                      }).map(transaction => {
-                        return ( 
-                          <Transaction key={transaction.id} {...transaction} balance={sumForThisKey(transaction.amount)} />
-                        );
-                      })
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })
+  loadMore: function () {
+    var allTransactions = this.props.transactions.concat(this.state.extraTransactions);
+    var oldest = allTransactions.reduce(function (min, t) {
+      return t.timestamp < min ? t.timestamp : min;
+    }, Infinity);
+
+    this.setState({loadingMore: true});
+
+    utils.xhr({
+      method: 'get',
+      url: utils.apiPath('/users/' + encodeURIComponent(this.props.username) + '/transactions?limit=50&before=' + oldest)
+    }, (err, res, data) => {
+      if (err || res.statusCode !== 200) {
+        this.setState({loadingMore: false});
+        return;
       }
-    </div>
-  </div>);
-}
+      this.setState({
+        extraTransactions: this.state.extraTransactions.concat(data.transactions),
+        hasMore: data.hasMore,
+        loadingMore: false
+      });
+    });
+  },
+
+  render: function () {
+    var transactionsArray = this.props.transactions.concat(this.state.extraTransactions);
+    var groups = utils.groupBy(transactionsArray, 'currency', function(val){return val.replace(/^[a-z]+-/, '');});
+    var keys = [];
+    for (var key in groups) {
+      if (groups.hasOwnProperty(key)) {
+        keys.push(key);
+      }
+    }
+
+    const cumulativeSum = (sum => value => sum += value);
+    var hasMore = this.state.hasMore;
+    var loadingMore = this.state.loadingMore;
+
+    return (<div className='col-md-8'>
+      <b>Transactions</b>
+      <div className='transaction-section'>
+        {
+          keys.map(k => {
+            var sumForThisKey = cumulativeSum(0);
+            return (
+              <div key={k}>
+                <h3>{k}</h3>
+                <div>
+                  <table className='table table-bordered table-striped table-condensed mb-0'>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Item</th>
+                        <th>Amount</th>
+                        <th>Balance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        groups[k].sort((a, b) => {
+                          return a.timestamp - b.timestamp;
+                        }).map(transaction => {
+                          transaction.balance = sumForThisKey(transaction.amount);
+                          return transaction;
+                        }).sort((a, b) => {
+                          return b.timestamp - a.timestamp;
+                        }).map(transaction => {
+                          return (
+                            <Transaction key={transaction.id} {...transaction} balance={transaction.balance} />
+                          );
+                        })
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })
+        }
+        {hasMore && (
+          <button
+            className='btn btn-default btn-block'
+            onClick={this.loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Loading…' : 'Load older transactions'}
+          </button>
+        )}
+      </div>
+    </div>);
+  }
+});
 
 function Transaction (props) { 
   var title = "Transaction<br/>" + utils.formatDate(props.timestamp);
@@ -280,25 +339,46 @@ function RenderReportsAndBlocks(props) {
   var blocks = props.results.blocks;
  
   var renderOneType = (items, title) => {
+    //calculating counts per user reports to show only distincts
+    const distinctUsers = items.reduce((m, d) => {
+      if (!m[d.username]) {
+        m[d.username] = { count: 1, fromTimeStamp: d.on };
+        return m;
+      }
+      m[d.username].tillTimeStamp = d.on;
+      m[d.username].count += 1;
+      return m;
+    }, {});
+    //format the distinct users to be an array for easy mapping.
+    const distinctItems = Object.keys(distinctUsers).map((key) => {
+      return {
+        username: key,
+        count: distinctUsers[key].count,
+        fromTimeStamp: distinctUsers[key].fromTimeStamp,
+        tillTimeStamp: distinctUsers[key].tillTimeStamp
+      };
+    });
+    const formatDate = (timestamp) => utils.formatDate(+timestamp, "YYYY-MM-DD hh:mm");
     return (
       <div>
         <span>{title}:</span>{" "}
-        {items
+        {distinctItems
           .map((rep) => {
             return (
-              <a
-                key={rep.on}
-                href={
+              <span key={rep.username}>
+                <a href={
                   "../chat/" +
-          encodeURIComponent(props.username) +
-          "," +
-          encodeURIComponent(rep.username)
+                  encodeURIComponent(props.username) +
+                  "," +
+                  encodeURIComponent(rep.username)
                 }
                 className="block-report-item"
-                title={utils.formatDate(+rep.on, "YYYY-MM-DD hh:mm")}
-              >
-                {rep.username}
-              </a>
+                title={!rep.tillTimeStamp ? formatDate(+rep.fromTimeStamp) :
+                  ("from " + formatDate(+rep.fromTimeStamp) + " to " + formatDate(+rep.tillTimeStamp))}>
+                  {rep.username}
+                </a>
+                {rep.count > 1 ? ` (${rep.count}x)` : ''}
+              </span>
             );
           })
           .reduce((prev, curr) => prev.concat(", ", curr), []).slice(1)}{" "}
@@ -471,6 +551,15 @@ function Profile (props) {
   }
   return (
     <div className='container-fluid'>
+      {props._warnings && props._warnings.length > 0 && (
+        <div className='alert alert-warning' role='alert'>
+          <strong>Some data may be incomplete.</strong>{' '}
+          Could not load: {props._warnings.map(function (w) {
+            return {balance: 'Balance', transactions: 'Transactions', banInfo: 'Ban status',
+              avatar: 'Avatar', metadata: 'User metadata', directory: 'Directory'}[w] || w;
+          }).join(', ')}.
+        </div>
+      )}
       <div className='row media'>
         <div className='media-left avatar'>{
           props.avatar
@@ -563,7 +652,7 @@ function Profile (props) {
           
         </div>
 
-        <TransactionsGrouped transactions={props.transactions}/>
+        <TransactionsGrouped transactions={props.transactions} username={props.username} hasMore={props._transactionsHasMore}/>
       </div>
       
     </div>

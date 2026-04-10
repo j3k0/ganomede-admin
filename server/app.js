@@ -22,7 +22,7 @@ const mailTransport = mailer.createTransport();
 //
 
 app.use(favicon(path.resolve(__dirname, '../web/images/favicon.ico')));
-app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.json({limit: '50mb'})); // support json encoded bodies
 app.use(cookieParser());
 app.use(passport.initialize());
 

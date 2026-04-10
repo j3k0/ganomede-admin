@@ -7,6 +7,7 @@ var ItemsCollection = require('./models/itemsCollection');
 var CostsTable = require('./CostsTable.jsx');
 var CollectionLoader = require('../components/CollectionLoader.jsx');
 var utils = require('../utils');
+var backupRestore = require('../backup-restore');
 require('react.backbone');
 
 var ItemComponent = React.createBackboneClass({
@@ -77,8 +78,49 @@ var ItemsListComponent = React.createBackboneClass({
     }.bind(this));
   },
 
+  getBackupData: function () {
+    var collection = this.getCollection();
+    return collection.map(function (item) {
+      return {id: item.get('id'), costs: item.get('costs')};
+    });
+  },
+
+  validateRestore: function (data) {
+    if (!Array.isArray(data)) return 'Backup file must contain a JSON array of items';
+    for (var i = 0; i < data.length; i++) {
+      if (!data[i].id) return 'Item at index ' + i + ' is missing an id';
+      if (!data[i].costs || typeof data[i].costs !== 'object') return 'Item at index ' + i + ' is missing costs';
+    }
+    return null;
+  },
+
+  onRestore: function (data, onProgress, callback) {
+    var collection = this.getCollection();
+
+    backupRestore.restoreItems(data, function (item, cb) {
+      var body = {id: item.id, costs: item.costs};
+      var itemUrl = utils.apiPath('/items/' + encodeURIComponent(item.id));
+      // Try POST (create) first, fall back to PUT (update) if item exists
+      utils.xhr({method: 'POST', url: itemUrl, body: body}, function (err, res) {
+        if (!err && res.statusCode >= 200 && res.statusCode <= 299) return cb(null);
+        utils.xhr({method: 'PUT', url: itemUrl, body: body}, function (err2, res2, body2) {
+          if (!err2 && (res2.statusCode < 200 || res2.statusCode > 299)) err2 = body2;
+          cb(err2);
+        });
+      });
+    }, onProgress, function (err, errors) {
+      collection.fetch();
+      callback(err, errors);
+    });
+  },
+
+  restorePreview: function (data) {
+    return 'Restore ' + data.length + ' item(s)?';
+  },
+
   render: function ItemsListComponent () {
     var collection = this.getCollection();
+    var self = this;
     var itemsList = collection.map(function (item, idx) {
       var key = [idx, item.id].join(':');
 
@@ -91,6 +133,14 @@ var ItemsListComponent = React.createBackboneClass({
 
     return (
       <div>
+        <backupRestore.BackupRestoreButtons
+          backupData={self.getBackupData}
+          backupFilename="items-backup"
+          onRestore={self.onRestore}
+          validateRestore={self.validateRestore}
+          restorePreview={self.restorePreview}
+          onRestoreComplete={function () { collection.fetch(); }}
+        />
         {itemsList}
         <button className="btn btn-primary btn-add-item" onClick={this.onAddItem}>Add New Item</button>
       </div>

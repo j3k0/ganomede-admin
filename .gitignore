@@ -1,3 +1,12 @@
 node_modules/
 /web/bundle.js
 tests-headless/screenshots/
+run-server.triominos.sh
+run-server.wordsearch.*.sh
+triominos-production.sh
+test-run.sh
+run-server.dev.sh
+dist/
+.claude/
+.vscode/
+CLAUDE.md
