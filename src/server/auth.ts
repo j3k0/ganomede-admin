@@ -1,4 +1,4 @@
-import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { Router, type Request, type Response, type NextFunction } from "express";
 
 interface AuthOptions {
@@ -33,12 +33,6 @@ export function createAuthModule(options: AuthOptions) {
     .update(":")
     .update(options.password)
     .digest("hex");
-
-  function createSession(): string {
-    const token = randomUUID();
-    sessions.set(token, { createdAt: Date.now() });
-    return token;
-  }
 
   function isValidSession(token: string): boolean {
     // Accept the persistent token (always valid, survives restarts)

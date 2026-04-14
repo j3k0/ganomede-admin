@@ -4,7 +4,6 @@ import { AuthGuard } from "./components/AuthGuard.js";
 import { Layout } from "./components/Layout.js";
 import { Login } from "./pages/Login.js";
 import { NotFound } from "./pages/NotFound.js";
-import { Placeholder } from "./pages/Placeholder.js";
 import { Data } from "./pages/Data.js";
 import { Items } from "./pages/Items.js";
 import { Packs } from "./pages/Packs.js";
