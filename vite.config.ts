@@ -4,7 +4,17 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: "replace-branding-title",
+      transformIndexHtml(html) {
+        const title = process.env.BRANDING_TITLE || "Ganomede";
+        return html.replace("<!--BRANDING_TITLE-->", `${title} Administration`);
+      },
+    },
+  ],
   root: "src/client",
   base: "/admin/v1/web/",
   build: {
