@@ -283,7 +283,7 @@ function RestoreBackup({ onRestored, existingDocs }: { onRestored: () => void; e
 }
 
 // --- Rebuild Index ---
-function RebuildIndexButton() {
+export function RebuildIndexButton() {
   const [confirming, setConfirming] = useState(false);
   const rebuild = useRebuildIndex();
 
