@@ -59,3 +59,17 @@ export function useBulkUpsert() {
     onSuccess: () => qc.invalidateQueries({ queryKey: dataKeys.all }),
   });
 }
+
+export interface RebuildIndexResult {
+  ok: boolean;
+  count: number;
+  elapsedMs: number;
+}
+
+export function useRebuildIndex() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<RebuildIndexResult>("/data/_rebuild_index"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: dataKeys.all }),
+  });
+}

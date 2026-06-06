@@ -70,4 +70,21 @@ describe("data routes", () => {
       .send({ id: "new-doc", content: {} });
     expect(res.status).toBe(200);
   });
+
+  it("POST /data/_rebuild_index proxies to upstream with secret", async () => {
+    mswServer.use(
+      http.post(`${UPSTREAM}/data/v1/_rebuild_index`, async ({ request }) => {
+        const body = await request.json() as Record<string, unknown>;
+        expect(body.secret).toBe("test-secret");
+        return HttpResponse.json({ ok: true, count: 42, elapsedMs: 150 });
+      }),
+    );
+    const app = createTestApp();
+    const cookie = await auth(app);
+    const res = await request(app)
+      .post("/admin/v1/api/data/_rebuild_index")
+      .set("Cookie", cookie);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true, count: 42, elapsedMs: 150 });
+  });
 });
