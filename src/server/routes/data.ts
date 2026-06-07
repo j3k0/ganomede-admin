@@ -14,6 +14,18 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     return config.UPSTREAM_URL;
   }
 
+  // Rebuild data store index
+  router.post("/_rebuild_index", async (_req: Request, res: Response) => {
+    const base = upstreamUrl();
+    const body = { secret: config.API_SECRET };
+    const result = await proxyToUpstream(base, `/data/v1/_rebuild_index`, {
+      method: "POST",
+      body,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+    });
+    res.status(result.status).json(result.data);
+  });
+
   // Bulk upsert — must be before /docs/:id to avoid matching "_bulk_upsert" as an ID
   router.post("/docs/_bulk_upsert", async (req: Request, res: Response) => {
     const base = upstreamUrl();

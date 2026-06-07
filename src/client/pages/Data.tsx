@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useDataDocs, useDataDoc, useCreateDoc, useUpdateDoc, useDeleteDoc, useBulkUpsert } from "../lib/queries/data.js";
+import { useDataDocs, useDataDoc, useCreateDoc, useUpdateDoc, useDeleteDoc, useBulkUpsert, useRebuildIndex } from "../lib/queries/data.js";
 import { JsonEditor, type JsonEditorRef } from "../components/JsonEditor.js";
 import { parseCSV } from "../lib/csv-parser.js";
 import { api } from "../lib/api.js";
@@ -86,9 +86,10 @@ function DocList() {
       {tab === "csv" && <CSVImport onImported={() => refetch()} />}
       {tab === "restore" && <RestoreBackup onRestored={() => refetch()} existingDocs={docs ?? []} />}
 
-      {/* Backup */}
-      <div className="mt-4">
+      {/* Backup & Rebuild */}
+      <div className="mt-4 flex items-center gap-3">
         <BackupButton docs={docs ?? []} />
+        <RebuildIndexButton />
       </div>
     </div>
   );
@@ -276,6 +277,48 @@ function RestoreBackup({ onRestored, existingDocs }: { onRestored: () => void; e
             {bulkUpsert.isPending ? "Restoring..." : "Restore"}
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// --- Rebuild Index ---
+export function RebuildIndexButton() {
+  const [confirming, setConfirming] = useState(false);
+  const rebuild = useRebuildIndex();
+
+  function handleClick() {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    rebuild.mutate(undefined, {
+      onSuccess: (result) => {
+        toast.success(`Index rebuilt: ${result.count} keys re-indexed in ${result.elapsedMs}ms`);
+        setConfirming(false);
+      },
+      onError: (err) => {
+        toast.error(err.message);
+        setConfirming(false);
+      },
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={handleClick}
+        disabled={rebuild.isPending}
+        className={`rounded px-3 py-1.5 text-sm text-white ${
+          confirming ? "bg-yellow-600 hover:bg-yellow-700" : "bg-orange-600 hover:bg-orange-700"
+        } disabled:opacity-50`}
+      >
+        {rebuild.isPending ? "Rebuilding..." : confirming ? "Confirm Rebuild?" : "Rebuild Index"}
+      </button>
+      {confirming && !rebuild.isPending && (
+        <button onClick={() => setConfirming(false)} className="text-sm text-gray-500">
+          Cancel
+        </button>
       )}
     </div>
   );
