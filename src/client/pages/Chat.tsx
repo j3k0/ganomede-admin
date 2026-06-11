@@ -4,7 +4,10 @@ import { useChatRoom } from "../lib/queries/users.js";
 import { formatDate } from "../lib/utils.js";
 
 export function Chat() {
-  const { username1, username2 } = useParams<{ username1: string; username2: string }>();
+  // Route is "chat/:usernames" with a comma-separated pair ("alice,bob") —
+  // React Router cannot express two params within one path segment.
+  const { usernames } = useParams<{ usernames: string }>();
+  const [username1 = "", username2 = ""] = (usernames ?? "").split(",");
   const navigate = useNavigate();
   const [input1, setInput1] = useState(username1 ?? "");
   const [input2, setInput2] = useState(username2 ?? "");
