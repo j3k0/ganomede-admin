@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
               { path: "data/:docId", element: <Data /> },
               { path: "reported", element: <Reports /> },
               { path: "chat", element: <Chat /> },
-              { path: "chat/:username1,:username2", element: <Chat /> },
+              { path: "chat/:usernames", element: <Chat /> },
             ],
           },
         ],
