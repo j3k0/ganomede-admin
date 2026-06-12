@@ -4,6 +4,8 @@ export interface AdminConfig {
   currencies: string[];
   chatRoomPrefix: string;
   userMetadataList: string[];
+  /** Grafana URL template for a user's analytics events ("{userId}" placeholder). Empty = hidden. */
+  analyticsGrafanaUrl: string;
 }
 
 declare global {
@@ -20,6 +22,7 @@ export function getConfig(): AdminConfig {
       currencies: [],
       chatRoomPrefix: "",
       userMetadataList: [],
+      analyticsGrafanaUrl: "",
     }
   );
 }

@@ -72,6 +72,7 @@ export function createApp({ config, pkg }: AppDeps) {
       currencies: config.CURRENCY_CODES,
       chatRoomPrefix: config.CHAT_ROOM_PREFIX,
       userMetadataList: config.USER_METADATA_LIST,
+      analyticsGrafanaUrl: config.ANALYTICS_GRAFANA_URL,
     }).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
 
     const configScript = `<script>window.__ADMIN_CONFIG__=${configJson};</script>`;
