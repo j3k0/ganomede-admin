@@ -30,6 +30,7 @@ describe("config", () => {
     expect(config.BRANDING_TITLE).toBe("Ganomede");
     expect(config.CHAT_ROOM_PREFIX).toBe("");
     expect(config.USER_METADATA_LIST).toEqual([]);
+    expect(config.ANALYTICS_GRAFANA_URL).toBe("");
   });
 
   it("throws when ADMIN_USERNAME is missing", () => {

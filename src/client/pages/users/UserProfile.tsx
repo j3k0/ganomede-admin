@@ -83,6 +83,7 @@ export function UserProfile() {
             Send Email
           </button>
         )}
+        <AnalyticsEventsLink userId={profile.userId} urlTemplate={config.analyticsGrafanaUrl} />
       </div>
 
       {/* Two-column layout */}
@@ -149,6 +150,26 @@ export function UserProfile() {
 }
 
 // --- Sub-components ---
+
+/**
+ * Link to the user's recent analytics events in Grafana. Hidden unless
+ * ANALYTICS_GRAFANA_URL is configured ("{userId}" placeholder in the template).
+ * Exported for tests.
+ */
+export function AnalyticsEventsLink({ userId, urlTemplate }: { userId: string; urlTemplate: string }) {
+  if (!urlTemplate) return null;
+  const href = urlTemplate.replaceAll("{userId}", encodeURIComponent(userId));
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+    >
+      Recent Events {"↗"}
+    </a>
+  );
+}
 
 function BanBadge({ banned, since }: { banned: boolean; since?: string }) {
   if (banned) {

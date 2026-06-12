@@ -7,13 +7,14 @@ import { formatDate, formatDateRelative } from "../../lib/utils.js";
 // Fields whose display values also appear in the profile header (but still editable here)
 
 // Known metadata types for smart rendering
-type FieldType = "friends" | "date" | "banned" | "boolean" | "json" | "text";
+type FieldType = "friends" | "date" | "banned" | "boolean" | "pushStatus" | "json" | "text";
 
 function detectFieldType(id: string, value: string): FieldType {
   if (id === "$friends") return "friends";
   if (id === "auth") return "date";
   if (id === "$banned") return "banned";
   if (id === "$chatdisabled" || id === "$muted") return "boolean";
+  if (id === "pushStatus") return "pushStatus";
   if (value.startsWith("{") || value.startsWith("[")) return "json";
   return "text";
 }
@@ -117,11 +118,16 @@ function MetadataField({
 
 /** Renders metadata value with type-aware formatting */
 function SmartValue({ fieldId, value }: { fieldId: string; value: string }) {
+  const type = detectFieldType(fieldId, value);
+
+  // pushStatus first: an absent value has meaning ("never asked"), unlike other fields
+  if (type === "pushStatus") {
+    return <PushStatusValue value={value} />;
+  }
+
   if (!value || value === "empty") {
     return <span className="italic text-gray-300">empty</span>;
   }
-
-  const type = detectFieldType(fieldId, value);
 
   switch (type) {
     case "friends": {
@@ -196,4 +202,50 @@ function SmartValue({ fieldId, value }: { fieldId: string; value: string }) {
         />
       );
   }
+}
+
+/**
+ * Push-notification permission status, written by the game client.
+ * Value is JSON like {"type":"apn","permissions":"refused"}; null/absent
+ * means the user was never prompted.
+ */
+function PushStatusValue({ value }: { value: string }) {
+  if (!value || value === "null" || value === "empty") {
+    return <span className="text-xs italic text-gray-400">never asked</span>;
+  }
+
+  let parsed: Record<string, unknown> | null = null;
+  try {
+    const obj: unknown = JSON.parse(value);
+    if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+      parsed = obj as Record<string, unknown>;
+    }
+  } catch {
+    // not JSON — fall through to raw display
+  }
+
+  if (!parsed) {
+    return (
+      <span className="text-xs font-mono text-gray-600" title={value}>
+        {value}
+      </span>
+    );
+  }
+
+  const permissions = String(parsed.permissions ?? "unknown");
+  const badgeColor =
+    permissions === "granted" ? "bg-green-100 text-green-800"
+    : permissions === "refused" || permissions === "denied" ? "bg-red-100 text-red-800"
+    : "bg-gray-100 text-gray-600";
+
+  return (
+    <span className="flex items-center gap-1.5" title={value}>
+      <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${badgeColor}`}>
+        {permissions}
+      </span>
+      {parsed.type != null && (
+        <span className="text-xs text-gray-500">via {String(parsed.type).toUpperCase()}</span>
+      )}
+    </span>
+  );
 }

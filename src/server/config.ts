@@ -34,6 +34,9 @@ const envSchema = z.object({
     .default("")
     .transform((s) => (s ? s.split(",") : [])),
   CHAT_ROOM_PREFIX: z.string().default(""),
+  // Grafana URL template for a user's analytics events; "{userId}" is replaced
+  // with the username. Empty = no link shown in the UI.
+  ANALYTICS_GRAFANA_URL: z.string().default(""),
   UPSTREAM_TIMEOUT_MS: z.coerce.number().default(30_000),
 
   // Mailer config (all optional — if MAILER_HOST is absent, mailer is disabled)

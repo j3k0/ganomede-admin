@@ -86,6 +86,7 @@ Other:
 - `VIRTUAL_CURRENCY_CURRENCY_CODES` — Comma-separated currency codes
 - `USER_METADATA_LIST` — Comma-separated metadata field names to display
 - `CHAT_ROOM_PREFIX` — Chat room ID prefix (e.g., `triominos/v1`)
+- `ANALYTICS_GRAFANA_URL` — Grafana URL template for a user's analytics events; `{userId}` placeholder is replaced with the username. Empty (default) hides the "Recent Events" link on user profiles
 
 ## Code Style
 
