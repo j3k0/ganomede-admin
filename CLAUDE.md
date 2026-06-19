@@ -92,6 +92,12 @@ Other:
 
 ESLint: ES2017, strict mode, no `var`, semicolons required, 2-space indent. Run `npm run lint` to check.
 
+## Merge Gate (FOV-522)
+
+Before merging any agent-authored code to a protected branch (`master`, `release-*`), you MUST request Reviewer review. The **Security release gate** fires automatically as part of Reviewer's standard code review — no separate invocation is needed.
+
+Reviewer checks: secrets/credentials, authn/authz, data exposure, input validation & injection, dependency intake. A blocking finding holds the merge; advisory notes are non-blocking.
+
 ## Project Management
 
 - `project-management/BACKLOG.md` — UX improvement backlog, prioritized by severity
