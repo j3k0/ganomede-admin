@@ -290,7 +290,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const base = upstreamUrl();
     const result = await proxyToUpstream(base, `/users/v1/banned-users`, {
       method: "POST",
-      body: { apiSecret: config.API_SECRET, username: userId },
+      body: { secret: config.API_SECRET, username: userId },
       timeoutMs: config.UPSTREAM_TIMEOUT_MS,
     });
     res.status(result.status).json(result.data);
@@ -304,7 +304,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       `/users/v1/banned-users/${encodeURIComponent(userId)}`,
       {
         method: "DELETE",
-        body: { apiSecret: config.API_SECRET },
+        body: { secret: config.API_SECRET },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
       },
     );
