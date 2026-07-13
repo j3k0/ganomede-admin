@@ -359,5 +359,69 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     res.status(result.status).json(result.data);
   });
 
+  // --- Games (coordinator) ---
+  // The coordinator API uses {apiSecret}.{userId} as the authToken in the URL
+  // path; auth-middleware's parseUserIdFromSecretToken() extracts the userId.
+  const GAME_TYPE = "triominos/v1";
+
+  router.get("/:userId/games", async (req: Request, res: Response) => {
+    const userId = param(req, "userId");
+    const base = upstreamUrl();
+    const token = `${config.API_SECRET}.${encodeURIComponent(userId)}`;
+    const result = await proxyToUpstream(
+      base,
+      `/coordinator/v1/auth/${token}/${GAME_TYPE}/active-games`,
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+    );
+    res.status(result.status).json(result.data);
+  });
+
+  router.post("/:userId/games/:gameId/delete", async (req: Request, res: Response) => {
+    const userId = param(req, "userId");
+    const gameId = param(req, "gameId");
+    const base = upstreamUrl();
+    const secret = config.API_SECRET;
+
+    // Fetch the game to get the player list.
+    const fetchToken = `${secret}.${encodeURIComponent(userId)}`;
+    const gameRes = await proxyToUpstream(
+      base,
+      `/coordinator/v1/auth/${fetchToken}/games/${encodeURIComponent(gameId)}`,
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+    );
+
+    if (gameRes.status !== 200) {
+      res.status(gameRes.status).json(gameRes.data ?? { error: "Failed to fetch game" });
+      return;
+    }
+
+    const game = gameRes.data as { players?: string[] };
+    const players = Array.isArray(game.players) ? game.players : [];
+
+    if (players.length === 0) {
+      res.status(404).json({ error: "Game has no players" });
+      return;
+    }
+
+    // Call leave for each player sequentially to avoid CouchDB revision conflicts.
+    const results: Array<{ player: string; success: boolean; error?: string }> = [];
+    for (const player of players) {
+      const token = `${secret}.${encodeURIComponent(player)}`;
+      const leaveRes = await proxyToUpstream(
+        base,
+        `/coordinator/v1/auth/${token}/games/${encodeURIComponent(gameId)}/leave`,
+        { method: "POST", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      );
+      results.push({
+        player,
+        success: leaveRes.status >= 200 && leaveRes.status < 300,
+        ...(leaveRes.status >= 300 ? { error: JSON.stringify(leaveRes.data) } : {}),
+      });
+    }
+
+    const allSucceeded = results.every((r) => r.success);
+    res.status(allSucceeded ? 200 : 207).json({ results });
+  });
+
   return router;
 }

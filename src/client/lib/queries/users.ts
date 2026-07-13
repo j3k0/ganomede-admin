@@ -52,6 +52,16 @@ export interface ChatRoom {
   messages: Array<{ from: string; timestamp: string; type: string; message: string }>;
 }
 
+export interface Game {
+  id: string;
+  type: string;
+  players: string[];
+  status: "active" | "inactive" | "gameover";
+  waiting?: string[];
+  viewers?: string[];
+  url?: string;
+}
+
 // --- Query Keys ---
 export const userKeys = {
   all: ["users"] as const,
@@ -61,6 +71,7 @@ export const userKeys = {
   reported: () => [...userKeys.all, "reported"] as const,
   chat: (u1: string, u2: string) => [...userKeys.all, "chat", u1, u2] as const,
   metadata: (userId: string) => [...userKeys.all, userId, "metadata"] as const,
+  games: (userId: string) => [...userKeys.all, userId, "games"] as const,
 };
 
 // --- Queries ---
@@ -108,6 +119,14 @@ export function useUserMetadata(userId: string) {
   return useQuery({
     queryKey: userKeys.metadata(userId),
     queryFn: () => api.get<Array<{ id: string; value: unknown }>>(`/users/${encodeURIComponent(userId)}/usermeta`),
+    enabled: !!userId,
+  });
+}
+
+export function useUserGames(userId: string) {
+  return useQuery({
+    queryKey: userKeys.games(userId),
+    queryFn: () => api.get<Game[]>(`/users/${encodeURIComponent(userId)}/games`),
     enabled: !!userId,
   });
 }
@@ -176,5 +195,18 @@ export function useSendEmail() {
   return useMutation({
     mutationFn: (data: { to: string; subject: string; text: string; html?: string }) =>
       api.post("/send-email", data),
+  });
+}
+
+export function useDeleteGame(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (gameId: string) =>
+      api.post<{ results: Array<{ player: string; success: boolean; error?: string }> }>(
+        `/users/${encodeURIComponent(userId)}/games/${encodeURIComponent(gameId)}/delete`,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userKeys.games(userId) });
+    },
   });
 }
