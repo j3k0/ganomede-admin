@@ -267,4 +267,124 @@ describe("user routes", () => {
       expect(res2.body.transactions).toHaveLength(20);
     });
   });
+
+  describe("GET /api/users/:userId/games", () => {
+    it("proxies to coordinator active-games endpoint", async () => {
+      const games = [
+        { id: "game1", type: "triominos/v1", players: ["alice", "bob"], status: "active" },
+        { id: "game2", type: "triominos/v1", players: ["alice", "carol"], status: "gameover" },
+      ];
+      mswServer.use(
+        http.get(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/triominos/v1/active-games`, () =>
+          HttpResponse.json(games),
+        ),
+      );
+
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+
+      const res = await request(app)
+        .get("/admin/v1/api/users/alice/games")
+        .set("Cookie", cookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+      expect(res.body[0].id).toBe("game1");
+      expect(res.body[1].status).toBe("gameover");
+    });
+
+    it("returns empty array when user has no games", async () => {
+      mswServer.use(
+        http.get(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/triominos/v1/active-games`, () =>
+          HttpResponse.json([]),
+        ),
+      );
+
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+
+      const res = await request(app)
+        .get("/admin/v1/api/users/alice/games")
+        .set("Cookie", cookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+  });
+
+  describe("POST /api/users/:userId/games/:gameId/delete", () => {
+    it("calls leave for all players sequentially", async () => {
+      const players = ["alice", "bob"];
+      const leaveCalls: string[] = [];
+
+      mswServer.use(
+        http.get(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/games/game1`, () =>
+          HttpResponse.json({ id: "game1", players, status: "active" }),
+        ),
+        http.post(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/games/game1/leave`, () => {
+          leaveCalls.push("alice");
+          return HttpResponse.json({ ok: true });
+        }),
+        http.post(`${UPSTREAM}/coordinator/v1/auth/test-secret.bob/games/game1/leave`, () => {
+          leaveCalls.push("bob");
+          return HttpResponse.json({ ok: true });
+        }),
+      );
+
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/games/game1/delete")
+        .set("Cookie", cookie);
+
+      expect(res.status).toBe(200);
+      expect(leaveCalls).toEqual(["alice", "bob"]);
+      expect(res.body.results).toHaveLength(2);
+      expect(res.body.results.every((r: { success: boolean }) => r.success)).toBe(true);
+    });
+
+    it("returns 207 when some players fail to leave", async () => {
+      mswServer.use(
+        http.get(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/games/game1`, () =>
+          HttpResponse.json({ id: "game1", players: ["alice", "bob"], status: "active" }),
+        ),
+        http.post(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/games/game1/leave`, () =>
+          HttpResponse.json({ ok: true }),
+        ),
+        http.post(`${UPSTREAM}/coordinator/v1/auth/test-secret.bob/games/game1/leave`, () =>
+          HttpResponse.json({ error: "conflict" }, { status: 409 }),
+        ),
+      );
+
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/games/game1/delete")
+        .set("Cookie", cookie);
+
+      expect(res.status).toBe(207);
+      expect(res.body.results).toHaveLength(2);
+      expect(res.body.results[0].success).toBe(true);
+      expect(res.body.results[1].success).toBe(false);
+    });
+
+    it("returns error when game fetch fails", async () => {
+      mswServer.use(
+        http.get(`${UPSTREAM}/coordinator/v1/auth/test-secret.alice/games/missing`, () =>
+          HttpResponse.json({ error: "not found" }, { status: 404 }),
+        ),
+      );
+
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/games/missing/delete")
+        .set("Cookie", cookie);
+
+      expect(res.status).toBe(404);
+    });
+  });
 });

@@ -9,6 +9,7 @@ import { Transactions } from "./Transactions.js";
 import { ReportsBlocks } from "./ReportsBlocks.js";
 import { MetadataEditor } from "./MetadataEditor.js";
 import { EmailDialog } from "./EmailDialog.js";
+import { Games } from "./Games.js";
 
 export function UserProfile() {
   const { username } = useParams<{ username: string }>();
@@ -116,6 +117,12 @@ export function UserProfile() {
           <div>
             <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Reports & Blocks</h3>
             <ReportsBlocks userId={profile.userId} />
+          </div>
+
+          {/* Games */}
+          <div>
+            <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Games</h3>
+            <Games userId={profile.userId} />
           </div>
 
           {/* Metadata */}
