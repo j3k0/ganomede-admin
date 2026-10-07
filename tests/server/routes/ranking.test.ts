@@ -117,6 +117,17 @@ describe("ranking routes", () => {
       expect(body).toEqual({ delta: -500, reason: "farming, FOV-1545", expectedLevel: 1200, by: "admin" });
     });
 
+    it("doesn't claim 'may have been applied' when UPSTREAM_URL is missing", async () => {
+      const app = createApp({ config: { ...config, UPSTREAM_URL: undefined }, pkg });
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/ranking/adjust")
+        .set("Cookie", cookie)
+        .send({ delta: -500, reason: "farming", expectedLevel: 1200 });
+      expect(res.status).toBe(500);
+      expect(JSON.stringify(res.body)).not.toMatch(/may have been applied/);
+    });
+
     it("returns a readable 409 when the level changed", async () => {
       mswServer.use(
         http.post(`${STATS}/alice/adjust`, () =>

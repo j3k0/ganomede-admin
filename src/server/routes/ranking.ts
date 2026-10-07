@@ -110,10 +110,11 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
     }
     // Audit trail of every attempt, including refused and unknown outcomes.
     const audit = { audit: "ranking-adjust", userId, ...parsed.data };
+    const base = upstreamUrl(); // config errors must not look like "maybe applied"
     let result: ProxyResult;
     try {
       result = await proxyToUpstream(
-        upstreamUrl(),
+        base,
         `${STATISTICS_PATH}/${encodeURIComponent(userId)}/adjust`,
         {
           method: "POST",
@@ -125,7 +126,9 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
         },
       );
     } catch (err) {
-      logger.warn({ ...audit, err: (err as Error).name }, "ranking adjustment outcome unknown");
+      const e = err as Error & { cause?: { code?: string } };
+      const kind = e.name === "TimeoutError" || e.name === "AbortError" ? "timeout" : "network";
+      logger.warn({ ...audit, kind, err: e.name, code: e.cause?.code }, "ranking adjustment outcome unknown");
       // The server may still have applied it after we gave up.
       res.status(504).json({
         error: "No answer from the statistics service. The change may have been applied: check the history before retrying.",
