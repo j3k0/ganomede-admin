@@ -42,11 +42,13 @@ const STATS = `${UPSTREAM}/statistics/v1/triominos/v1/admin`;
 
 describe("ranking routes", () => {
   describe("GET /api/users/:userId/ranking", () => {
-    it("proxies to the statistics admin API with the secret in the query", async () => {
+    it("proxies to the statistics admin API with the secret in a header", async () => {
       let secret: string | null = null;
+      let url = "";
       mswServer.use(
         http.get(`${STATS}/alice`, ({ request }) => {
-          secret = new URL(request.url).searchParams.get("secret");
+          secret = request.headers.get("x-api-secret");
+          url = request.url;
           return HttpResponse.json({ username: "alice", level: 1200, rank: 3, adjustments: [] });
         }),
       );
@@ -57,6 +59,7 @@ describe("ranking routes", () => {
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ username: "alice", level: 1200, rank: 3, adjustments: [] });
       expect(secret).toBe("test-secret");
+      expect(url).not.toContain("secret");
     });
 
     it("encodes the username so it can't change the upstream path", async () => {
@@ -91,13 +94,13 @@ describe("ranking routes", () => {
   });
 
   describe("POST /api/users/:userId/ranking/adjust", () => {
-    it("forwards secret, delta and reason in the body, dropping unknown fields", async () => {
+    it("forwards delta, reason, expectedLevel and the admin as 'by'; secret in a header", async () => {
       let body: unknown = null;
-      let url = "";
+      let secret: string | null = null;
       mswServer.use(
         http.post(`${STATS}/alice/adjust`, async ({ request }) => {
           body = await request.json();
-          url = request.url;
+          secret = request.headers.get("x-api-secret");
           return HttpResponse.json({ level: 700, rank: 40 });
         }),
       );
@@ -106,12 +109,28 @@ describe("ranking routes", () => {
       const res = await request(app)
         .post("/admin/v1/api/users/alice/ranking/adjust")
         .set("Cookie", cookie)
-        .send({ delta: -500, reason: "  farming, FOV-1545 ", by: "spoofed" });
+        .send({ delta: -500, reason: "  farming, FOV-1545 ", expectedLevel: 1200, by: "spoofed" });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ level: 700, rank: 40 });
-      expect(url).not.toContain("secret");
-      expect(body).toEqual({ secret: "test-secret", delta: -500, reason: "farming, FOV-1545" });
+      expect(secret).toBe("test-secret");
+      expect(body).toEqual({ delta: -500, reason: "farming, FOV-1545", expectedLevel: 1200, by: "admin" });
+    });
+
+    it("returns a readable 409 when the level changed", async () => {
+      mswServer.use(
+        http.post(`${STATS}/alice/adjust`, () =>
+          HttpResponse.json({ code: "Conflict", message: "level changed", level: 1230 }, { status: 409 })),
+      );
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/ranking/adjust")
+        .set("Cookie", cookie)
+        .send({ delta: -500, reason: "farming", expectedLevel: 1200 });
+      expect(res.status).toBe(409);
+      expect(res.body.error).toMatch(/Points changed/);
+      expect(res.body.upstream.level).toBe(1230);
     });
 
     it("returns a readable 503 when the stats worker is busy", async () => {
@@ -121,7 +140,7 @@ describe("ranking routes", () => {
       const res = await request(app)
         .post("/admin/v1/api/users/alice/ranking/adjust")
         .set("Cookie", cookie)
-        .send({ delta: -500, reason: "farming" });
+        .send({ delta: -500, reason: "farming", expectedLevel: 1200 });
       expect(res.status).toBe(503);
       expect(res.body.error).toMatch(/Nothing was changed/);
     });
@@ -133,19 +152,21 @@ describe("ranking routes", () => {
       const res = await request(app)
         .post("/admin/v1/api/users/alice/ranking/adjust")
         .set("Cookie", cookie)
-        .send({ delta: -500, reason: "farming" });
+        .send({ delta: -500, reason: "farming", expectedLevel: 1200 });
       expect(res.status).toBe(504);
       expect(res.body.error).toMatch(/may have been applied/);
     });
 
     it.each([
-      ["zero delta", { delta: 0, reason: "x" }],
-      ["non-integer delta", { delta: 1.5, reason: "x" }],
-      ["string delta", { delta: "-5", reason: "x" }],
-      ["delta too large", { delta: -100_001, reason: "x" }],
-      ["missing reason", { delta: -5 }],
-      ["blank reason", { delta: -5, reason: "   " }],
-      ["reason too long", { delta: -5, reason: "x".repeat(201) }],
+      ["zero delta", { delta: 0, reason: "x", expectedLevel: 10 }],
+      ["non-integer delta", { delta: 1.5, reason: "x", expectedLevel: 10 }],
+      ["string delta", { delta: "-5", reason: "x", expectedLevel: 10 }],
+      ["delta too large", { delta: -100_001, reason: "x", expectedLevel: 10 }],
+      ["missing reason", { delta: -5, expectedLevel: 10 }],
+      ["blank reason", { delta: -5, reason: "   ", expectedLevel: 10 }],
+      ["reason too long", { delta: -5, reason: "x".repeat(201), expectedLevel: 10 }],
+      ["missing expectedLevel", { delta: -5, reason: "x" }],
+      ["negative expectedLevel", { delta: -5, reason: "x", expectedLevel: -1 }],
     ])("rejects %s without calling upstream", async (_name, payload) => {
       let called = false;
       mswServer.use(
@@ -168,7 +189,7 @@ describe("ranking routes", () => {
       const app = createTestApp();
       const res = await request(app)
         .post("/admin/v1/api/users/alice/ranking/adjust")
-        .send({ delta: -5, reason: "x" });
+        .send({ delta: -5, reason: "x", expectedLevel: 10 });
       expect(res.status).toBe(401);
     });
   });

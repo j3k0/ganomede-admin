@@ -65,8 +65,11 @@ export interface Game {
 export interface RankingAdjustment {
   /** Seconds since epoch (archive score unit). */
   date: number;
+  /** Applied delta (after the floor at 0). */
   delta: number;
+  requestedDelta: number;
   reason: string;
+  by: string;
   previousLevel: number;
   newLevel: number;
 }
@@ -246,9 +249,10 @@ export function useDeleteGame(userId: string) {
 export function useAdjustRanking(userId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { delta: number; reason: string }) =>
+    mutationFn: (data: { delta: number; reason: string; expectedLevel: number }) =>
       api.post<RankingAdjustResult>(`/users/${encodeURIComponent(userId)}/ranking/adjust`, data),
-    // Refetch on errors too: after a timeout the change may still have landed.
+    // Refetch on errors too: a 409 needs the current level, and after a
+    // timeout the change may still have landed.
     onSettled: () => {
       qc.invalidateQueries({ queryKey: userKeys.ranking(userId) });
     },

@@ -22,14 +22,16 @@ export function Ranking({ userId }: { userId: string }) {
   const level = data?.level;
 
   // Level changed under an armed confirm button (refetch after a game):
-  // disarm so the admin re-confirms against the current value.
+  // disarm so expectedLevel is always a value the admin confirmed.
   useEffect(() => {
     setConfirming(false);
   }, [level]);
 
   if (isLoading) return <p className="text-sm text-gray-500">Loading ranking...</p>;
   if (error) {
-    const msg = error instanceof ApiError && error.status === 404 ? "No ranking data for this player." : error.message;
+    const msg = error instanceof ApiError && error.status === 404
+      ? "Ranking not available (statistics admin API not found)."
+      : error.message;
     return <p className="text-sm text-gray-500">{msg}</p>;
   }
   if (!data) return null;
@@ -47,7 +49,7 @@ export function Ranking({ userId }: { userId: string }) {
       return;
     }
     adjust.mutate(
-      { delta, reason: reason.trim() },
+      { delta, reason: reason.trim(), expectedLevel: data.level },
       {
         onSuccess: (res) => {
           toast.success(`${userId}: ${data.level} → ${res.level} points`);
@@ -135,6 +137,7 @@ export function Ranking({ userId }: { userId: string }) {
                 <td className="whitespace-nowrap pr-2">{formatDate(a.date * 1000)}</td>
                 <td className={`pr-2 font-mono ${a.delta < 0 ? "text-red-700" : "text-green-700"}`}>
                   {a.delta > 0 ? `+${a.delta}` : a.delta}
+                  {a.requestedDelta !== a.delta && <span className="text-gray-400"> (asked {a.requestedDelta})</span>}
                 </td>
                 <td className="pr-2 font-mono">{a.newLevel}</td>
                 <td className="break-words">{a.reason}</td>

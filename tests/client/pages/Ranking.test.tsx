@@ -39,7 +39,7 @@ describe("Ranking", () => {
       username: "ledebris",
       level: 1200,
       rank: 3,
-      adjustments: [{ date: 1759830000, delta: -500, reason: "<b>farming</b>", previousLevel: 1700, newLevel: 1199 }],
+      adjustments: [{ date: 1759830000, delta: -500, requestedDelta: -500, reason: "<b>farming</b>", by: "admin", previousLevel: 1700, newLevel: 1199 }],
     });
     expect(screen.getByText("1200")).toBeInTheDocument();
     expect(screen.getByText("#3")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("Ranking", () => {
     // Floored at 0
     fireEvent.click(screen.getByRole("button", { name: "Confirm 1200 → 0?" }));
     expect(mutate).toHaveBeenCalledWith(
-      { delta: -5000, reason: "farming" },
+      { delta: -5000, reason: "farming", expectedLevel: 1200 },
       expect.anything(),
     );
   });
@@ -79,7 +79,7 @@ describe("Ranking", () => {
     fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "refund" } });
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm 100 → 130?" }));
-    expect(mutate).toHaveBeenCalledWith({ delta: 30, reason: "refund" }, expect.anything());
+    expect(mutate).toHaveBeenCalledWith({ delta: 30, reason: "refund", expectedLevel: 100 }, expect.anything());
   });
 
   it("rejects non-integer amounts", () => {
@@ -93,13 +93,15 @@ describe("Ranking", () => {
     renderRanking({
       username: "x", level: 900, rank: 2,
       adjustments: [
-        { date: 1759830000, delta: -100, reason: "first", previousLevel: 1000, newLevel: 900 },
-        { date: 1759840000, delta: 50, reason: "second", previousLevel: 900, newLevel: 950 },
+        { date: 1759830000, delta: -100, requestedDelta: -100, reason: "first", by: "admin", previousLevel: 1000, newLevel: 900 },
+        { date: 1759840000, delta: -950, requestedDelta: -2000, reason: "second", by: "admin", previousLevel: 950, newLevel: 0 },
       ],
     });
     const rows = screen.getAllByRole("row").slice(1);
     expect(rows[0]).toHaveTextContent("second");
     expect(rows[1]).toHaveTextContent("first");
+    expect(rows[0]).toHaveTextContent("(asked -2000)");
+    expect(rows[1]).not.toHaveTextContent("asked");
   });
 
   it("disables Apply and shows a wait note while the request is in flight", () => {
