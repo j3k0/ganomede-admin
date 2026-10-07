@@ -13,6 +13,9 @@ function param(req: Request, name: string): string {
   return Array.isArray(v) ? v[0] : v;
 }
 
+/** Game type served by this admin (coordinator games, statistics). */
+export const GAME_TYPE = "triominos/v1";
+
 /** Reproduce ganomede-tagizer's tag() — lowercase, 0→o, l/1→i */
 function toTag(s: string): string {
   return s.toLowerCase().replace(/0/g, "o").replace(/[l1]/g, "i");
