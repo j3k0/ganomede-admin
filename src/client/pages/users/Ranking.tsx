@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRanking, useAdjustRanking } from "../../lib/queries/users.js";
 import { ApiError } from "../../lib/api.js";
@@ -8,17 +8,42 @@ import { formatDate } from "../../lib/utils.js";
 const MAX_DELTA = 100_000;
 const MAX_REASON_LENGTH = 200;
 
+/** While a queued (202) adjustment hasn't shown up yet. */
+const PENDING_POLL_MS = 3_000;
+const PENDING_TIMEOUT_MS = 60_000;
+
 /**
  * Leaderboard points + rank, manual +/- adjustment with a reason, and the
  * adjustment history (FOV-1545).
  */
 export function Ranking({ userId }: { userId: string }) {
-  const { data, isLoading, error } = useRanking(userId);
+  // Level at the time a 202 came back. Submitting stays blocked until the
+  // level moves (or the timeout), so a second click can't queue the same
+  // adjustment again with the same expectedLevel.
+  const [pendingFrom, setPendingFrom] = useState<number | null>(null);
+  const { data, isLoading, error } = useRanking(userId, pendingFrom !== null ? PENDING_POLL_MS : false);
   const adjust = useAdjustRanking(userId);
   const [direction, setDirection] = useState<"remove" | "add">("remove");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const level = data?.level;
+
+  // Level changed under an armed confirm button (refetch, queued apply):
+  // disarm so expectedLevel is never sent for a value the admin didn't confirm.
+  useEffect(() => {
+    setConfirming(false);
+    if (pendingFrom !== null && level !== pendingFrom) setPendingFrom(null);
+  }, [level]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (pendingFrom === null) return;
+    const t = setTimeout(() => {
+      setPendingFrom(null);
+      toast.error("Queued adjustment still not visible. Reload to check before trying again.");
+    }, PENDING_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [pendingFrom]);
 
   if (isLoading) return <p className="text-sm text-gray-500">Loading ranking...</p>;
   if (error) {
@@ -34,7 +59,7 @@ export function Ranking({ userId }: { userId: string }) {
   const newLevel = Math.max(0, data.level + delta);
 
   function handleSubmit() {
-    if (!amountValid || !reasonValid || !data) return;
+    if (!amountValid || !reasonValid || !data || pendingFrom !== null) return;
     if (!confirming) {
       setConfirming(true);
       return;
@@ -46,6 +71,7 @@ export function Ranking({ userId }: { userId: string }) {
           if (res?.level !== undefined) {
             toast.success(`${userId}: ${data.level} → ${res.level} points`);
           } else {
+            setPendingFrom(data.level);
             toast.success(`${userId}: adjustment queued, it applies within a few seconds`);
           }
           setAmount("");
@@ -100,7 +126,7 @@ export function Ranking({ userId }: { userId: string }) {
         />
         <button
           onClick={handleSubmit}
-          disabled={!amountValid || !reasonValid || adjust.isPending}
+          disabled={!amountValid || !reasonValid || adjust.isPending || pendingFrom !== null}
           className="rounded bg-orange-600 px-3 py-1 text-white hover:bg-orange-700 disabled:opacity-50"
         >
           {adjust.isPending ? "Applying..." : confirming ? `Confirm ${data.level} → ${newLevel}?` : "Apply"}
@@ -111,6 +137,10 @@ export function Ranking({ userId }: { userId: string }) {
           </button>
         )}
       </div>
+
+      {pendingFrom !== null && (
+        <p className="text-xs text-amber-700">Adjustment queued, waiting for the server to apply it...</p>
+      )}
 
       {data.adjustments.length > 0 && (
         <table className="w-full text-xs">
@@ -125,7 +155,7 @@ export function Ranking({ userId }: { userId: string }) {
           <tbody>
             {data.adjustments.map((a, i) => (
               <tr key={`${a.date}-${i}`} className="border-t border-gray-200">
-                <td className="whitespace-nowrap pr-2">{formatDate(a.date)}</td>
+                <td className="whitespace-nowrap pr-2">{formatDate(a.date * 1000)}</td>
                 <td className={`pr-2 font-mono ${a.delta < 0 ? "text-red-700" : "text-green-700"}`}>
                   {a.delta > 0 ? `+${a.delta}` : a.delta}
                 </td>

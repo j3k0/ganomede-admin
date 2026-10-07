@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Config } from "../config.js";
 import { proxyToUpstream, type ProxyResult } from "../proxy.js";
 import { GAME_TYPE } from "./users.js";
+import { logger } from "../logger.js";
 
 /**
  * Leaderboard ranking view/adjust (FOV-1545).
@@ -13,7 +14,7 @@ import { GAME_TYPE } from "./users.js";
  *
  *   GET  /statistics/v1/triominos/v1/admin/:username          (X-API-Secret)
  *     200 { username, level, rank, adjustments: [{ date, delta, reason, by, newLevel }] }
- *         rank is 1-based, 0 = unranked
+ *         rank is 1-based, 0 = unranked; date in seconds (archive score unit)
  *   POST /statistics/v1/triominos/v1/admin/:username/adjust   (X-API-Secret)
  *     body { delta, reason, by, expectedLevel }
  *     200 { level, rank }  applied
@@ -107,6 +108,12 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
         body: { ...parsed.data, by: config.ADMIN_USERNAME },
         timeoutMs: config.UPSTREAM_TIMEOUT_MS,
       },
+    );
+    // Audit trail: the shared admin login means upstream "by" can't tell
+    // support people apart, so keep a record of every attempt here too.
+    logger.info(
+      { audit: "ranking-adjust", userId, ...parsed.data, status: result.status, result: result.data },
+      "ranking adjustment",
     );
     send(res, result);
   });

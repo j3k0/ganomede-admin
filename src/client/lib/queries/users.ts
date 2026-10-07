@@ -63,7 +63,8 @@ export interface Game {
 }
 
 export interface RankingAdjustment {
-  date: number | string;
+  /** Seconds since epoch (archive score unit). */
+  date: number;
   delta: number;
   reason: string;
   by?: string;
@@ -154,11 +155,13 @@ export function useUserGames(userId: string) {
   });
 }
 
-export function useRanking(userId: string) {
+/** pollMs: refetch interval while a queued (202) adjustment is pending. */
+export function useRanking(userId: string, pollMs: number | false = false) {
   return useQuery({
     queryKey: userKeys.ranking(userId),
     queryFn: () => api.get<Ranking>(`/users/${encodeURIComponent(userId)}/ranking`),
     enabled: !!userId,
+    refetchInterval: pollMs,
   });
 }
 
