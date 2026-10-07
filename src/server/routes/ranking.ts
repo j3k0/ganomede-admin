@@ -8,23 +8,27 @@ import { logger } from "../logger.js";
 /**
  * Leaderboard ranking view/adjust (FOV-1545).
  *
- * Proxies to the triominos-server statistics admin API (FOV-1546). The
- * upstream contract lives only in this file so it can follow FOV-1546 if it
- * changes:
+ * Proxies to the triominos-server statistics admin API (FOV-1546, PR #95):
  *
- *   GET  /statistics/v1/triominos/v1/admin/:username          (X-API-Secret)
- *     200 { username, level, rank, adjustments: [{ date, delta, reason, by, newLevel }] }
- *         rank is 1-based, 0 = unranked; date in seconds (archive score unit)
- *   POST /statistics/v1/triominos/v1/admin/:username/adjust   (X-API-Secret)
- *     body { delta, reason, by, expectedLevel }
- *     200 { level, rank }  applied
- *     202                  queued, applied by the fetcher within one step
- *     409 { level }        expectedLevel no longer matches (concurrent game or double submit)
+ *   GET  /statistics/v1/triominos/v1/admin/:tag?secret=…
+ *     200 { username, level, rank, adjustments: [{ date, delta, reason, previousLevel, newLevel }] }
+ *         rank is 1-based, 0 = unranked; date in seconds; adjustments oldest first
+ *   POST /statistics/v1/triominos/v1/admin/:tag/adjust   body { secret, delta, reason }
+ *     200 { level, rank }
+ *     404 player has no games
+ *     503 stats worker held its lock > 40s, retry
+ *
+ * The adjust call waits for the stats worker's lock, so it can take ~30s.
+ * The secret is in the GET query string because the server only reads it
+ * from query/body; FOV-1548 tracks redacting it from the server's logs.
  */
 
 const STATISTICS_PATH = `/statistics/v1/${GAME_TYPE}/admin`;
 
-/** Keep in sync with the server-side bounds on FOV-1546. */
+/** Above the server's 40s lock wait, so we see its 503 instead of timing out. */
+const ADJUST_TIMEOUT_MS = 45_000;
+
+/** Server allows 500 chars and no delta cap; the admin is stricter. */
 export const MAX_DELTA = 100_000;
 export const MAX_REASON_LENGTH = 200;
 
@@ -35,7 +39,6 @@ const adjustSchema = z.object({
     .refine((n) => n !== 0, "delta must not be zero")
     .refine((n) => Math.abs(n) <= MAX_DELTA, `|delta| must be at most ${MAX_DELTA}`),
   reason: z.string().trim().min(1, "reason is required").max(MAX_REASON_LENGTH),
-  expectedLevel: z.number().int().min(0),
 });
 
 interface RankingRouterDeps {
@@ -55,8 +58,6 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
     return config.UPSTREAM_URL;
   }
 
-  const headers = () => ({ "X-API-Secret": config.API_SECRET });
-
   /**
    * Upstream auth failures must not reach the browser as 401: the client
    * treats 401 as "admin session expired" and redirects to login.
@@ -70,11 +71,8 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
       res.status(404).json({ error: "Player has no ranking data" });
       return;
     }
-    if (result.status === 409) {
-      res.status(409).json({
-        error: "Points changed since the page was loaded. Check the new value and try again.",
-        upstream: result.data,
-      });
+    if (result.status === 503) {
+      res.status(503).json({ error: "Statistics worker is busy. Nothing was changed, try again." });
       return;
     }
     res.status(result.status).json(result.data ?? {});
@@ -84,8 +82,8 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
     const userId = param(req, "userId");
     const result = await proxyToUpstream(
       upstreamUrl(),
-      `${STATISTICS_PATH}/${encodeURIComponent(userId)}`,
-      { method: "GET", headers: headers(), timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      `${STATISTICS_PATH}/${encodeURIComponent(userId)}?secret=${encodeURIComponent(config.API_SECRET)}`,
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
     );
     send(res, result);
   });
@@ -97,24 +95,29 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
       res.status(400).json({ error: "Validation error", details: parsed.error.issues });
       return;
     }
-    const result = await proxyToUpstream(
-      upstreamUrl(),
-      `${STATISTICS_PATH}/${encodeURIComponent(userId)}/adjust`,
-      {
-        method: "POST",
-        headers: headers(),
-        // Single shared admin login: "by" is the configured admin account,
-        // never taken from the browser.
-        body: { ...parsed.data, by: config.ADMIN_USERNAME },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
-      },
-    );
-    // Audit trail: the shared admin login means upstream "by" can't tell
+    // Audit trail: the shared admin login means nothing upstream tells
     // support people apart, so keep a record of every attempt here too.
-    logger.info(
-      { audit: "ranking-adjust", userId, ...parsed.data, status: result.status, result: result.data },
-      "ranking adjustment",
-    );
+    const audit = { audit: "ranking-adjust", userId, ...parsed.data };
+    let result: ProxyResult;
+    try {
+      result = await proxyToUpstream(
+        upstreamUrl(),
+        `${STATISTICS_PATH}/${encodeURIComponent(userId)}/adjust`,
+        {
+          method: "POST",
+          body: { secret: config.API_SECRET, ...parsed.data },
+          timeoutMs: ADJUST_TIMEOUT_MS,
+        },
+      );
+    } catch (err) {
+      logger.warn({ ...audit, err: (err as Error).name }, "ranking adjustment outcome unknown");
+      // No idempotency upstream: the adjustment may still have been applied.
+      res.status(504).json({
+        error: "No answer from the statistics service. The change may have been applied: check the history before retrying.",
+      });
+      return;
+    }
+    logger.info({ ...audit, status: result.status, result: result.data }, "ranking adjustment");
     send(res, result);
   });
 

@@ -67,7 +67,7 @@ export interface RankingAdjustment {
   date: number;
   delta: number;
   reason: string;
-  by?: string;
+  previousLevel: number;
   newLevel: number;
 }
 
@@ -76,13 +76,13 @@ export interface Ranking {
   level: number;
   /** 1-based, 0 = unranked */
   rank: number;
+  /** Oldest first. */
   adjustments: RankingAdjustment[];
 }
 
-/** Returned by a synchronous adjustment; empty when the server queued it (202). */
 export interface RankingAdjustResult {
-  level?: number;
-  rank?: number;
+  level: number;
+  rank: number;
 }
 
 // --- Query Keys ---
@@ -155,13 +155,11 @@ export function useUserGames(userId: string) {
   });
 }
 
-/** pollMs: refetch interval while a queued (202) adjustment is pending. */
-export function useRanking(userId: string, pollMs: number | false = false) {
+export function useRanking(userId: string) {
   return useQuery({
     queryKey: userKeys.ranking(userId),
     queryFn: () => api.get<Ranking>(`/users/${encodeURIComponent(userId)}/ranking`),
     enabled: !!userId,
-    refetchInterval: pollMs,
   });
 }
 
@@ -248,9 +246,9 @@ export function useDeleteGame(userId: string) {
 export function useAdjustRanking(userId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { delta: number; reason: string; expectedLevel: number }) =>
+    mutationFn: (data: { delta: number; reason: string }) =>
       api.post<RankingAdjustResult>(`/users/${encodeURIComponent(userId)}/ranking/adjust`, data),
-    // Refetch on 409 too: the dialog must show the current level before a retry.
+    // Refetch on errors too: after a timeout the change may still have landed.
     onSettled: () => {
       qc.invalidateQueries({ queryKey: userKeys.ranking(userId) });
     },
