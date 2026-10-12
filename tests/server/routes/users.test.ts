@@ -147,6 +147,7 @@ describe("user routes", () => {
         avatar: () => HttpResponse.json({}, { status: 404 }),
         metadata: () => HttpResponse.json({ alice: { locale: "en", auth: "1711800000000" } }),
         directory: () => HttpResponse.json({ id: "alice", aliases: { name: "Alice", email: "a@b.com" } }),
+        deleted: () => HttpResponse.json({ alice: {} }),
       };
       const handlers = { ...defaults, ...overrides };
 
@@ -155,10 +156,30 @@ describe("user routes", () => {
         http.get(`${UPSTREAM}/virtualcurrency/v1/auth/test-secret.alice/transactions`, handlers.transactions),
         http.get(`${UPSTREAM}/users/v1/banned-users/alice`, handlers.ban),
         http.get(`${UPSTREAM}/avatars/v1/alice/64.png`, handlers.avatar),
-        http.get(`${UPSTREAM}/usermeta/v1/alice/*`, handlers.metadata),
+        http.get(`${UPSTREAM}/usermeta/v1/alice/*`, ({ request }) =>
+          new URL(request.url).pathname.endsWith("/$deleted") ? handlers.deleted() : handlers.metadata()),
         http.get(`${UPSTREAM}/directory/v1/users/id/alice`, handlers.directory),
       );
     }
+
+    it("returns deleted: true when the $deleted usermeta flag is set", async () => {
+      setupProfileHandlers({ deleted: () => HttpResponse.json({ alice: { $deleted: "true" } }) });
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
+      expect(res.status).toBe(200);
+      expect(res.body.deleted).toBe(true);
+      expect(res.body._warnings).toEqual([]);
+    });
+
+    it("returns deleted: false with a warning when the flag can't be read", async () => {
+      setupProfileHandlers({ deleted: () => HttpResponse.json({}, { status: 503 }) });
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
+      expect(res.body.deleted).toBe(false);
+      expect(res.body._warnings).toContain("deleted");
+    });
 
     it("returns _warnings when upstream services fail", async () => {
       setupProfileHandlers({
@@ -218,6 +239,57 @@ describe("user routes", () => {
       expect(res.status).toBe(200);
       expect(res.body.transactions).toHaveLength(50);
       expect(res.body._transactionsHasMore).toBe(true);
+    });
+  });
+
+  describe("POST /api/users/:userId/password-reset", () => {
+    function setup(deleted: () => ReturnType<typeof HttpResponse.json>) {
+      let resetCalled = false;
+      mswServer.use(
+        http.get(`${UPSTREAM}/usermeta/v1/alice/*`, deleted),
+        http.post(`${UPSTREAM}/directory/v1/users/id/alice`, () => {
+          resetCalled = true;
+          return HttpResponse.json({ id: "alice" });
+        }),
+      );
+      return () => resetCalled;
+    }
+
+    it("refuses with 409 on a deleted account without calling the directory", async () => {
+      const resetCalled = setup(() => HttpResponse.json({ alice: { $deleted: "true" } }));
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(409);
+      expect(res.body.error).toMatch(/deleted/);
+      expect(resetCalled()).toBe(false);
+    });
+
+    it("resets the password on a live account", async () => {
+      const resetCalled = setup(() => HttpResponse.json({ alice: {} }));
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(200);
+      expect(resetCalled()).toBe(true);
+    });
+
+    it("proceeds when the deletion flag can't be read", async () => {
+      const resetCalled = setup(() => HttpResponse.json({}, { status: 503 }));
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(200);
+      expect(resetCalled()).toBe(true);
     });
   });
 
