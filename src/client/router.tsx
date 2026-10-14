@@ -9,6 +9,7 @@ import { Items } from "./pages/Items.js";
 import { Packs } from "./pages/Packs.js";
 import { Reports } from "./pages/Reports.js";
 import { Chat } from "./pages/Chat.js";
+import { FarmingSuspects } from "./pages/FarmingSuspects.js";
 import { UserSearch } from "./pages/users/UserSearch.js";
 import { UserProfile } from "./pages/users/UserProfile.js";
 
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
               { path: "data/:docId", element: <Data /> },
               { path: "reported", element: <Reports /> },
               { path: "chat", element: <Chat /> },
+              { path: "farming", element: <FarmingSuspects /> },
               { path: "chat/:usernames", element: <Chat /> },
             ],
           },
