@@ -10,6 +10,7 @@ import { ReportsBlocks } from "./ReportsBlocks.js";
 import { MetadataEditor } from "./MetadataEditor.js";
 import { EmailDialog } from "./EmailDialog.js";
 import { Games } from "./Games.js";
+import { Ranking } from "./Ranking.js";
 
 export function UserProfile() {
   const { username } = useParams<{ username: string }>();
@@ -112,6 +113,12 @@ export function UserProfile() {
               </div>
             </div>
           )}
+
+          {/* Ranking */}
+          <div>
+            <h3 className="mb-1 text-xs font-semibold uppercase text-gray-400">Ranking</h3>
+            <Ranking userId={profile.userId} />
+          </div>
 
           {/* Reports & Blocks */}
           <div>

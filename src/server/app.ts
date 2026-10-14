@@ -11,6 +11,7 @@ import { createMailer } from "./mailer.js";
 import { createHealthRouter } from "./routes/health.js";
 import { createMailRouter } from "./routes/mail.js";
 import { createUsersRouter } from "./routes/users.js";
+import { createRankingRouter } from "./routes/ranking.js";
 import { createVCurrencyRouter } from "./routes/vcurrency.js";
 import { createDataRouter } from "./routes/data.js";
 import { errorHandler } from "./errors.js";
@@ -122,6 +123,7 @@ export function createApp({ config, pkg }: AppDeps) {
   app.use(apiRoot, createMailRouter(mailer, config.MAILER_SEND_FROM));
 
   // --- Users ---
+  app.use(`${apiRoot}/users`, createRankingRouter({ config }));
   app.use(`${apiRoot}/users`, createUsersRouter({ config }));
 
   // --- Virtual Currency (Items + Packs) ---
