@@ -21,7 +21,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     const result = await proxyToUpstream(base, `/data/v1/_rebuild_index`, {
       method: "POST",
       body,
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -33,7 +33,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     const result = await proxyToUpstream(base, `/data/v1/docs/_bulk_upsert`, {
       method: "POST",
       body,
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -45,7 +45,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/data/v1/docs${query}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
@@ -57,7 +57,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/data/v1/docs/${encodeURIComponent(id)}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
@@ -69,7 +69,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     const result = await proxyToUpstream(base, `/data/v1/docs`, {
       method: "POST",
       body,
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -82,7 +82,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/data/v1/docs/${encodeURIComponent(id)}`,
-      { method: "POST", body, timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "POST", body, timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
@@ -97,7 +97,7 @@ export function createDataRouter({ config }: DataRouterDeps): Router {
       {
         method: "DELETE",
         body: { secret: config.API_SECRET },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
     res.status(result.status).json(result.data);

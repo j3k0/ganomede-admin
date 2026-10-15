@@ -20,7 +20,7 @@ export function createVCurrencyRouter({ config }: VCurrencyRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/virtualcurrency/v1/auth/${config.API_SECRET}/products?limit=500`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     // Wrap in {items, currencies} format
     const items = Array.isArray(result.data) ? result.data : [];
@@ -33,7 +33,7 @@ export function createVCurrencyRouter({ config }: VCurrencyRouterDeps): Router {
     const result = await proxyToUpstream(base, `/virtualcurrency/v1/products`, {
       method: "POST",
       body,
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -44,7 +44,7 @@ export function createVCurrencyRouter({ config }: VCurrencyRouterDeps): Router {
     const result = await proxyToUpstream(base, `/virtualcurrency/v1/products`, {
       method: "PUT",
       body,
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -55,7 +55,7 @@ export function createVCurrencyRouter({ config }: VCurrencyRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/virtualcurrency/v1/auth/${config.API_SECRET}/packs?limit=500`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.json(result.data);
   });
@@ -66,7 +66,7 @@ export function createVCurrencyRouter({ config }: VCurrencyRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/virtualcurrency/v1/auth/${config.API_SECRET}/packs`,
-      { method: "POST", body, timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "POST", body, timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
@@ -77,7 +77,7 @@ export function createVCurrencyRouter({ config }: VCurrencyRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/virtualcurrency/v1/auth/${config.API_SECRET}/packs`,
-      { method: "PUT", body, timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "PUT", body, timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
