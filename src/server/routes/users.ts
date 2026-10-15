@@ -49,17 +49,17 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       proxyToUpstream(dirBase, `/directory/v1/users/id/${encodeURIComponent(query)}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       }),
       proxyToUpstream(dirBase, `/directory/v1/users/alias/email/${encodeURIComponent(query)}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       }),
       proxyToUpstream(dirBase, `/directory/v1/users/alias/tag/${encodeURIComponent(toTag(query))}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${secret}` },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       }),
     ]);
 
@@ -96,7 +96,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       `/users/v1/admin/blocks/${encodeURIComponent(userId)}?secret=${config.API_SECRET}`,
       {
         method: "GET",
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
     res.status(result.status).json(result.data);
@@ -107,7 +107,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const base = upstreamUrl();
     const result = await proxyToUpstream(base, `/users/v1/admin/reported-users?secret=${config.API_SECRET}`, {
       method: "GET",
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -123,7 +123,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/chat/v1/auth/${config.API_SECRET}/rooms/${encodeURIComponent(roomId)}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     if (result.status === 404) {
       res.json({ users: sorted, messages: [] });
@@ -146,39 +146,39 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
         proxyToUpstream(
           base,
           `/virtualcurrency/v1/auth/${secret}.${encodeURIComponent(userId)}/coins/${currencies.join(",")}/count`,
-          { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+          { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
         ),
         // Transactions
         proxyToUpstream(
           base,
           `/virtualcurrency/v1/auth/${secret}.${encodeURIComponent(userId)}/transactions?reasons=reward,purchase&limit=51`,
-          { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+          { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
         ),
         // Ban info
         proxyToUpstream(base, `/users/v1/banned-users/${encodeURIComponent(userId)}`, {
           method: "GET",
           headers: secretHeader(),
-          timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+          timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
         }),
         // Avatar (binary)
         proxyToUpstream(base, `/avatars/v1/${encodeURIComponent(userId)}/64.png`, {
           method: "GET",
           responseType: "buffer",
-          timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+          timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
         }),
         // Metadata
         config.USER_METADATA_LIST.length > 0
           ? proxyToUpstream(
               base,
               `/usermeta/v1/${encodeURIComponent(userId)}/${config.USER_METADATA_LIST.join(",")}?secret=${secret}`,
-              { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+              { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
             )
           : Promise.resolve({ status: 200, data: {} }),
         // Directory info
         proxyToUpstream(directoryUrl(), `/directory/v1/users/id/${encodeURIComponent(userId)}?secret=${secret}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${secret}` },
-          timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+          timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
         }),
       ]);
 
@@ -236,7 +236,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/usermeta/v1/${encodeURIComponent(userId)}/${fields.join(",")}?secret=${config.API_SECRET}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     // Upstream returns {username: {field1: val1, field2: val2, ...}}
     // Unwrap the username key, then transform to [{id, value}, ...]
@@ -254,7 +254,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/usermeta/v1/${encodeURIComponent(userId)}/${key}?secret=${config.API_SECRET}`,
-      { method: "POST", body: { value }, timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "POST", body: { value }, timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
@@ -274,7 +274,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(
       upstreamUrl(),
       `/virtualcurrency/v1/auth/${config.API_SECRET}.${encodeURIComponent(userId)}/transactions?${qs}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
 
     let transactions = ((result.status >= 200 && result.status < 300 ? result.data : []) ?? []) as unknown[];
@@ -294,7 +294,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(base, `/users/v1/banned-users`, {
       method: "POST",
       body: { secret: config.API_SECRET, username: userId },
-      timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+      timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
     });
     res.status(result.status).json(result.data);
   });
@@ -308,7 +308,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       {
         method: "DELETE",
         body: { secret: config.API_SECRET },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
     res.status(result.status).json(result.data);
@@ -334,7 +334,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       {
         method: "POST",
         body: { amount: parsed.data.amount, currency: parsed.data.currency },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
     res.status(result.status).json(result.data);
@@ -356,7 +356,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       {
         method: "POST",
         body: { secret: config.API_SECRET, password: parsed.data.newPassword },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
     res.status(result.status).json(result.data);
@@ -374,7 +374,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(
       base,
       `/coordinator/v1/auth/${token}/${GAME_TYPE}/active-games`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     res.status(result.status).json(result.data);
   });
@@ -390,7 +390,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const gameRes = await proxyToUpstream(
       base,
       `/coordinator/v1/auth/${fetchToken}/games/${encodeURIComponent(gameId)}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
 
     if (gameRes.status !== 200) {
@@ -413,7 +413,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       const leaveRes = await proxyToUpstream(
         base,
         `/coordinator/v1/auth/${token}/games/${encodeURIComponent(gameId)}/leave`,
-        { method: "POST", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+        { method: "POST", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
       );
       results.push({
         player,

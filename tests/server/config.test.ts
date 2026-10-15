@@ -105,4 +105,15 @@ describe("config", () => {
   it("redactConfig leaves an unset MAILER_PASSWORD undefined", () => {
     expect(redactConfig(parseConfig(VALID_ENV)).MAILER_PASSWORD).toBeUndefined();
   });
+
+  it("redactConfig masks keys that are not explicitly loggable", () => {
+    const safe = redactConfig({ ...parseConfig(VALID_ENV), SOME_NEW_TOKEN: "new-secret" } as never);
+    expect(safe.SOME_NEW_TOKEN).toBe("***");
+  });
+
+  it("redactConfig strips credentials from URLs", () => {
+    const safe = redactConfig(parseConfig({ ...VALID_ENV, UPSTREAM_URL: "https://user:pa55@example.com/x" }));
+    expect(safe.UPSTREAM_URL).toBe("https://example.com/x");
+    expect(redactConfig(parseConfig(VALID_ENV)).UPSTREAM_URL).toBe("http://localhost:8080");
+  });
 });

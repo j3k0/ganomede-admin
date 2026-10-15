@@ -23,6 +23,7 @@ describe("proxyToUpstream", () => {
     const result = await proxyToUpstream(UPSTREAM, "/users/v1/search/alice", {
       method: "GET",
       timeoutMs: 5000,
+      redactSecret: "test-secret",
     });
 
     expect(result.status).toBe(200);
@@ -41,6 +42,7 @@ describe("proxyToUpstream", () => {
       method: "POST",
       body: { userId: "alice" },
       timeoutMs: 5000,
+      redactSecret: "test-secret",
     });
 
     expect(result.status).toBe(200);
@@ -61,6 +63,7 @@ describe("proxyToUpstream", () => {
       method: "GET",
       responseType: "buffer",
       timeoutMs: 5000,
+      redactSecret: "test-secret",
     });
 
     expect(result.status).toBe(200);
@@ -78,27 +81,41 @@ describe("proxyToUpstream", () => {
     const result = await proxyToUpstream(UPSTREAM, "/users/v1/missing", {
       method: "GET",
       timeoutMs: 5000,
+      redactSecret: "test-secret",
     });
 
     expect(result.status).toBe(404);
     expect(result.data).toEqual({ error: "not found" });
   });
 
-  it("masks the API secret in the logged upstream URL", async () => {
+  it("masks the secret in the logged upstream URL and response body", async () => {
+    // A secret the module-level config doesn't know: the mask must come from
+    // the caller, not from the config singleton.
+    const secret = "injected-only-secret";
     mswServer.use(
-      http.get(`${UPSTREAM}/chat/v1/auth/test-secret/rooms/r1`, () =>
-        HttpResponse.json({ code: "NotFound" }, { status: 404 }),
+      http.get(`${UPSTREAM}/chat/v1/auth/${secret}/rooms/r1`, () =>
+        // restify's route-miss 404 echoes the pathname
+        HttpResponse.json(
+          { code: "ResourceNotFound", message: `/chat/v1/auth/${secret}/rooms/r1 does not exist` },
+          { status: 404 },
+        ),
       ),
     );
-    const child = vi.spyOn(logger, "child");
+    const warn = vi.fn();
+    const child = vi.spyOn(logger, "child").mockReturnValue({ warn } as never);
     try {
-      await proxyToUpstream(UPSTREAM, "/chat/v1/auth/test-secret/rooms/r1?secret=test-secret", {
+      const result = await proxyToUpstream(UPSTREAM, `/chat/v1/auth/${secret}/rooms/r1?secret=${secret}`, {
         method: "GET",
         timeoutMs: 5000,
+        redactSecret: secret,
       });
-      const bindings = JSON.stringify(child.mock.calls);
-      expect(bindings).not.toContain("test-secret");
-      expect(bindings).toContain("/chat/v1/auth/***/rooms/r1?secret=***");
+      const logged = JSON.stringify([child.mock.calls, warn.mock.calls]);
+      expect(warn).toHaveBeenCalled();
+      expect(logged).not.toContain(secret);
+      expect(logged).toContain("/chat/v1/auth/***/rooms/r1?secret=***");
+      expect(logged).toContain("/chat/v1/auth/***/rooms/r1 does not exist");
+      // the caller still gets the unmodified body
+      expect(JSON.stringify(result.data)).toContain(secret);
     } finally {
       child.mockRestore();
     }
@@ -113,7 +130,7 @@ describe("proxyToUpstream", () => {
     );
 
     await expect(
-      proxyToUpstream(UPSTREAM, "/slow", { method: "GET", timeoutMs: 50 }),
+      proxyToUpstream(UPSTREAM, "/slow", { method: "GET", timeoutMs: 50, redactSecret: "test-secret" }),
     ).rejects.toThrow();
   });
 
@@ -125,7 +142,7 @@ describe("proxyToUpstream", () => {
     );
 
     await expect(
-      proxyToUpstream(UPSTREAM, "/network-error", { method: "GET", timeoutMs: 5000 }),
+      proxyToUpstream(UPSTREAM, "/network-error", { method: "GET", timeoutMs: 5000, redactSecret: "test-secret" }),
     ).rejects.toThrow();
   });
 
@@ -141,6 +158,7 @@ describe("proxyToUpstream", () => {
       method: "GET",
       headers: { "X-API-Secret": "my-secret" },
       timeoutMs: 5000,
+      redactSecret: "test-secret",
     });
 
     expect(result.data).toEqual({ secret: "my-secret" });

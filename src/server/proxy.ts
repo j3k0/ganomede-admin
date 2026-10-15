@@ -1,4 +1,3 @@
-import { config } from "./config.js";
 import { logger } from "./logger.js";
 
 export interface ProxyOptions {
@@ -7,6 +6,13 @@ export interface ProxyOptions {
   headers?: Record<string, string>;
   responseType?: "json" | "buffer";
   timeoutMs: number;
+  /**
+   * Masked as "***" in everything this function logs (URL and response body).
+   * Not sent upstream. Required so no call site can forget it: older upstream
+   * APIs take the secret in the URL (?secret=, /auth/<secret>/), and restify's
+   * 404 body echoes the path back.
+   */
+  redactSecret: string;
 }
 
 export interface ProxyResult {
@@ -25,10 +31,8 @@ export async function proxyToUpstream(
   options: ProxyOptions,
 ): Promise<ProxyResult> {
   const url = `${baseUrl}${path}`;
-  // Some upstream APIs take the secret in the URL (?secret=, /auth/<secret>/);
-  // never let it reach the logs.
-  const safeUrl = url.split(config.API_SECRET).join("***");
-  const log = logger.child({ upstream: safeUrl, method: options.method });
+  const redact = (s: string) => s.split(options.redactSecret).join("***");
+  const log = logger.child({ upstream: redact(url), method: options.method });
 
   const res = await fetch(url, {
     method: options.method,
@@ -48,7 +52,7 @@ export async function proxyToUpstream(
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    log.warn({ status: res.status, data }, "upstream returned non-2xx");
+    log.warn({ status: res.status, data: redact(JSON.stringify(data)) }, "upstream returned non-2xx");
   }
 
   return { status: res.status, data };

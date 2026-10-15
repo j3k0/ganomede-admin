@@ -60,17 +60,55 @@ export function parseConfig(env: Record<string, string | undefined>): Config {
   return envSchema.parse(env);
 }
 
-/** Config keys whose values must never appear in logs. */
-const SECRET_KEYS = ["ADMIN_PASSWORD", "API_SECRET", "MAILER_PASSWORD"] as const;
+/**
+ * Config keys whose values may appear in logs. Deny by default: a key added
+ * to the schema is masked until someone lists it here, so a new secret can't
+ * leak just because nobody remembered to mask it.
+ */
+const LOGGABLE_KEYS: ReadonlySet<keyof Config> = new Set<keyof Config>([
+  "PORT",
+  "HOST",
+  "NODE_ENV",
+  "ADMIN_USERNAME",
+  "UPSTREAM_URL",
+  "DIRECTORY_URL",
+  "BRANDING_TITLE",
+  "CURRENCY_CODES",
+  "USER_METADATA_LIST",
+  "CHAT_ROOM_PREFIX",
+  "ANALYTICS_GRAFANA_URL",
+  "UPSTREAM_TIMEOUT_MS",
+  "MAILER_HOST",
+  "MAILER_PORT",
+  "MAILER_SECURE",
+  "MAILER_USER",
+  "MAILER_SEND_FROM",
+]);
+
+/** URLs may carry credentials (https://user:pass@host): drop them. */
+function stripUrlCredentials(value: string): string {
+  try {
+    const url = new URL(value);
+    if (!url.username && !url.password) return value;
+    url.username = "";
+    url.password = "";
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
 
 /**
- * Copy of the config safe to log: secret values are replaced with "***"
- * (absent optional secrets stay undefined).
+ * Copy of the config safe to log: values of keys not in LOGGABLE_KEYS are
+ * replaced with "***" (unset ones stay undefined), URL credentials removed.
  */
 export function redactConfig(config: Config): Record<string, unknown> {
-  const safe: Record<string, unknown> = { ...config };
-  for (const key of SECRET_KEYS) {
-    if (safe[key] !== undefined) safe[key] = "***";
+  const safe: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(config)) {
+    if (value === undefined) safe[key] = undefined;
+    else if (!LOGGABLE_KEYS.has(key as keyof Config)) safe[key] = "***";
+    else if (typeof value === "string") safe[key] = stripUrlCredentials(value);
+    else safe[key] = value;
   }
   return safe;
 }

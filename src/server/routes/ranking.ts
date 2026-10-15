@@ -96,7 +96,7 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
     const result = await proxyToUpstream(
       upstreamUrl(),
       `${STATISTICS_PATH}/${encodeURIComponent(userId)}`,
-      { method: "GET", headers: headers(), timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", headers: headers(), timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     send(res, result);
   });
@@ -123,6 +123,7 @@ export function createRankingRouter({ config }: RankingRouterDeps): Router {
           // never taken from the browser.
           body: { ...parsed.data, by: config.ADMIN_USERNAME },
           timeoutMs: ADJUST_TIMEOUT_MS,
+          redactSecret: config.API_SECRET,
         },
       );
     } catch (err) {
