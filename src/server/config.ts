@@ -60,6 +60,21 @@ export function parseConfig(env: Record<string, string | undefined>): Config {
   return envSchema.parse(env);
 }
 
+/** Config keys whose values must never appear in logs. */
+const SECRET_KEYS = ["ADMIN_PASSWORD", "API_SECRET", "MAILER_PASSWORD"] as const;
+
+/**
+ * Copy of the config safe to log: secret values are replaced with "***"
+ * (absent optional secrets stay undefined).
+ */
+export function redactConfig(config: Config): Record<string, unknown> {
+  const safe: Record<string, unknown> = { ...config };
+  for (const key of SECRET_KEYS) {
+    if (safe[key] !== undefined) safe[key] = "***";
+  }
+  return safe;
+}
+
 /**
  * Singleton config parsed from process.env. Used at runtime.
  * Throws on startup if env vars are invalid.

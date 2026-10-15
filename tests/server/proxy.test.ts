@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { proxyToUpstream } from "../../src/server/proxy.js";
+import { logger } from "../../src/server/logger.js";
 
 const UPSTREAM = "http://localhost:9999";
 
@@ -81,6 +82,26 @@ describe("proxyToUpstream", () => {
 
     expect(result.status).toBe(404);
     expect(result.data).toEqual({ error: "not found" });
+  });
+
+  it("masks the API secret in the logged upstream URL", async () => {
+    mswServer.use(
+      http.get(`${UPSTREAM}/chat/v1/auth/test-secret/rooms/r1`, () =>
+        HttpResponse.json({ code: "NotFound" }, { status: 404 }),
+      ),
+    );
+    const child = vi.spyOn(logger, "child");
+    try {
+      await proxyToUpstream(UPSTREAM, "/chat/v1/auth/test-secret/rooms/r1?secret=test-secret", {
+        method: "GET",
+        timeoutMs: 5000,
+      });
+      const bindings = JSON.stringify(child.mock.calls);
+      expect(bindings).not.toContain("test-secret");
+      expect(bindings).toContain("/chat/v1/auth/***/rooms/r1?secret=***");
+    } finally {
+      child.mockRestore();
+    }
   });
 
   it("throws on timeout", async () => {

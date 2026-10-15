@@ -1,3 +1,4 @@
+import { config } from "./config.js";
 import { logger } from "./logger.js";
 
 export interface ProxyOptions {
@@ -24,7 +25,10 @@ export async function proxyToUpstream(
   options: ProxyOptions,
 ): Promise<ProxyResult> {
   const url = `${baseUrl}${path}`;
-  const log = logger.child({ upstream: url, method: options.method });
+  // Some upstream APIs take the secret in the URL (?secret=, /auth/<secret>/);
+  // never let it reach the logs.
+  const safeUrl = url.split(config.API_SECRET).join("***");
+  const log = logger.child({ upstream: safeUrl, method: options.method });
 
   const res = await fetch(url, {
     method: options.method,
