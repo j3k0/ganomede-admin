@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseConfig } from "../../src/server/config.js";
+import { parseConfig, redactConfig } from "../../src/server/config.js";
 
 const VALID_ENV = {
   ADMIN_USERNAME: "admin",
@@ -80,5 +80,40 @@ describe("config", () => {
   it("mailer is disabled when MAILER_HOST is absent", () => {
     const config = parseConfig(VALID_ENV);
     expect(config.MAILER_HOST).toBeUndefined();
+  });
+
+  it("redactConfig masks every secret, including MAILER_PASSWORD", () => {
+    const config = parseConfig({
+      ...VALID_ENV,
+      MAILER_HOST: "smtp.example.com",
+      MAILER_USER: "user@example.com",
+      MAILER_PASSWORD: "mail-secret",
+    });
+    const safe = redactConfig(config);
+    expect(safe.ADMIN_PASSWORD).toBe("***");
+    expect(safe.API_SECRET).toBe("***");
+    expect(safe.MAILER_PASSWORD).toBe("***");
+    expect(safe.MAILER_USER).toBe("user@example.com");
+    const logged = JSON.stringify(safe);
+    for (const secret of ["secret", "api-secret", "mail-secret"]) {
+      expect(logged).not.toContain(`"${secret}"`);
+    }
+    // the original config is untouched
+    expect(config.MAILER_PASSWORD).toBe("mail-secret");
+  });
+
+  it("redactConfig leaves an unset MAILER_PASSWORD undefined", () => {
+    expect(redactConfig(parseConfig(VALID_ENV)).MAILER_PASSWORD).toBeUndefined();
+  });
+
+  it("redactConfig masks keys that are not explicitly loggable", () => {
+    const safe = redactConfig({ ...parseConfig(VALID_ENV), SOME_NEW_TOKEN: "new-secret" } as never);
+    expect(safe.SOME_NEW_TOKEN).toBe("***");
+  });
+
+  it("redactConfig strips credentials from URLs", () => {
+    const safe = redactConfig(parseConfig({ ...VALID_ENV, UPSTREAM_URL: "https://user:pa55@example.com/x" }));
+    expect(safe.UPSTREAM_URL).toBe("https://example.com/x");
+    expect(redactConfig(parseConfig(VALID_ENV)).UPSTREAM_URL).toBe("http://localhost:8080");
   });
 });

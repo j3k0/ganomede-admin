@@ -1,4 +1,4 @@
-import { config } from "./config.js";
+import { config, redactConfig } from "./config.js";
 import { createApp } from "./app.js";
 import { logger } from "./logger.js";
 
@@ -22,7 +22,7 @@ function die(title: string) {
 process.on("uncaughtException", die("uncaughtException"));
 process.on("unhandledRejection", die("unhandledRejection"));
 
-logger.info({ config: { ...config, ADMIN_PASSWORD: "***", API_SECRET: "***" } }, "Starting");
+logger.info({ config: redactConfig(config) }, "Starting");
 
 app.listen(config.PORT, config.HOST, () => {
   logger.info(`App listening at http://${config.HOST}:${config.PORT}`);
