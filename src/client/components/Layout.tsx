@@ -66,6 +66,12 @@ export function Layout() {
                   </NavLink>
                 </>
               )}
+
+              {hasService("users") && (
+                <NavLink to={`${BASE}/farming`} className={navLinkClass}>
+                  Farming
+                </NavLink>
+              )}
             </div>
 
             <button
