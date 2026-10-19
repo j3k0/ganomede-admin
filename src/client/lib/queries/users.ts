@@ -16,6 +16,8 @@ export interface UserProfile {
   avatar: string | null;
   metadata: Record<string, unknown>;
   directory: { id: string; aliases: Record<string, string> } | null;
+  /** `$deleted` usermeta flag: account deleted, can never log in again. */
+  deleted: boolean;
   _warnings: string[];
   _transactionsHasMore: boolean;
 }

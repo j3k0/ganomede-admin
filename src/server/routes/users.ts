@@ -38,6 +38,22 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     return { "X-API-Secret": config.API_SECRET };
   }
 
+  /**
+   * Read the `$deleted` usermeta flag set by the game server's account
+   * deletion. Deleted accounts can never log in again (AccountDeletedError),
+   * so a password reset on them is useless. Returns null when unknown.
+   */
+  async function readDeletedFlag(userId: string): Promise<boolean | null> {
+    const result = await proxyToUpstream(
+      upstreamUrl(),
+      `/usermeta/v1/${encodeURIComponent(userId)}/$deleted?secret=${config.API_SECRET}`,
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+    );
+    if (result.status < 200 || result.status >= 300) return null;
+    const raw = (result.data ?? {}) as Record<string, Record<string, unknown> | undefined>;
+    return raw[userId]?.["$deleted"] === "true";
+  }
+
   // --- Search ---
   router.get("/search/:query", async (req: Request, res: Response) => {
     const query = param(req, "query");
@@ -140,7 +156,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const currencies = config.CURRENCY_CODES;
 
     // Fetch all profile data in parallel (some may fail -- that's OK)
-    const [balanceRes, transactionsRes, banRes, avatarRes, metadataRes, directoryRes] =
+    const [balanceRes, transactionsRes, banRes, avatarRes, metadataRes, directoryRes, deletedRes] =
       await Promise.allSettled([
         // Balance
         proxyToUpstream(
@@ -180,6 +196,8 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
           headers: { Authorization: `Bearer ${secret}` },
           timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
         }),
+        // Account deletion flag
+        readDeletedFlag(userId),
       ]);
 
     const _warnings: string[] = [];
@@ -207,6 +225,13 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       transactions = transactions.slice(0, 50);
     }
 
+    let deleted = false;
+    if (deletedRes.status === "fulfilled" && deletedRes.value !== null) {
+      deleted = deletedRes.value;
+    } else {
+      _warnings.push("deleted");
+    }
+
     res.json({
       userId,
       balance: extract(balanceRes, "balance", []),
@@ -219,6 +244,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
         return (raw[userId] ?? raw) as Record<string, unknown>;
       })(),
       directory: extract(directoryRes, "directory", null),
+      deleted,
       _warnings,
       _transactionsHasMore,
     });
@@ -348,6 +374,12 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const parsed = passwordSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Validation error", details: parsed.error.issues });
+      return;
+    }
+    // Refuse on deleted accounts: login is rejected regardless of password.
+    // If the flag can't be read, proceed (the UI already warns when known).
+    if (await readDeletedFlag(userId).catch(() => null)) {
+      res.status(409).json({ error: "Account is deleted: it can't log in, a password reset would have no effect" });
       return;
     }
     const result = await proxyToUpstream(
