@@ -28,6 +28,7 @@ export function UserProfile() {
   const warningLabels: Record<string, string> = {
     balance: "Balance", transactions: "Transactions", banInfo: "Ban status",
     avatar: "Avatar", metadata: "User metadata", directory: "Directory",
+    deleted: "Deletion status",
   };
 
   return (
@@ -52,6 +53,9 @@ export function UserProfile() {
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold">{profile.userId}</h2>
             <BanBadge banned={profile.banInfo.exists} since={profile.banInfo.createdAt} />
+            {profile.deleted && (
+              <span className="rounded bg-gray-700 px-2 py-0.5 text-xs font-medium text-white">Deleted account</span>
+            )}
           </div>
           {profile.directory?.aliases && (
             <p className="text-sm text-gray-500">
@@ -75,7 +79,7 @@ export function UserProfile() {
       {/* Actions row — compact */}
       <div className="flex flex-wrap items-center gap-2">
         <BanButton userId={profile.userId} banned={profile.banInfo.exists} />
-        <PasswordResetButton userId={profile.userId} />
+        <PasswordResetButton userId={profile.userId} deleted={profile.deleted} banned={profile.banInfo.exists} />
         <AwardButton userId={profile.userId} currencies={config.currencies} />
         {profile.directory?.aliases?.email && (
           <button
@@ -239,7 +243,7 @@ function BanButton({ userId, banned }: { userId: string; banned: boolean }) {
   );
 }
 
-function PasswordResetButton({ userId }: { userId: string }) {
+function PasswordResetButton({ userId, deleted, banned }: { userId: string; deleted: boolean; banned: boolean }) {
   const reset = usePasswordReset(userId);
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -262,6 +266,18 @@ function PasswordResetButton({ userId }: { userId: string }) {
     );
   }
 
+  if (deleted) {
+    return (
+      <button
+        disabled
+        title="This account is deleted. It can never log in again, so a new password would have no effect."
+        className="cursor-not-allowed rounded bg-gray-300 px-3 py-1.5 text-sm text-gray-600"
+      >
+        Reset Password (account deleted)
+      </button>
+    );
+  }
+
   if (!open) {
     return (
       <button onClick={handleOpen} className="rounded bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
@@ -272,6 +288,9 @@ function PasswordResetButton({ userId }: { userId: string }) {
 
   return (
     <div className="flex items-center gap-2 rounded border border-yellow-200 bg-yellow-50 p-2">
+      {banned && (
+        <span className="text-sm font-medium text-red-700">Banned: the user can&apos;t log in until unbanned.</span>
+      )}
       <input
         type="text"
         value={newPassword}
