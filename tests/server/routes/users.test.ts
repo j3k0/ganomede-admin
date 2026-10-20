@@ -172,14 +172,49 @@ describe("user routes", () => {
       expect(res.body._warnings).toEqual([]);
     });
 
-    it("returns deleted: false with a warning when the flag can't be read", async () => {
-      setupProfileHandlers({ deleted: () => HttpResponse.json({}, { status: 503 }) });
+    it("returns deleted: false when the flag is not set", async () => {
+      setupProfileHandlers();
       const app = createTestApp();
       const cookie = await loginAndGetCookie(app);
       const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
       expect(res.body.deleted).toBe(false);
+      expect(res.body._warnings).toEqual([]);
+    });
+
+    it("returns deleted: \"unknown\" with a warning when the flag can't be read", async () => {
+      setupProfileHandlers({ deleted: () => HttpResponse.json({}, { status: 503 }) });
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
+      expect(res.body.deleted).toBe("unknown");
       expect(res.body._warnings).toContain("deleted");
     });
+
+    it("returns deleted: \"unknown\" on a 2xx with an unusable body", async () => {
+      for (const body of [
+        () => new HttpResponse("<html>proxy error</html>", { status: 200 }),
+        () => new HttpResponse("", { status: 200 }),
+        () => HttpResponse.json(["alice"]),
+      ]) {
+        setupProfileHandlers({ deleted: body as never });
+        const app = createTestApp();
+        const cookie = await loginAndGetCookie(app);
+        const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
+        expect(res.body.deleted).toBe("unknown");
+        expect(res.body._warnings).toContain("deleted");
+      }
+    });
+
+    it("returns deleted: \"unknown\" when the flag read times out", async () => {
+      setupProfileHandlers({ deleted: () => new Promise(() => {}) as never });
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const started = Date.now();
+      const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
+      expect(Date.now() - started).toBeLessThan(5_000);
+      expect(res.body.deleted).toBe("unknown");
+      expect(res.body._warnings).toContain("deleted");
+    }, 10_000);
 
     it("returns _warnings when upstream services fail", async () => {
       setupProfileHandlers({
@@ -280,7 +315,7 @@ describe("user routes", () => {
       expect(resetCalled()).toBe(true);
     });
 
-    it("proceeds when the deletion flag can't be read", async () => {
+    it("proceeds but reports deleted: \"unknown\" when the deletion flag can't be read", async () => {
       const resetCalled = setup(() => HttpResponse.json({}, { status: 503 }));
       const app = createTestApp();
       const cookie = await loginAndGetCookie(app);
@@ -289,8 +324,64 @@ describe("user routes", () => {
         .set("Cookie", cookie)
         .send({ newPassword: "newpass" });
       expect(res.status).toBe(200);
+      expect(res.body.deleted).toBe("unknown");
       expect(resetCalled()).toBe(true);
     });
+
+    it("answers a fixed { ok: true } on a known-live account", async () => {
+      setup(() => HttpResponse.json({ alice: {} }));
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true });
+    });
+
+    it("reports deleted: \"unknown\" when the flag body is unparseable", async () => {
+      const resetCalled = setup((() => new HttpResponse("<html>", { status: 200 })) as never);
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true, deleted: "unknown" });
+      expect(resetCalled()).toBe(true);
+    });
+
+    it("keeps the unknown tag when the directory answers 204", async () => {
+      mswServer.use(
+        http.get(`${UPSTREAM}/usermeta/v1/alice/*`, () => HttpResponse.json({}, { status: 503 })),
+        http.post(`${UPSTREAM}/directory/v1/users/id/alice`, () => new HttpResponse(null, { status: 204 })),
+      );
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true, deleted: "unknown" });
+    });
+
+    it("gives up on a slow flag read after a short timeout", async () => {
+      const resetCalled = setup(() => new Promise(() => {}) as never);
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const started = Date.now();
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(Date.now() - started).toBeLessThan(5_000);
+      expect(res.status).toBe(200);
+      expect(res.body.deleted).toBe("unknown");
+      expect(resetCalled()).toBe(true);
+    }, 10_000);
   });
 
   describe("GET /api/users/:userId/transactions", () => {
