@@ -94,7 +94,7 @@ ESLint: ES2017, strict mode, no `var`, semicolons required, 2-space indent. Run 
 
 ## Merge Gate (FOV-522)
 
-`develop` is the default and active deploy branch. `master` is a legacy stable branch; both are protected by the `protect develop and master` ruleset.
+Production deploys from `master`; staging deploys from `develop` (the default branch). Merging to `develop` does NOT deploy to production — that needs `develop` merged into `master`. Both branches are protected by the `protect develop and master` ruleset (`deletion` + `non_fast_forward`; no required review or CI — CI is not required because the CircleCI config is stale and fails on an unrelated lint error).
 
 Before merging any agent-authored code to a protected branch (`develop`, `master`, `release-*`), you MUST request Reviewer review. The **Security release gate** fires automatically as part of Reviewer's standard code review — no separate invocation is needed.
 
