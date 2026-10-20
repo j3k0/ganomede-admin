@@ -25,7 +25,7 @@ export function createFarmingRouter({ config }: { config: Config }): Router {
       {
         method: "GET",
         headers: { "X-API-Secret": config.API_SECRET },
-        timeoutMs: config.UPSTREAM_TIMEOUT_MS,
+        timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
     // Upstream 401 must not reach the browser as 401: the client treats it as

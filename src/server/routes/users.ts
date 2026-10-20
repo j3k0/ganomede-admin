@@ -47,7 +47,7 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
     const result = await proxyToUpstream(
       upstreamUrl(),
       `/usermeta/v1/${encodeURIComponent(userId)}/$deleted?secret=${config.API_SECRET}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS },
+      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
     );
     if (result.status < 200 || result.status >= 300) return null;
     const raw = (result.data ?? {}) as Record<string, Record<string, unknown> | undefined>;
