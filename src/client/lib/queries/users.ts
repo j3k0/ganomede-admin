@@ -8,6 +8,12 @@ export interface SearchResult {
   matchingIds: string[];
 }
 
+/**
+ * `$deleted` flag. Compare with `=== true` / `=== "unknown"`, never by
+ * truthiness: `"unknown"` is truthy and would read as deleted.
+ */
+export type DeletedStatus = boolean | "unknown";
+
 export interface UserProfile {
   userId: string;
   balance: Array<{ currency: string; count: number }>;
@@ -16,8 +22,11 @@ export interface UserProfile {
   avatar: string | null;
   metadata: Record<string, unknown>;
   directory: { id: string; aliases: Record<string, string> } | null;
-  /** `$deleted` usermeta flag: account deleted, can never log in again. */
-  deleted: boolean;
+  /**
+   * `$deleted` usermeta flag: account deleted, can never log in again.
+   * "unknown" when the flag couldn't be read.
+   */
+  deleted: DeletedStatus;
   _warnings: string[];
   _transactionsHasMore: boolean;
 }
@@ -201,9 +210,13 @@ export function useUnban(userId: string) {
 }
 
 export function usePasswordReset(userId: string) {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { newPassword: string }) =>
-      api.post(`/users/${encodeURIComponent(userId)}/password-reset`, data),
+      api.post<{ ok: boolean; deleted?: "unknown" }>(`/users/${encodeURIComponent(userId)}/password-reset`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userKeys.detail(userId) });
+    },
   });
 }
 

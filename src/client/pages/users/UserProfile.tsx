@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { ApiError } from "../../lib/api.js";
-import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset } from "../../lib/queries/users.js";
+import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset, type DeletedStatus } from "../../lib/queries/users.js";
 import { formatDate, formatDateRelative, passwordSuggestion, stripPrefix } from "../../lib/utils.js";
 import { getConfig } from "../../lib/config.js";
 import { Transactions } from "./Transactions.js";
@@ -28,16 +28,23 @@ export function UserProfile() {
   const warningLabels: Record<string, string> = {
     balance: "Balance", transactions: "Transactions", banInfo: "Ban status",
     avatar: "Avatar", metadata: "User metadata", directory: "Directory",
-    deleted: "Deletion status",
   };
+  // "deleted" gets its own banner: it decides whether a reset means anything.
+  const otherWarnings = (profile._warnings ?? []).filter((w) => w !== "deleted");
 
   return (
     <div className="space-y-3">
       {/* Warnings banner */}
-      {profile._warnings?.length > 0 && (
+      {profile.deleted === "unknown" && (
+        <div className="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+          <strong>Deletion status unknown.</strong>{" "}
+          Could not check whether this account is deleted. If it is, it can&apos;t log in and a password reset has no effect.
+        </div>
+      )}
+      {otherWarnings.length > 0 && (
         <div className="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
           <strong>Some data may be incomplete.</strong>{" "}
-          Could not load: {profile._warnings.map((w) => warningLabels[w] ?? w).join(", ")}.
+          Could not load: {otherWarnings.map((w) => warningLabels[w] ?? w).join(", ")}.
         </div>
       )}
       {/* Header: avatar + info + ban badge */}
@@ -52,9 +59,12 @@ export function UserProfile() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold">{profile.userId}</h2>
-            <BanBadge banned={profile.banInfo.exists} since={profile.banInfo.createdAt} />
-            {profile.deleted && (
+            <BanBadge banned={profile.banInfo.exists} since={profile.banInfo.createdAt} deleted={profile.deleted} />
+            {profile.deleted === true && (
               <span className="rounded bg-gray-700 px-2 py-0.5 text-xs font-medium text-white">Deleted account</span>
+            )}
+            {profile.deleted === "unknown" && (
+              <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Deletion status unknown</span>
             )}
           </div>
           {profile.directory?.aliases && (
@@ -189,7 +199,9 @@ export function AnalyticsEventsLink({ userId, urlTemplate }: { userId: string; u
   );
 }
 
-function BanBadge({ banned, since }: { banned: boolean; since?: string }) {
+export function BanBadge(
+  { banned, since, deleted }: { banned: boolean; since?: string; deleted: DeletedStatus },
+) {
   if (banned) {
     return (
       <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
@@ -197,6 +209,8 @@ function BanBadge({ banned, since }: { banned: boolean; since?: string }) {
       </span>
     );
   }
+  // Not banned says nothing good about a deleted (or possibly deleted) account.
+  if (deleted !== false) return null;
   return (
     <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
       In Good Standing
@@ -243,7 +257,9 @@ function BanButton({ userId, banned }: { userId: string; banned: boolean }) {
   );
 }
 
-function PasswordResetButton({ userId, deleted, banned }: { userId: string; deleted: boolean; banned: boolean }) {
+export function PasswordResetButton(
+  { userId, deleted, banned }: { userId: string; deleted: DeletedStatus; banned: boolean },
+) {
   const reset = usePasswordReset(userId);
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -257,8 +273,13 @@ function PasswordResetButton({ userId, deleted, banned }: { userId: string; dele
     reset.mutate(
       { newPassword },
       {
-        onSuccess: () => {
-          toast.success(`Password reset for ${userId}`);
+        onSuccess: (data) => {
+          // The server re-reads the flag before resetting: its answer is authoritative.
+          if (data?.deleted === "unknown") {
+            toast.warning(`Password set for ${userId}, but deletion status is unknown: it may have no effect.`);
+          } else {
+            toast.success(`Password reset for ${userId}`);
+          }
           setOpen(false);
         },
         onError: (err) => toast.error(err.message),
@@ -266,7 +287,7 @@ function PasswordResetButton({ userId, deleted, banned }: { userId: string; dele
     );
   }
 
-  if (deleted) {
+  if (deleted === true) {
     return (
       <button
         disabled
@@ -280,14 +301,20 @@ function PasswordResetButton({ userId, deleted, banned }: { userId: string; dele
 
   if (!open) {
     return (
-      <button onClick={handleOpen} className="rounded bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600">
-        Reset Password
+      <button
+        onClick={handleOpen}
+        className="rounded bg-yellow-500 px-3 py-1.5 text-sm text-white hover:bg-yellow-600"
+      >
+        {deleted === "unknown" ? "Reset Password (deletion status unknown)" : "Reset Password"}
       </button>
     );
   }
 
   return (
     <div className="flex items-center gap-2 rounded border border-yellow-200 bg-yellow-50 p-2">
+      {deleted === "unknown" && (
+        <span className="text-sm font-medium text-amber-700">Deletion status unknown: this may have no effect.</span>
+      )}
       {banned && (
         <span className="text-sm font-medium text-red-700">Banned: the user can&apos;t log in until unbanned.</span>
       )}
