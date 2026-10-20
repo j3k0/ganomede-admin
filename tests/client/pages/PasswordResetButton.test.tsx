@@ -31,7 +31,7 @@ async function resetWith(deleted: boolean | "unknown", data: ResetData) {
   const user = userEvent.setup();
   render(<PasswordResetButton userId="alice" deleted={deleted} banned={false} />);
   await user.click(screen.getByRole("button", { name: /reset password/i }));
-  await user.click(screen.getByRole("button", { name: /set password/i }));
+  await user.click(screen.getByRole("button", { name: /^set password$/i }));
 }
 
 describe("PasswordResetButton", () => {

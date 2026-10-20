@@ -195,6 +195,8 @@ describe("user routes", () => {
         () => new HttpResponse("<html>proxy error</html>", { status: 200 }),
         () => new HttpResponse("", { status: 200 }),
         () => HttpResponse.json(["alice"]),
+        () => HttpResponse.json("hi"),
+        () => HttpResponse.json(42),
       ]) {
         setupProfileHandlers({ deleted: body as never });
         const app = createTestApp();
@@ -211,7 +213,7 @@ describe("user routes", () => {
       const cookie = await loginAndGetCookie(app);
       const started = Date.now();
       const res = await request(app).get("/admin/v1/api/users/alice").set("Cookie", cookie);
-      expect(Date.now() - started).toBeLessThan(5_000);
+      expect(Date.now() - started).toBeLessThan(3_500);
       expect(res.body.deleted).toBe("unknown");
       expect(res.body._warnings).toContain("deleted");
     }, 10_000);
@@ -353,6 +355,21 @@ describe("user routes", () => {
       expect(resetCalled()).toBe(true);
     });
 
+    it("passes a directory error through unchanged", async () => {
+      mswServer.use(
+        http.get(`${UPSTREAM}/usermeta/v1/alice/*`, () => HttpResponse.json({ alice: {} })),
+        http.post(`${UPSTREAM}/directory/v1/users/id/alice`, () => HttpResponse.json({ error: "boom" }, { status: 500 })),
+      );
+      const app = createTestApp();
+      const cookie = await loginAndGetCookie(app);
+      const res = await request(app)
+        .post("/admin/v1/api/users/alice/password-reset")
+        .set("Cookie", cookie)
+        .send({ newPassword: "newpass" });
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ error: "boom" });
+    });
+
     it("keeps the unknown tag when the directory answers 204", async () => {
       mswServer.use(
         http.get(`${UPSTREAM}/usermeta/v1/alice/*`, () => HttpResponse.json({}, { status: 503 })),
@@ -377,7 +394,7 @@ describe("user routes", () => {
         .post("/admin/v1/api/users/alice/password-reset")
         .set("Cookie", cookie)
         .send({ newPassword: "newpass" });
-      expect(Date.now() - started).toBeLessThan(5_000);
+      expect(Date.now() - started).toBeLessThan(3_500);
       expect(res.status).toBe(200);
       expect(res.body.deleted).toBe("unknown");
       expect(resetCalled()).toBe(true);

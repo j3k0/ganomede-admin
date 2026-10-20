@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { ApiError } from "../../lib/api.js";
-import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset } from "../../lib/queries/users.js";
+import { useUserProfile, useAwardCurrency, useBan, useUnban, usePasswordReset, type DeletedStatus } from "../../lib/queries/users.js";
 import { formatDate, formatDateRelative, passwordSuggestion, stripPrefix } from "../../lib/utils.js";
 import { getConfig } from "../../lib/config.js";
 import { Transactions } from "./Transactions.js";
@@ -200,7 +200,7 @@ export function AnalyticsEventsLink({ userId, urlTemplate }: { userId: string; u
 }
 
 export function BanBadge(
-  { banned, since, deleted }: { banned: boolean; since?: string; deleted: boolean | "unknown" },
+  { banned, since, deleted }: { banned: boolean; since?: string; deleted: DeletedStatus },
 ) {
   if (banned) {
     return (
@@ -258,7 +258,7 @@ function BanButton({ userId, banned }: { userId: string; banned: boolean }) {
 }
 
 export function PasswordResetButton(
-  { userId, deleted, banned }: { userId: string; deleted: boolean | "unknown"; banned: boolean },
+  { userId, deleted, banned }: { userId: string; deleted: DeletedStatus; banned: boolean },
 ) {
   const reset = usePasswordReset(userId);
   const [open, setOpen] = useState(false);
