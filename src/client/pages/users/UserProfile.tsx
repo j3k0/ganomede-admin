@@ -276,7 +276,7 @@ export function PasswordResetButton(
         onSuccess: (data) => {
           // The server re-reads the flag before resetting: its answer is authoritative.
           if (data?.deleted === "unknown") {
-            toast.warning(`Password set for ${userId}, but deletion status is unknown: it may have no effect.`);
+            toast.warning(`Password reset for ${userId}, but deletion status is unknown: it may have no effect.`, { duration: 10_000 });
           } else {
             toast.success(`Password reset for ${userId}`);
           }
@@ -325,7 +325,7 @@ export function PasswordResetButton(
         className="rounded border px-2 py-1 text-sm"
       />
       <button onClick={handleReset} disabled={reset.isPending} className="rounded bg-yellow-500 px-3 py-1 text-sm text-white">
-        {reset.isPending ? "Resetting..." : "Set Password"}
+        {reset.isPending ? "Resetting..." : deleted === "unknown" ? "Reset Password anyway (may have no effect)" : "Set Password"}
       </button>
       <button onClick={() => setOpen(false)} className="text-sm text-gray-500 hover:underline">
         Cancel

@@ -31,7 +31,7 @@ async function resetWith(deleted: boolean | "unknown", data: ResetData) {
   const user = userEvent.setup();
   render(<PasswordResetButton userId="alice" deleted={deleted} banned={false} />);
   await user.click(screen.getByRole("button", { name: /reset password/i }));
-  await user.click(screen.getByRole("button", { name: /^set password$/i }));
+  await user.click(screen.getByRole("button", { name: /^set password$|reset password anyway/i }));
 }
 
 describe("PasswordResetButton", () => {
@@ -45,9 +45,20 @@ describe("PasswordResetButton", () => {
     expect(screen.getByRole("button", { name: /deletion status unknown/i })).toBeEnabled();
   });
 
+  it("relabels the submit button when the status is unknown", async () => {
+    const user = userEvent.setup();
+    render(<PasswordResetButton userId="alice" deleted="unknown" banned={false} />);
+    await user.click(screen.getByRole("button", { name: /reset password/i }));
+    expect(screen.getByRole("button", { name: "Reset Password anyway (may have no effect)" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: /^set password$/i })).not.toBeInTheDocument();
+  });
+
   it("warns instead of claiming success when the server reports unknown", async () => {
     await resetWith(false, { ok: true, deleted: "unknown" });
-    expect(toast.warning).toHaveBeenCalledWith(expect.stringMatching(/deletion status is unknown/));
+    expect(toast.warning).toHaveBeenCalledWith(
+      expect.stringMatching(/Password reset for alice, but deletion status is unknown/),
+      { duration: 10_000 },
+    );
     expect(toast.success).not.toHaveBeenCalled();
   });
 
