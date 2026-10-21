@@ -2,6 +2,9 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import type { Config } from "../config.js";
 import { proxyToUpstream } from "../proxy.js";
+import { logger } from "../logger.js";
+
+const log = logger.child({ module: "users" });
 
 interface UsersRouterDeps {
   config: Config;
@@ -12,6 +15,12 @@ function param(req: Request, name: string): string {
   const v = req.params[name];
   return Array.isArray(v) ? v[0] : v;
 }
+
+/** `$deleted` flag: true/false when read, "unknown" when it couldn't be. */
+type DeletedStatus = boolean | "unknown";
+
+/** Timeout for the `$deleted` read, which sits in front of the password reset. */
+const DELETED_FLAG_TIMEOUT_MS = 2_500;
 
 /** Game type served by this admin (coordinator games, statistics). */
 export const GAME_TYPE = "triominos/v1";
@@ -41,17 +50,31 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
   /**
    * Read the `$deleted` usermeta flag set by the game server's account
    * deletion. Deleted accounts can never log in again (AccountDeletedError),
-   * so a password reset on them is useless. Returns null when unknown.
+   * so a password reset on them is useless. Returns "unknown" when the flag
+   * can't be read (upstream error or timeout); never throws.
    */
-  async function readDeletedFlag(userId: string): Promise<boolean | null> {
-    const result = await proxyToUpstream(
-      upstreamUrl(),
-      `/usermeta/v1/${encodeURIComponent(userId)}/$deleted?secret=${config.API_SECRET}`,
-      { method: "GET", timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET },
-    );
-    if (result.status < 200 || result.status >= 300) return null;
-    const raw = (result.data ?? {}) as Record<string, Record<string, unknown> | undefined>;
-    return raw[userId]?.["$deleted"] === "true";
+  async function readDeletedFlag(userId: string): Promise<DeletedStatus> {
+    try {
+      const result = await proxyToUpstream(
+        upstreamUrl(),
+        `/usermeta/v1/${encodeURIComponent(userId)}/$deleted?secret=${config.API_SECRET}`,
+        // Short timeout: a slow usermeta must not hang the profile or the reset.
+        { method: "GET", timeoutMs: Math.min(config.UPSTREAM_TIMEOUT_MS, DELETED_FLAG_TIMEOUT_MS), redactSecret: config.API_SECRET },
+      );
+      if (result.status < 200 || result.status >= 300) return "unknown";
+      // A 2xx whose body couldn't be parsed (proxyToUpstream yields null) or
+      // isn't an object is no evidence the account is live.
+      if (!result.data || typeof result.data !== "object" || Array.isArray(result.data)) {
+        log.warn({ userId, status: result.status }, "unusable $deleted response");
+        return "unknown";
+      }
+      const raw = result.data as Record<string, Record<string, unknown> | undefined>;
+      return raw[userId]?.["$deleted"] === "true";
+    } catch (err) {
+      // Network error or timeout. Log the error name only: messages may carry the URL.
+      log.warn({ userId, error: (err as Error)?.name }, "could not read $deleted");
+      return "unknown";
+    }
   }
 
   // --- Search ---
@@ -225,12 +248,8 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       transactions = transactions.slice(0, 50);
     }
 
-    let deleted = false;
-    if (deletedRes.status === "fulfilled" && deletedRes.value !== null) {
-      deleted = deletedRes.value;
-    } else {
-      _warnings.push("deleted");
-    }
+    const deleted: DeletedStatus = deletedRes.status === "fulfilled" ? deletedRes.value : "unknown";
+    if (deleted === "unknown") _warnings.push("deleted");
 
     res.json({
       userId,
@@ -377,8 +396,10 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
       return;
     }
     // Refuse on deleted accounts: login is rejected regardless of password.
-    // If the flag can't be read, proceed (the UI already warns when known).
-    if (await readDeletedFlag(userId).catch(() => null)) {
+    // If the flag can't be read, proceed (blocking support on a usermeta blip
+    // is worse) but tag the response so the UI doesn't claim it worked.
+    const deleted = await readDeletedFlag(userId);
+    if (deleted === true) {
       res.status(409).json({ error: "Account is deleted: it can't log in, a password reset would have no effect" });
       return;
     }
@@ -391,7 +412,12 @@ export function createUsersRouter({ config }: UsersRouterDeps): Router {
         timeoutMs: config.UPSTREAM_TIMEOUT_MS, redactSecret: config.API_SECRET,
       },
     );
-    res.status(result.status).json(result.data);
+    if (result.status < 200 || result.status >= 300) {
+      res.status(result.status).json(result.data);
+      return;
+    }
+    // Fixed shape, always 200 (a 204 would drop the tag).
+    res.json(deleted === "unknown" ? { ok: true, deleted } : { ok: true });
   });
 
   // --- Games (coordinator) ---
